@@ -1,0 +1,46 @@
+/* #PatientPage {
+    background-color: #f6f8fb;
+}
+
+QLineEdit {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+QPushButton {
+    padding: 8px 16px;
+    background-color: #003366;
+    color: white;
+    font-weight: bold;
+    border: none;
+    border-radius: 20px;
+}
+
+QPushButton:hover {
+    background-color: #0055a5;
+}
+
+QTableWidget {
+    background-color: #f0f4f9;
+    gridline-color: #ccc;
+    border: none;
+    font-size: 14px;
+}
+
+QHeaderView::section {
+    background-color: #002b5c;
+    color: white;
+    padding: 8px;
+    border: none;
+    font-weight: bold;
+    font-size:12px
+}
+
+QTableWidget::item {
+    padding: 6px;
+}
+#patient-title {
+    margin: 10px 0 10px 0;
+} */

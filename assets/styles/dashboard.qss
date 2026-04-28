@@ -1,0 +1,66 @@
+
+/* QWidget {
+    background: #ffffff;
+    font-family: "Segoe UI", sans-serif;
+    font-size: 14px;
+}
+
+
+#TopBar         { background:#ffffff; border-bottom:1px solid #ced0d5; }
+#LogoLabel      { padding:6px 12px; }
+#DashboardTitle { color:#df0606; font-size:26px; font-weight:700; }
+
+
+#SideBar { 
+    background:#ffffff; 
+    border-right:1px solid #ced0d5; 
+    text-align: center; 
+}
+
+QToolButton#SideBarButton {
+    width:65px; height:65px;
+    margin:10px 10px;
+    border-radius:14px;
+    border:1px solid black;
+    icon-size:40px 40px;
+    font-weight:600;     
+}
+
+QToolButton#SideBarButton:pressed,
+QToolButton#SideBarButton[active="true"] {
+    background:#c40000;
+    color:#ffffff;
+    border-left:6px solid #ffffff;  
+} */
+
+#CameraLabel {
+    color:#df0606;
+    font-weight:500;
+    margin:14px 0 6px 8px;
+    font-size: 26px;
+}
+
+#VideoWidget {
+    margin:0 20px 0 20px;
+}
+
+#BottomControls { padding:10px 0; }
+
+QPushButton#ZoomButton {
+    background:qlineargradient(x1:0,y1:0,x2:0,y2:1,
+              stop:0 #0b6ad9, stop:1 #044a9b);
+    border:none;
+    color:#ffffff;
+    font-weight:600;
+    padding:12px 32px;
+    margin:0 18px;
+    border-radius:12px;
+    font-size:20px;
+}
+
+QPushButton#ZoomButton:hover {
+    background:qlineargradient(x1:0,y1:0,x2:0,y2:1,
+              stop:0 #1e7fff, stop:1 #0b5dc2);
+}
+
+QPushButton#ZoomButton:pressed { background:#033670; }

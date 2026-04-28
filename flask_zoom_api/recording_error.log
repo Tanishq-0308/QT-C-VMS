@@ -1,0 +1,780 @@
+ffmpeg version N-119739-gab37c7e49f Copyright (c) 2000-2025 the FFmpeg developers
+  built with gcc 11 (Ubuntu 11.4.0-1ubuntu1~22.04)
+  configuration: --enable-nonfree --enable-cuda --enable-cuvid --enable-nvenc --extra-cflags=-I/home/brainwave/Desktop/sdk/Video_Codec_SDK_13.0.19/Interface --extra-ldflags=-L/usr/local/cuda/lib64 --enable-libx264 --enable-libx265 --enable-gpl
+  libavutil      60.  3.100 / 60.  3.100
+  libavcodec     62.  3.101 / 62.  3.101
+  libavformat    62.  0.102 / 62.  0.102
+  libavdevice    62.  0.100 / 62.  0.100
+  libavfilter    11.  0.100 / 11.  0.100
+  libswscale      9.  0.100 /  9.  0.100
+  libswresample   6.  0.100 /  6.  0.100
+Input #0, rtsp, from 'rtsp://admin:123456@192.168.1.88/stream0':
+  Metadata:
+    title           : RTSP/RTP stream from icamra ipc
+  Duration: N/A, start: 0.000000, bitrate: N/A
+  Stream #0:0: Video: h264 (High), yuv420p(progressive), 3840x2160, 30 fps, 30 tbr, 90k tbn, Start 0.032000
+  Stream #0:1: Audio: pcm_mulaw, 8000 Hz, mono, s16, 64 kb/s
+Stream mapping:
+  Stream #0:0 -> #0:0 (h264 (native) -> h264 (h264_nvenc))
+  Stream #0:1 -> #0:1 (pcm_mulaw (native) -> aac (native))
+Press [q] to stop, [?] for help
+[aac @ 0x574078c39540] Too many bits 8832.000000 > 6144 per frame requested, clamping to max
+[h264_nvenc @ 0x5740783d1100] The selected preset is deprecated. Use p1 to p7 + -tune or fast/medium/slow.
+Output #0, mp4, to 'recordings/video_20250602_012353.mp4':
+  Metadata:
+    title           : RTSP/RTP stream from icamra ipc
+    encoder         : Lavf62.0.102
+  Stream #0:0: Video: h264 (Main) (avc1 / 0x31637661), yuv420p(tv, progressive), 3840x2160, q=2-31, 5000 kb/s, 30 fps, 15360 tbn
+    Metadata:
+      encoder         : Lavc62.3.101 h264_nvenc
+    Side data:
+      cpb: bitrate max/min/avg: 0/0/5000000 buffer size: 10000000 vbv_delay: N/A
+  Stream #0:1: Audio: aac (LC) (mp4a / 0x6134706D), 8000 Hz, mono, fltp, 48 kb/s
+    Metadata:
+      encoder         : Lavc62.3.101 aac
+frame=   16 fps=0.0 q=19.0 size=       0KiB time=00:00:00.53 bitrate=   0.7kbits/s speed=1.07x elapsed=0:00:00.50    frame=   48 fps= 48 q=10.0 size=     512KiB time=00:00:01.60 bitrate=2621.7kbits/s speed= 1.6x elapsed=0:00:01.00    frame=   63 fps= 42 q=10.0 size=     768KiB time=00:00:02.10 bitrate=2996.1kbits/s speed= 1.4x elapsed=0:00:01.50    frame=   78 fps= 39 q=10.0 size=    1280KiB time=00:00:02.60 bitrate=4033.1kbits/s speed= 1.3x elapsed=0:00:02.00    frame=   93 fps= 37 q=11.0 size=    1536KiB time=00:00:03.10 bitrate=4059.1kbits/s speed=1.24x elapsed=0:00:02.50    frame=  108 fps= 36 q=11.0 size=    2048KiB time=00:00:03.60 bitrate=4660.4kbits/s speed= 1.2x elapsed=0:00:03.00    frame=  123 fps= 35 q=11.0 size=    2816KiB time=00:00:04.10 bitrate=5626.6kbits/s speed=1.17x elapsed=0:00:03.50    frame=  138 fps= 34 q=11.0 size=    3072KiB time=00:00:04.60 bitrate=5470.9kbits/s speed=1.15x elapsed=0:00:04.00    frame=  153 fps= 34 q=11.0 size=    3328KiB time=00:00:05.10 bitrate=5345.8kbits/s speed=1.13x elapsed=0:00:04.50    frame=  168 fps= 34 q=13.0 size=    4096KiB time=00:00:05.60 bitrate=5991.9kbits/s speed=1.12x elapsed=0:00:05.00    frame=  183 fps= 33 q=15.0 size=    5120KiB time=00:00:06.10 bitrate=6876.0kbits/s speed=1.11x elapsed=0:00:05.50    frame=  197 fps= 33 q=16.0 size=    5888KiB time=00:00:06.56 bitrate=7345.4kbits/s speed=1.09x elapsed=0:00:06.00    frame=  212 fps= 33 q=17.0 size=    6400KiB time=00:00:07.06 bitrate=7419.2kbits/s speed=1.09x elapsed=0:00:06.50    frame=  228 fps= 33 q=17.0 size=    6656KiB time=00:00:07.60 bitrate=7174.5kbits/s speed=1.09x elapsed=0:00:07.00    frame=  243 fps= 32 q=19.0 size=    7424KiB time=00:00:08.10 bitrate=7508.4kbits/s speed=1.08x elapsed=0:00:07.50    frame=  257 fps= 32 q=17.0 size=    7936KiB time=00:00:08.56 bitrate=7589.0kbits/s speed=1.07x elapsed=0:00:08.00    frame=  273 fps= 32 q=17.0 size=    8192KiB time=00:00:09.07 bitrate=7392.5kbits/s speed=1.07x elapsed=0:00:08.50    frame=  288 fps= 32 q=17.0 size=    8704KiB time=00:00:09.60 bitrate=7427.5kbits/s speed=1.07x elapsed=0:00:09.00    frame=  303 fps= 32 q=17.0 size=    9216KiB time=00:00:10.10 bitrate=7475.0kbits/s speed=1.06x elapsed=0:00:09.50    frame=  318 fps= 32 q=17.0 size=    9472KiB time=00:00:10.60 bitrate=7320.3kbits/s speed=1.06x elapsed=0:00:10.00    frame=  332 fps= 32 q=17.0 size=    9472KiB time=00:00:11.06 bitrate=7011.6kbits/s speed=1.05x elapsed=0:00:10.50    frame=  348 fps= 32 q=17.0 size=    9728KiB time=00:00:11.60 bitrate=6870.0kbits/s speed=1.05x elapsed=0:00:11.00    frame=  363 fps= 32 q=17.0 size=    9984KiB time=00:00:12.10 bitrate=6759.4kbits/s speed=1.05x elapsed=0:00:11.50    frame=  378 fps= 31 q=17.0 size=    9984KiB time=00:00:12.60 bitrate=6491.2kbits/s speed=1.05x elapsed=0:00:12.00    frame=  393 fps= 31 q=16.0 size=   10240KiB time=00:00:13.10 bitrate=6403.5kbits/s speed=1.05x elapsed=0:00:12.50    frame=  408 fps= 31 q=15.0 size=   10240KiB time=00:00:13.60 bitrate=6168.1kbits/s speed=1.05x elapsed=0:00:13.00    frame=  423 fps= 31 q=14.0 size=   10496KiB time=00:00:14.10 bitrate=6098.1kbits/s speed=1.04x elapsed=0:00:13.50    frame=  437 fps= 31 q=14.0 size=   10496KiB time=00:00:14.56 bitrate=5902.8kbits/s speed=1.04x elapsed=0:00:14.00    frame=  452 fps= 31 q=13.0 size=   10496KiB time=00:00:15.06 bitrate=5706.9kbits/s speed=1.04x elapsed=0:00:14.50    frame=  468 fps= 31 q=13.0 size=   10752KiB time=00:00:15.60 bitrate=5646.2kbits/s speed=1.04x elapsed=0:00:15.00    frame=  483 fps= 31 q=13.0 size=   10752KiB time=00:00:16.10 bitrate=5470.9kbits/s speed=1.04x elapsed=0:00:15.50    frame=  498 fps= 31 q=12.0 size=   11264KiB time=00:00:16.60 bitrate=5558.7kbits/s speed=1.04x elapsed=0:00:16.00    frame=  513 fps= 31 q=12.0 size=   11520KiB time=00:00:17.10 bitrate=5518.8kbits/s speed=1.04x elapsed=0:00:16.50    frame=  528 fps= 31 q=12.0 size=   12032KiB time=00:00:17.60 bitrate=5600.4kbits/s speed=1.03x elapsed=0:00:17.00    frame=  543 fps= 31 q=12.0 size=   12288KiB time=00:00:18.10 bitrate=5561.5kbits/s speed=1.03x elapsed=0:00:17.50    frame=  558 fps= 31 q=11.0 size=   12288KiB time=00:00:18.60 bitrate=5412.0kbits/s speed=1.03x elapsed=0:00:18.00    frame=  573 fps= 31 q=11.0 size=   12544KiB time=00:00:19.10 bitrate=5380.1kbits/s speed=1.03x elapsed=0:00:18.50    frame=  588 fps= 31 q=13.0 size=   13568KiB time=00:00:19.60 bitrate=5670.9kbits/s speed=1.03x elapsed=0:00:19.00    frame=  602 fps= 31 q=16.0 size=   14848KiB time=00:00:20.06 bitrate=6061.6kbits/s speed=1.03x elapsed=0:00:19.50    frame=  618 fps= 31 q=16.0 size=   15104KiB time=00:00:20.60 bitrate=6006.4kbits/s speed=1.03x elapsed=0:00:20.00    frame=  633 fps= 31 q=16.0 size=   15616KiB time=00:00:21.10 bitrate=6062.9kbits/s speed=1.03x elapsed=0:00:20.50    frame=  648 fps= 31 q=16.0 size=   15872KiB time=00:00:21.60 bitrate=6019.6kbits/s speed=1.03x elapsed=0:00:21.00    frame=  663 fps= 31 q=16.0 size=   16128KiB time=00:00:22.10 bitrate=5978.3kbits/s speed=1.03x elapsed=0:00:21.50    frame=  678 fps= 31 q=16.0 size=   16640KiB time=00:00:22.60 bitrate=6031.6kbits/s speed=1.03x elapsed=0:00:22.00    frame=  693 fps= 31 q=17.0 size=   17152KiB time=00:00:23.10 bitrate=6082.7kbits/s speed=1.03x elapsed=0:00:22.50    frame=  708 fps= 31 q=17.0 size=   17664KiB time=00:00:23.60 bitrate=6131.5kbits/s speed=1.03x elapsed=0:00:23.00    frame=  723 fps= 31 q=17.0 size=   18176KiB time=00:00:24.10 bitrate=6178.3kbits/s speed=1.03x elapsed=0:00:23.50    frame=  738 fps= 31 q=17.0 size=   18432KiB time=00:00:24.60 bitrate=6138.0kbits/s speed=1.02x elapsed=0:00:24.00    frame=  753 fps= 31 q=17.0 size=   18432KiB time=00:00:25.08 bitrate=6020.5kbits/s speed=1.02x elapsed=0:00:24.50    frame=  768 fps= 31 q=17.0 size=   18688KiB time=00:00:25.60 bitrate=5980.2kbits/s speed=1.02x elapsed=0:00:25.00    frame=  783 fps= 31 q=16.0 size=   18944KiB time=00:00:26.10 bitrate=5946.0kbits/s speed=1.02x elapsed=0:00:25.50    frame=  798 fps= 31 q=16.0 size=   18944KiB time=00:00:26.60 bitrate=5834.2kbits/s speed=1.02x elapsed=0:00:26.00    frame=  813 fps= 31 q=15.0 size=   19200KiB time=00:00:27.10 bitrate=5803.9kbits/s speed=1.02x elapsed=0:00:26.50    frame=  828 fps= 31 q=15.0 size=   19456KiB time=00:00:27.60 bitrate=5774.8kbits/s speed=1.02x elapsed=0:00:27.00    frame=  843 fps= 31 q=15.0 size=   19712KiB time=00:00:28.10 bitrate=5746.7kbits/s speed=1.02x elapsed=0:00:27.50    frame=  858 fps= 31 q=15.0 size=   20224KiB time=00:00:28.60 bitrate=5792.8kbits/s speed=1.02x elapsed=0:00:28.00    frame=  873 fps= 31 q=15.0 size=   20480KiB time=00:00:29.10 bitrate=5765.4kbits/s speed=1.02x elapsed=0:00:28.50    frame=  888 fps= 31 q=15.0 size=   20736KiB time=00:00:29.60 bitrate=5738.8kbits/s speed=1.02x elapsed=0:00:29.00    frame=  903 fps= 31 q=15.0 size=   20992KiB time=00:00:30.10 bitrate=5713.2kbits/s speed=1.02x elapsed=0:00:29.50    frame=  918 fps= 31 q=15.0 size=   21248KiB time=00:00:30.60 bitrate=5688.4kbits/s speed=1.02x elapsed=0:00:30.00    frame=  933 fps= 31 q=15.0 size=   21760KiB time=00:00:31.09 bitrate=5732.1kbits/s speed=1.02x elapsed=0:00:30.51    frame=  948 fps= 31 q=15.0 size=   22016KiB time=00:00:31.60 bitrate=5707.5kbits/s speed=1.02x elapsed=0:00:31.01    frame=  963 fps= 31 q=16.0 size=   22784KiB time=00:00:32.10 bitrate=5814.5kbits/s speed=1.02x elapsed=0:00:31.51    frame=  978 fps= 31 q=16.0 size=   23040KiB time=00:00:32.60 bitrate=5789.7kbits/s speed=1.02x elapsed=0:00:32.01    frame=  993 fps= 31 q=17.0 size=   23808KiB time=00:00:33.10 bitrate=5892.3kbits/s speed=1.02x elapsed=0:00:32.51    frame= 1008 fps= 31 q=17.0 size=   24832KiB time=00:00:33.60 bitrate=6054.3kbits/s speed=1.02x elapsed=0:00:33.01    frame= 1023 fps= 31 q=17.0 size=   25600KiB time=00:00:34.10 bitrate=6150.0kbits/s speed=1.02x elapsed=0:00:33.51    frame= 1038 fps= 31 q=17.0 size=   26112KiB time=00:00:34.60 bitrate=6182.4kbits/s speed=1.02x elapsed=0:00:34.01    frame= 1053 fps= 31 q=17.0 size=   26368KiB time=00:00:35.10 bitrate=6154.0kbits/s speed=1.02x elapsed=0:00:34.51    frame= 1068 fps= 31 q=17.0 size=   26880KiB time=00:00:35.60 bitrate=6185.4kbits/s speed=1.02x elapsed=0:00:35.01    frame= 1083 fps= 30 q=19.0 size=   27904KiB time=00:00:36.10 bitrate=6332.1kbits/s speed=1.02x elapsed=0:00:35.51    frame= 1098 fps= 30 q=17.0 size=   28160KiB time=00:00:36.60 bitrate=6302.9kbits/s speed=1.02x elapsed=0:00:36.01    frame= 1113 fps= 30 q=17.0 size=   28672KiB time=00:00:37.10 bitrate=6331.0kbits/s speed=1.02x elapsed=0:00:36.51    frame= 1128 fps= 30 q=17.0 size=   29440KiB time=00:00:37.60 bitrate=6414.2kbits/s speed=1.02x elapsed=0:00:37.01    frame= 1143 fps= 30 q=17.0 size=   29696KiB time=00:00:38.10 bitrate=6385.0kbits/s speed=1.02x elapsed=0:00:37.51    frame= 1158 fps= 30 q=17.0 size=   29952KiB time=00:00:38.60 bitrate=6356.7kbits/s speed=1.02x elapsed=0:00:38.01    frame= 1173 fps= 30 q=17.0 size=   30208KiB time=00:00:39.10 bitrate=6329.0kbits/s speed=1.02x elapsed=0:00:38.51    frame= 1188 fps= 30 q=17.0 size=   30464KiB time=00:00:39.60 bitrate=6302.1kbits/s speed=1.02x elapsed=0:00:39.01    frame= 1203 fps= 30 q=17.0 size=   30720KiB time=00:00:40.10 bitrate=6275.8kbits/s speed=1.01x elapsed=0:00:39.51    frame= 1218 fps= 30 q=17.0 size=   30720KiB time=00:00:40.60 bitrate=6198.5kbits/s speed=1.01x elapsed=0:00:40.01    frame= 1233 fps= 30 q=17.0 size=   30720KiB time=00:00:41.07 bitrate=6126.4kbits/s speed=1.01x elapsed=0:00:40.51    frame= 1248 fps= 30 q=17.0 size=   30976KiB time=00:00:41.60 bitrate=6099.9kbits/s speed=1.01x elapsed=0:00:41.01    frame= 1263 fps= 30 q=17.0 size=   30976KiB time=00:00:42.10 bitrate=6027.5kbits/s speed=1.01x elapsed=0:00:41.51    frame= 1278 fps= 30 q=17.0 size=   30976KiB time=00:00:42.60 bitrate=5956.7kbits/s speed=1.01x elapsed=0:00:42.01    frame= 1293 fps= 30 q=17.0 size=   31232KiB time=00:00:43.10 bitrate=5936.3kbits/s speed=1.01x elapsed=0:00:42.51    frame= 1308 fps= 30 q=17.0 size=   31488KiB time=00:00:43.60 bitrate=5916.3kbits/s speed=1.01x elapsed=0:00:43.01    frame= 1323 fps= 30 q=17.0 size=   31744KiB time=00:00:44.10 bitrate=5896.8kbits/s speed=1.01x elapsed=0:00:43.51    frame= 1338 fps= 30 q=17.0 size=   32000KiB time=00:00:44.60 bitrate=5877.7kbits/s speed=1.01x elapsed=0:00:44.01    frame= 1353 fps= 30 q=17.0 size=   32256KiB time=00:00:45.10 bitrate=5859.0kbits/s speed=1.01x elapsed=0:00:44.51    frame= 1368 fps= 30 q=17.0 size=   32256KiB time=00:00:45.60 bitrate=5794.8kbits/s speed=1.01x elapsed=0:00:45.01    frame= 1383 fps= 30 q=17.0 size=   32512KiB time=00:00:46.10 bitrate=5777.4kbits/s speed=1.01x elapsed=0:00:45.51    frame= 1398 fps= 30 q=17.0 size=   33024KiB time=00:00:46.60 bitrate=5805.4kbits/s speed=1.01x elapsed=0:00:46.01    frame= 1413 fps= 30 q=17.0 size=   33536KiB time=00:00:47.09 bitrate=5833.6kbits/s speed=1.01x elapsed=0:00:46.51    frame= 1428 fps= 30 q=17.0 size=   34304KiB time=00:00:47.60 bitrate=5903.8kbits/s speed=1.01x elapsed=0:00:47.01    frame= 1443 fps= 30 q=19.0 size=   35072KiB time=00:00:48.10 bitrate=5973.2kbits/s speed=1.01x elapsed=0:00:47.51    frame= 1458 fps= 30 q=17.0 size=   35584KiB time=00:00:48.60 bitrate=5998.0kbits/s speed=1.01x elapsed=0:00:48.01    [out#0/mp4 @ 0x574078611180] video:35911KiB audio:187KiB subtitle:0KiB other streams:0KiB global headers:0KiB muxing overhead: 0.051022%
+frame= 1484 fps= 30 q=17.0 Lsize=   36116KiB time=00:00:49.46 bitrate=5981.1kbits/s speed=1.02x elapsed=0:00:48.65    
+[aac @ 0x574078c39540] Qavg: 64791.254
+Exiting normally, received signal 15.
+
+ffmpeg version N-119739-gab37c7e49f Copyright (c) 2000-2025 the FFmpeg developers
+  built with gcc 11 (Ubuntu 11.4.0-1ubuntu1~22.04)
+  configuration: --enable-nonfree --enable-cuda --enable-cuvid --enable-nvenc --extra-cflags=-I/home/brainwave/Desktop/sdk/Video_Codec_SDK_13.0.19/Interface --extra-ldflags=-L/usr/local/cuda/lib64 --enable-libx264 --enable-libx265 --enable-gpl
+  libavutil      60.  3.100 / 60.  3.100
+  libavcodec     62.  3.101 / 62.  3.101
+  libavformat    62.  0.102 / 62.  0.102
+  libavdevice    62.  0.100 / 62.  0.100
+  libavfilter    11.  0.100 / 11.  0.100
+  libswscale      9.  0.100 /  9.  0.100
+  libswresample   6.  0.100 /  6.  0.100
+Input #0, rtsp, from 'rtsp://admin:123456@192.168.1.88/stream0':
+  Metadata:
+    title           : RTSP/RTP stream from icamra ipc
+  Duration: N/A, start: 0.000000, bitrate: N/A
+  Stream #0:0: Video: h264 (High), yuv420p(progressive), 3840x2160, 30 fps, 30 tbr, 90k tbn, Start 0.036000
+  Stream #0:1: Audio: pcm_mulaw, 8000 Hz, mono, s16, 64 kb/s
+Stream mapping:
+  Stream #0:0 -> #0:0 (h264 (native) -> h264 (h264_nvenc))
+  Stream #0:1 -> #0:1 (pcm_mulaw (native) -> aac (native))
+Press [q] to stop, [?] for help
+[aac @ 0x63d17d3ebc80] Too many bits 8832.000000 > 6144 per frame requested, clamping to max
+[h264_nvenc @ 0x63d17d21e980] The selected preset is deprecated. Use p1 to p7 + -tune or fast/medium/slow.
+Output #0, mp4, to 'recordings/video_test.mp4':
+  Metadata:
+    title           : RTSP/RTP stream from icamra ipc
+    encoder         : Lavf62.0.102
+  Stream #0:0: Video: h264 (Main) (avc1 / 0x31637661), yuv420p(tv, progressive), 3840x2160, q=2-31, 5000 kb/s, 30 fps, 15360 tbn
+    Metadata:
+      encoder         : Lavc62.3.101 h264_nvenc
+    Side data:
+      cpb: bitrate max/min/avg: 0/0/5000000 buffer size: 10000000 vbv_delay: N/A
+  Stream #0:1: Audio: aac (LC) (mp4a / 0x6134706D), 8000 Hz, mono, fltp, 48 kb/s
+    Metadata:
+      encoder         : Lavc62.3.101 aac
+frame=   15 fps=0.0 q=32.0 size=       0KiB time=00:00:00.50 bitrate=   0.8kbits/s speed=   1x elapsed=0:00:00.50    frame=   48 fps= 48 q=21.0 size=     768KiB time=00:00:01.60 bitrate=3932.4kbits/s speed= 1.6x elapsed=0:00:01.00    frame=   63 fps= 42 q=21.0 size=    1280KiB time=00:00:02.08 bitrate=5041.4kbits/s speed=1.39x elapsed=0:00:01.50    frame=   78 fps= 39 q=11.0 size=    1792KiB time=00:00:02.60 bitrate=5646.3kbits/s speed= 1.3x elapsed=0:00:02.00    frame=   93 fps= 37 q=11.0 size=    2048KiB time=00:00:03.10 bitrate=5412.1kbits/s speed=1.24x elapsed=0:00:02.50    frame=  108 fps= 36 q=11.0 size=    2048KiB time=00:00:03.59 bitrate=4665.6kbits/s speed= 1.2x elapsed=0:00:03.00    frame=  123 fps= 35 q=11.0 size=    2560KiB time=00:00:04.10 bitrate=5115.1kbits/s speed=1.17x elapsed=0:00:03.50    frame=  137 fps= 34 q=11.0 size=    2816KiB time=00:00:04.56 bitrate=5051.6kbits/s speed=1.14x elapsed=0:00:04.00    frame=  153 fps= 34 q=11.0 size=    2816KiB time=00:00:05.10 bitrate=4523.3kbits/s speed=1.13x elapsed=0:00:04.50    frame=  168 fps= 34 q=10.0 size=    3072KiB time=00:00:05.60 bitrate=4494.0kbits/s speed=1.12x elapsed=0:00:05.00    frame=  183 fps= 33 q=10.0 size=    3328KiB time=00:00:06.10 bitrate=4469.4kbits/s speed=1.11x elapsed=0:00:05.50    frame=  198 fps= 33 q=9.0 size=    3584KiB time=00:00:06.60 bitrate=4448.6kbits/s speed= 1.1x elapsed=0:00:06.00    frame=  213 fps= 33 q=9.0 size=    3840KiB time=00:00:07.10 bitrate=4430.7kbits/s speed=1.09x elapsed=0:00:06.50    frame=  228 fps= 33 q=9.0 size=    4096KiB time=00:00:07.60 bitrate=4415.1kbits/s speed=1.09x elapsed=0:00:07.00    frame=  243 fps= 32 q=11.0 size=    4352KiB time=00:00:08.05 bitrate=4425.5kbits/s speed=1.07x elapsed=0:00:07.50    frame=  258 fps= 32 q=10.0 size=    4864KiB time=00:00:08.60 bitrate=4633.3kbits/s speed=1.07x elapsed=0:00:08.00    frame=  273 fps= 32 q=10.0 size=    5376KiB time=00:00:09.08 bitrate=4846.0kbits/s speed=1.07x elapsed=0:00:08.50    frame=  288 fps= 32 q=10.0 size=    5888KiB time=00:00:09.60 bitrate=5024.5kbits/s speed=1.07x elapsed=0:00:09.00    frame=  303 fps= 32 q=10.0 size=    6144KiB time=00:00:10.10 bitrate=4983.4kbits/s speed=1.06x elapsed=0:00:09.50    frame=  318 fps= 32 q=11.0 size=    6656KiB time=00:00:10.60 bitrate=5144.0kbits/s speed=1.06x elapsed=0:00:10.00    frame=  333 fps= 32 q=12.0 size=    7680KiB time=00:00:11.10 bitrate=5668.0kbits/s speed=1.06x elapsed=0:00:10.50    frame=  348 fps= 32 q=14.0 size=    8704KiB time=00:00:11.60 bitrate=6146.9kbits/s speed=1.05x elapsed=0:00:11.00    frame=  363 fps= 32 q=17.0 size=    9216KiB time=00:00:12.06 bitrate=6259.1kbits/s speed=1.05x elapsed=0:00:11.50    frame=  378 fps= 31 q=16.0 size=    9984KiB time=00:00:12.60 bitrate=6491.2kbits/s speed=1.05x elapsed=0:00:12.00    [out#0/mp4 @ 0x63d17d223c00] video:10489KiB audio:50KiB subtitle:0KiB other streams:0KiB global headers:0KiB muxing overhead: 0.058450%
+frame=  403 fps= 32 q=16.0 Lsize=   10545KiB time=00:00:13.43 bitrate=6430.8kbits/s speed=1.06x elapsed=0:00:12.64    
+[aac @ 0x63d17d3ebc80] Qavg: 62728.039
+Exiting normally, received signal 15.
+
+ffmpeg version N-119739-gab37c7e49f Copyright (c) 2000-2025 the FFmpeg developers
+  built with gcc 11 (Ubuntu 11.4.0-1ubuntu1~22.04)
+  configuration: --enable-nonfree --enable-cuda --enable-cuvid --enable-nvenc --extra-cflags=-I/home/brainwave/Desktop/sdk/Video_Codec_SDK_13.0.19/Interface --extra-ldflags=-L/usr/local/cuda/lib64 --enable-libx264 --enable-libx265 --enable-gpl
+  libavutil      60.  3.100 / 60.  3.100
+  libavcodec     62.  3.101 / 62.  3.101
+  libavformat    62.  0.102 / 62.  0.102
+  libavdevice    62.  0.100 / 62.  0.100
+  libavfilter    11.  0.100 / 11.  0.100
+  libswscale      9.  0.100 /  9.  0.100
+  libswresample   6.  0.100 /  6.  0.100
+Input #0, rtsp, from 'rtsp://admin:123456@192.168.1.88/stream0':
+  Metadata:
+    title           : RTSP/RTP stream from icamra ipc
+  Duration: N/A, start: 0.000000, bitrate: N/A
+  Stream #0:0: Video: h264 (High), yuv420p(progressive), 3840x2160, 30 fps, 30 tbr, 90k tbn, Start 0.032000
+  Stream #0:1: Audio: pcm_mulaw, 8000 Hz, mono, s16, 64 kb/s
+Stream mapping:
+  Stream #0:0 -> #0:0 (h264 (native) -> h264 (h264_nvenc))
+  Stream #0:1 -> #0:1 (pcm_mulaw (native) -> aac (native))
+Press [q] to stop, [?] for help
+[aac @ 0x5c96a1587640] Too many bits 8832.000000 > 6144 per frame requested, clamping to max
+[h264_nvenc @ 0x5c96a0cafec0] The selected preset is deprecated. Use p1 to p7 + -tune or fast/medium/slow.
+Output #0, mp4, to '../recordings/video_test.mp4':
+  Metadata:
+    title           : RTSP/RTP stream from icamra ipc
+    encoder         : Lavf62.0.102
+  Stream #0:0: Video: h264 (Main) (avc1 / 0x31637661), yuv420p(tv, progressive), 3840x2160, q=2-31, 5000 kb/s, 30 fps, 15360 tbn
+    Metadata:
+      encoder         : Lavc62.3.101 h264_nvenc
+    Side data:
+      cpb: bitrate max/min/avg: 0/0/5000000 buffer size: 10000000 vbv_delay: N/A
+  Stream #0:1: Audio: aac (LC) (mp4a / 0x6134706D), 8000 Hz, mono, fltp, 48 kb/s
+    Metadata:
+      encoder         : Lavc62.3.101 aac
+frame=   13 fps=0.0 q=32.0 size=       0KiB time=00:00:00.43 bitrate=   0.9kbits/s speed=0.867x elapsed=0:00:00.50    frame=   48 fps= 48 q=23.0 size=     768KiB time=00:00:01.60 bitrate=3932.4kbits/s speed= 1.6x elapsed=0:00:01.00    frame=   63 fps= 42 q=23.0 size=    1280KiB time=00:00:02.07 bitrate=5046.3kbits/s speed=1.39x elapsed=0:00:01.50    frame=   78 fps= 39 q=23.0 size=    2048KiB time=00:00:02.60 bitrate=6452.9kbits/s speed= 1.3x elapsed=0:00:02.00    frame=   94 fps= 38 q=13.0 size=    2560KiB time=00:00:03.10 bitrate=6760.8kbits/s speed=1.24x elapsed=0:00:02.50    frame=  108 fps= 36 q=13.0 size=    3072KiB time=00:00:03.59 bitrate=6998.4kbits/s speed= 1.2x elapsed=0:00:03.00    frame=  123 fps= 35 q=14.0 size=    3584KiB time=00:00:04.10 bitrate=7161.1kbits/s speed=1.17x elapsed=0:00:03.50    frame=  139 fps= 35 q=14.0 size=    3840KiB time=00:00:04.62 bitrate=6800.2kbits/s speed=1.16x elapsed=0:00:04.00    frame=  153 fps= 34 q=13.0 size=    4096KiB time=00:00:05.10 bitrate=6579.4kbits/s speed=1.13x elapsed=0:00:04.50    frame=  168 fps= 34 q=13.0 size=    4096KiB time=00:00:05.60 bitrate=5991.9kbits/s speed=1.12x elapsed=0:00:05.00    frame=  183 fps= 33 q=12.0 size=    4352KiB time=00:00:06.10 bitrate=5844.6kbits/s speed=1.11x elapsed=0:00:05.50    frame=  198 fps= 33 q=12.0 size=    4608KiB time=00:00:06.60 bitrate=5719.6kbits/s speed= 1.1x elapsed=0:00:06.00    [out#0/mp4 @ 0x5c96a0cb53c0] video:5070KiB audio:26KiB subtitle:0KiB other streams:0KiB global headers:0KiB muxing overhead: 0.079409%
+frame=  224 fps= 34 q=11.0 Lsize=    5100KiB time=00:00:07.46 bitrate=5595.7kbits/s speed=1.12x elapsed=0:00:06.65    
+[aac @ 0x5c96a1587640] Qavg: 61120.648
+Exiting normally, received signal 15.
+
+ffmpeg version N-119739-gab37c7e49f Copyright (c) 2000-2025 the FFmpeg developers
+  built with gcc 11 (Ubuntu 11.4.0-1ubuntu1~22.04)
+  configuration: --enable-nonfree --enable-cuda --enable-cuvid --enable-nvenc --extra-cflags=-I/home/brainwave/Desktop/sdk/Video_Codec_SDK_13.0.19/Interface --extra-ldflags=-L/usr/local/cuda/lib64 --enable-libx264 --enable-libx265 --enable-gpl
+  libavutil      60.  3.100 / 60.  3.100
+  libavcodec     62.  3.101 / 62.  3.101
+  libavformat    62.  0.102 / 62.  0.102
+  libavdevice    62.  0.100 / 62.  0.100
+  libavfilter    11.  0.100 / 11.  0.100
+  libswscale      9.  0.100 /  9.  0.100
+  libswresample   6.  0.100 /  6.  0.100
+Input #0, rtsp, from 'rtsp://admin:123456@192.168.1.88/stream0':
+  Metadata:
+    title           : RTSP/RTP stream from icamra ipc
+  Duration: N/A, start: 0.000000, bitrate: N/A
+  Stream #0:0: Video: h264 (High), yuv420p(progressive), 3840x2160, 30 fps, 30 tbr, 90k tbn, Start 0.032000
+  Stream #0:1: Audio: pcm_mulaw, 8000 Hz, mono, s16, 64 kb/s
+Stream mapping:
+  Stream #0:0 -> #0:0 (h264 (native) -> h264 (h264_nvenc))
+  Stream #0:1 -> #0:1 (pcm_mulaw (native) -> aac (native))
+Press [q] to stop, [?] for help
+[aac @ 0x5744fed1d440] Too many bits 8832.000000 > 6144 per frame requested, clamping to max
+[h264_nvenc @ 0x5744feba7a80] The selected preset is deprecated. Use p1 to p7 + -tune or fast/medium/slow.
+Output #0, mp4, to '/home/brainwave/Delivered/medical_qt_app29/medical_qt_app/build/../recordings/P1001/1/recording_20250602_015236.mp4':
+  Metadata:
+    title           : RTSP/RTP stream from icamra ipc
+    encoder         : Lavf62.0.102
+  Stream #0:0: Video: h264 (Main) (avc1 / 0x31637661), yuv420p(tv, progressive), 3840x2160, q=2-31, 5000 kb/s, 30 fps, 15360 tbn
+    Metadata:
+      encoder         : Lavc62.3.101 h264_nvenc
+    Side data:
+      cpb: bitrate max/min/avg: 0/0/5000000 buffer size: 10000000 vbv_delay: N/A
+  Stream #0:1: Audio: aac (LC) (mp4a / 0x6134706D), 8000 Hz, mono, fltp, 48 kb/s
+    Metadata:
+      encoder         : Lavc62.3.101 aac
+frame=   11 fps=0.0 q=24.0 size=       0KiB time=00:00:00.36 bitrate=   1.0kbits/s speed=0.733x elapsed=0:00:00.50    frame=   45 fps= 45 q=14.0 size=    1792KiB time=00:00:01.50 bitrate=9787.0kbits/s speed= 1.5x elapsed=0:00:01.00    frame=   63 fps= 42 q=17.0 size=    3072KiB time=00:00:02.10 bitrate=11983.9kbits/s speed= 1.4x elapsed=0:00:01.50    frame=   78 fps= 39 q=17.0 size=    3840KiB time=00:00:02.54 bitrate=12346.0kbits/s speed=1.27x elapsed=0:00:02.00    frame=   92 fps= 37 q=29.0 size=    4608KiB time=00:00:03.03 bitrate=12425.6kbits/s speed=1.21x elapsed=0:00:02.50    frame=  108 fps= 36 q=17.0 size=    5120KiB time=00:00:03.58 bitrate=11716.0kbits/s speed=1.19x elapsed=0:00:03.00    frame=  123 fps= 35 q=30.0 size=    5888KiB time=00:00:04.07 bitrate=11845.5kbits/s speed=1.16x elapsed=0:00:03.50    frame=  138 fps= 34 q=27.0 size=    6400KiB time=00:00:04.60 bitrate=11397.6kbits/s speed=1.15x elapsed=0:00:04.00    frame=  153 fps= 34 q=31.0 size=    6656KiB time=00:00:05.10 bitrate=10691.4kbits/s speed=1.13x elapsed=0:00:04.50    frame=  167 fps= 33 q=31.0 size=    6912KiB time=00:00:05.53 bitrate=10239.3kbits/s speed=1.11x elapsed=0:00:05.00    frame=  183 fps= 33 q=32.0 size=    7168KiB time=00:00:06.10 bitrate=9626.3kbits/s speed=1.11x elapsed=0:00:05.50    frame=  197 fps= 33 q=31.0 size=    7424KiB time=00:00:06.56 bitrate=9261.6kbits/s speed=1.09x elapsed=0:00:06.00    frame=  213 fps= 33 q=30.0 size=    7680KiB time=00:00:07.10 bitrate=8861.3kbits/s speed=1.09x elapsed=0:00:06.50    frame=  227 fps= 32 q=32.0 size=    7936KiB time=00:00:07.54 bitrate=8620.0kbits/s speed=1.08x elapsed=0:00:07.00    frame=  243 fps= 32 q=32.0 size=    8192KiB time=00:00:08.08 bitrate=8305.6kbits/s speed=1.08x elapsed=0:00:07.50    [out#0/mp4 @ 0x5744febad3c0] video:8915KiB audio:33KiB subtitle:0KiB other streams:0KiB global headers:0KiB muxing overhead: 0.050949%
+frame=  267 fps= 33 q=26.0 Lsize=    8952KiB time=00:00:08.90 bitrate=8239.8kbits/s speed= 1.1x elapsed=0:00:08.11    
+[aac @ 0x5744fed1d440] Qavg: 60813.621
+Exiting normally, received signal 15.
+
+ffmpeg version N-119739-gab37c7e49f Copyright (c) 2000-2025 the FFmpeg developers
+  built with gcc 11 (Ubuntu 11.4.0-1ubuntu1~22.04)
+  configuration: --enable-nonfree --enable-cuda --enable-cuvid --enable-nvenc --extra-cflags=-I/home/brainwave/Desktop/sdk/Video_Codec_SDK_13.0.19/Interface --extra-ldflags=-L/usr/local/cuda/lib64 --enable-libx264 --enable-libx265 --enable-gpl
+  libavutil      60.  3.100 / 60.  3.100
+  libavcodec     62.  3.101 / 62.  3.101
+  libavformat    62.  0.102 / 62.  0.102
+  libavdevice    62.  0.100 / 62.  0.100
+  libavfilter    11.  0.100 / 11.  0.100
+  libswscale      9.  0.100 /  9.  0.100
+  libswresample   6.  0.100 /  6.  0.100
+Input #0, rtsp, from 'rtsp://admin:123456@192.168.1.88/stream0':
+  Metadata:
+    title           : RTSP/RTP stream from icamra ipc
+  Duration: N/A, start: 0.000000, bitrate: N/A
+  Stream #0:0: Video: h264 (High), yuv420p(progressive), 3840x2160, 30 fps, 30 tbr, 90k tbn, Start 0.032000
+  Stream #0:1: Audio: pcm_mulaw, 8000 Hz, mono, s16, 64 kb/s
+Stream mapping:
+  Stream #0:0 -> #0:0 (h264 (native) -> h264 (h264_nvenc))
+  Stream #0:1 -> #0:1 (pcm_mulaw (native) -> aac (native))
+Press [q] to stop, [?] for help
+[aac @ 0x582d45c8f500] Too many bits 8832.000000 > 6144 per frame requested, clamping to max
+[h264_nvenc @ 0x582d45353ec0] The selected preset is deprecated. Use p1 to p7 + -tune or fast/medium/slow.
+Output #0, mp4, to '/home/brainwave/Delivered/medical_qt_app29/medical_qt_app/build/../recordings/P1001/1/recording_20250602_015637.mp4':
+  Metadata:
+    title           : RTSP/RTP stream from icamra ipc
+    encoder         : Lavf62.0.102
+  Stream #0:0: Video: h264 (Main) (avc1 / 0x31637661), yuv420p(tv, progressive), 3840x2160, q=2-31, 5000 kb/s, 30 fps, 15360 tbn
+    Metadata:
+      encoder         : Lavc62.3.101 h264_nvenc
+    Side data:
+      cpb: bitrate max/min/avg: 0/0/5000000 buffer size: 10000000 vbv_delay: N/A
+  Stream #0:1: Audio: aac (LC) (mp4a / 0x6134706D), 8000 Hz, mono, fltp, 48 kb/s
+    Metadata:
+      encoder         : Lavc62.3.101 aac
+frame=   12 fps=0.0 q=34.0 size=     256KiB time=00:00:00.40 bitrate=5243.8kbits/s speed= 0.8x elapsed=0:00:00.50    frame=   47 fps= 47 q=27.0 size=     768KiB time=00:00:01.56 bitrate=4016.1kbits/s speed=1.57x elapsed=0:00:01.00    frame=   63 fps= 42 q=20.0 size=    1024KiB time=00:00:02.03 bitrate=4128.4kbits/s speed=1.35x elapsed=0:00:01.50    frame=   78 fps= 39 q=17.0 size=    1536KiB time=00:00:02.60 bitrate=4839.7kbits/s speed= 1.3x elapsed=0:00:02.00    frame=   92 fps= 37 q=12.0 size=    2304KiB time=00:00:03.06 bitrate=6154.8kbits/s speed=1.23x elapsed=0:00:02.50    frame=  108 fps= 36 q=14.0 size=    3072KiB time=00:00:03.59 bitrate=7010.1kbits/s speed= 1.2x elapsed=0:00:03.00    frame=  122 fps= 35 q=15.0 size=    4096KiB time=00:00:04.06 bitrate=8251.2kbits/s speed=1.16x elapsed=0:00:03.50    [out#0/mp4 @ 0x582d4565e100] video:4942KiB audio:18KiB subtitle:0KiB other streams:0KiB global headers:0KiB muxing overhead: 0.063946%
+frame=  148 fps= 36 q=16.0 Lsize=    4963KiB time=00:00:04.93 bitrate=8242.0kbits/s speed=1.19x elapsed=0:00:04.15    
+[aac @ 0x582d45c8f500] Qavg: 56828.512
+Exiting normally, received signal 15.
+
+ffmpeg version N-119739-gab37c7e49f Copyright (c) 2000-2025 the FFmpeg developers
+  built with gcc 11 (Ubuntu 11.4.0-1ubuntu1~22.04)
+  configuration: --enable-nonfree --enable-cuda --enable-cuvid --enable-nvenc --extra-cflags=-I/home/brainwave/Desktop/sdk/Video_Codec_SDK_13.0.19/Interface --extra-ldflags=-L/usr/local/cuda/lib64 --enable-libx264 --enable-libx265 --enable-gpl
+  libavutil      60.  3.100 / 60.  3.100
+  libavcodec     62.  3.101 / 62.  3.101
+  libavformat    62.  0.102 / 62.  0.102
+  libavdevice    62.  0.100 / 62.  0.100
+  libavfilter    11.  0.100 / 11.  0.100
+  libswscale      9.  0.100 /  9.  0.100
+  libswresample   6.  0.100 /  6.  0.100
+Input #0, rtsp, from 'rtsp://admin:123456@192.168.1.88/stream0':
+  Metadata:
+    title           : RTSP/RTP stream from icamra ipc
+  Duration: N/A, start: 0.000000, bitrate: N/A
+  Stream #0:0: Video: h264 (High), yuv420p(progressive), 3840x2160, 30 fps, 30 tbr, 90k tbn, Start 0.034000
+  Stream #0:1: Audio: pcm_mulaw, 8000 Hz, mono, s16, 64 kb/s
+Stream mapping:
+  Stream #0:0 -> #0:0 (h264 (native) -> h264 (h264_nvenc))
+  Stream #0:1 -> #0:1 (pcm_mulaw (native) -> aac (native))
+Press [q] to stop, [?] for help
+[aac @ 0x60d7ff8b74c0] Too many bits 8832.000000 > 6144 per frame requested, clamping to max
+[h264_nvenc @ 0x60d7ff019540] The selected preset is deprecated. Use p1 to p7 + -tune or fast/medium/slow.
+Output #0, mp4, to '/home/brainwave/Delivered/medical_qt_app29/medical_qt_app/build/../recordings/P1001/1/recording_20250602_021047.mp4':
+  Metadata:
+    title           : RTSP/RTP stream from icamra ipc
+    encoder         : Lavf62.0.102
+  Stream #0:0: Video: h264 (Main) (avc1 / 0x31637661), yuv420p(tv, progressive), 3840x2160, q=2-31, 5000 kb/s, 30 fps, 15360 tbn
+    Metadata:
+      encoder         : Lavc62.3.101 h264_nvenc
+    Side data:
+      cpb: bitrate max/min/avg: 0/0/5000000 buffer size: 10000000 vbv_delay: N/A
+  Stream #0:1: Audio: aac (LC) (mp4a / 0x6134706D), 8000 Hz, mono, fltp, 48 kb/s
+    Metadata:
+      encoder         : Lavc62.3.101 aac
+frame=   12 fps=0.0 q=25.0 size=       0KiB time=00:00:00.40 bitrate=   1.0kbits/s speed= 0.8x elapsed=0:00:00.50    frame=   48 fps= 48 q=14.0 size=    2048KiB time=00:00:01.60 bitrate=10486.0kbits/s speed= 1.6x elapsed=0:00:01.00    frame=   63 fps= 42 q=15.0 size=    2816KiB time=00:00:02.10 bitrate=10985.3kbits/s speed= 1.4x elapsed=0:00:01.50    frame=   77 fps= 38 q=16.0 size=    3328KiB time=00:00:02.56 bitrate=10622.1kbits/s speed=1.28x elapsed=0:00:02.00    frame=   93 fps= 37 q=17.0 size=    3840KiB time=00:00:03.10 bitrate=10147.6kbits/s speed=1.24x elapsed=0:00:02.50    frame=  107 fps= 36 q=17.0 size=    4352KiB time=00:00:03.54 bitrate=10054.1kbits/s speed=1.18x elapsed=0:00:03.00    frame=  123 fps= 35 q=17.0 size=    5120KiB time=00:00:04.10 bitrate=10230.1kbits/s speed=1.17x elapsed=0:00:03.50    frame=  138 fps= 34 q=17.0 size=    5376KiB time=00:00:04.57 bitrate=9620.0kbits/s speed=1.14x elapsed=0:00:04.00    [out#0/mp4 @ 0x60d7ff01ea40] video:6316KiB audio:20KiB subtitle:0KiB other streams:0KiB global headers:0KiB muxing overhead: 0.053696%
+frame=  163 fps= 35 q=17.0 Lsize=    6340KiB time=00:00:05.43 bitrate=9564.4kbits/s speed=1.17x elapsed=0:00:04.64    
+[aac @ 0x60d7ff8b74c0] Qavg: 58630.488
+Exiting normally, received signal 15.
+
+ffmpeg version N-119739-gab37c7e49f Copyright (c) 2000-2025 the FFmpeg developers
+  built with gcc 11 (Ubuntu 11.4.0-1ubuntu1~22.04)
+  configuration: --enable-nonfree --enable-cuda --enable-cuvid --enable-nvenc --extra-cflags=-I/home/brainwave/Desktop/sdk/Video_Codec_SDK_13.0.19/Interface --extra-ldflags=-L/usr/local/cuda/lib64 --enable-libx264 --enable-libx265 --enable-gpl
+  libavutil      60.  3.100 / 60.  3.100
+  libavcodec     62.  3.101 / 62.  3.101
+  libavformat    62.  0.102 / 62.  0.102
+  libavdevice    62.  0.100 / 62.  0.100
+  libavfilter    11.  0.100 / 11.  0.100
+  libswscale      9.  0.100 /  9.  0.100
+  libswresample   6.  0.100 /  6.  0.100
+Input #0, rtsp, from 'rtsp://admin:123456@192.168.1.88/stream0':
+  Metadata:
+    title           : RTSP/RTP stream from icamra ipc
+  Duration: N/A, start: 0.000000, bitrate: N/A
+  Stream #0:0: Video: h264 (High), yuv420p(progressive), 3840x2160, 30 fps, 30 tbr, 90k tbn, Start 0.032000
+  Stream #0:1: Audio: pcm_mulaw, 8000 Hz, mono, s16, 64 kb/s
+Stream mapping:
+  Stream #0:0 -> #0:0 (h264 (native) -> h264 (h264_nvenc))
+  Stream #0:1 -> #0:1 (pcm_mulaw (native) -> aac (native))
+Press [q] to stop, [?] for help
+[aac @ 0x5b9ca4044640] Too many bits 8832.000000 > 6144 per frame requested, clamping to max
+[h264_nvenc @ 0x5b9ca3e86200] The selected preset is deprecated. Use p1 to p7 + -tune or fast/medium/slow.
+Output #0, mp4, to '/home/brainwave/Delivered/medical_qt_app29/medical_qt_app/build/../recordings/P1001/1/recording_20250602_023913.mp4':
+  Metadata:
+    title           : RTSP/RTP stream from icamra ipc
+    encoder         : Lavf62.0.102
+  Stream #0:0: Video: h264 (Main) (avc1 / 0x31637661), yuv420p(tv, progressive), 3840x2160, q=2-31, 5000 kb/s, 30 fps, 15360 tbn
+    Metadata:
+      encoder         : Lavc62.3.101 h264_nvenc
+    Side data:
+      cpb: bitrate max/min/avg: 0/0/5000000 buffer size: 10000000 vbv_delay: N/A
+  Stream #0:1: Audio: aac (LC) (mp4a / 0x6134706D), 8000 Hz, mono, fltp, 48 kb/s
+    Metadata:
+      encoder         : Lavc62.3.101 aac
+frame=   12 fps=0.0 q=32.0 size=       0KiB time=00:00:00.40 bitrate=   1.0kbits/s speed= 0.8x elapsed=0:00:00.50    frame=   48 fps= 48 q=17.0 size=     768KiB time=00:00:01.60 bitrate=3932.4kbits/s speed= 1.6x elapsed=0:00:01.00    frame=   63 fps= 42 q=17.0 size=    1280KiB time=00:00:02.10 bitrate=4993.4kbits/s speed= 1.4x elapsed=0:00:01.50    frame=   78 fps= 39 q=12.0 size=    1792KiB time=00:00:02.60 bitrate=5646.3kbits/s speed= 1.3x elapsed=0:00:02.00    frame=   93 fps= 37 q=13.0 size=    2560KiB time=00:00:03.10 bitrate=6765.1kbits/s speed=1.24x elapsed=0:00:02.50    frame=  108 fps= 36 q=13.0 size=    3072KiB time=00:00:03.60 bitrate=6990.6kbits/s speed= 1.2x elapsed=0:00:03.00    frame=  123 fps= 35 q=14.0 size=    3584KiB time=00:00:04.10 bitrate=7161.1kbits/s speed=1.17x elapsed=0:00:03.50    frame=  138 fps= 34 q=13.0 size=    3584KiB time=00:00:04.59 bitrate=6396.6kbits/s speed=1.15x elapsed=0:00:04.00    frame=  153 fps= 34 q=12.0 size=    3840KiB time=00:00:05.10 bitrate=6168.2kbits/s speed=1.13x elapsed=0:00:04.50    frame=  168 fps= 34 q=12.0 size=    3840KiB time=00:00:05.60 bitrate=5617.4kbits/s speed=1.12x elapsed=0:00:05.00    frame=  183 fps= 33 q=11.0 size=    4096KiB time=00:00:06.10 bitrate=5500.8kbits/s speed=1.11x elapsed=0:00:05.50    frame=  198 fps= 33 q=11.0 size=    4352KiB time=00:00:06.60 bitrate=5401.8kbits/s speed= 1.1x elapsed=0:00:06.00    frame=  213 fps= 33 q=11.0 size=    4864KiB time=00:00:07.10 bitrate=5612.2kbits/s speed=1.09x elapsed=0:00:06.50    frame=  228 fps= 33 q=11.0 size=    5120KiB time=00:00:07.60 bitrate=5518.9kbits/s speed=1.09x elapsed=0:00:07.00    frame=  243 fps= 32 q=12.0 size=    5632KiB time=00:00:08.10 bitrate=5696.0kbits/s speed=1.08x elapsed=0:00:07.50    frame=  258 fps= 32 q=12.0 size=    5888KiB time=00:00:08.60 bitrate=5608.7kbits/s speed=1.07x elapsed=0:00:08.00    frame=  273 fps= 32 q=12.0 size=    6400KiB time=00:00:09.10 bitrate=5761.4kbits/s speed=1.07x elapsed=0:00:08.50    frame=  288 fps= 32 q=12.0 size=    6656KiB time=00:00:09.60 bitrate=5679.8kbits/s speed=1.07x elapsed=0:00:09.00    frame=  303 fps= 32 q=12.0 size=    6912KiB time=00:00:10.10 bitrate=5606.3kbits/s speed=1.06x elapsed=0:00:09.50    frame=  318 fps= 32 q=12.0 size=    7168KiB time=00:00:10.60 bitrate=5539.7kbits/s speed=1.06x elapsed=0:00:10.00    frame=  333 fps= 32 q=14.0 size=    8192KiB time=00:00:11.10 bitrate=6045.9kbits/s speed=1.06x elapsed=0:00:10.50    frame=  348 fps= 32 q=15.0 size=    8960KiB time=00:00:11.60 bitrate=6327.6kbits/s speed=1.05x elapsed=0:00:11.00    frame=  363 fps= 32 q=18.0 size=    9984KiB time=00:00:12.10 bitrate=6759.4kbits/s speed=1.05x elapsed=0:00:11.50    frame=  378 fps= 31 q=17.0 size=   10240KiB time=00:00:12.60 bitrate=6657.7kbits/s speed=1.05x elapsed=0:00:12.00    frame=  393 fps= 31 q=17.0 size=   10496KiB time=00:00:13.10 bitrate=6563.6kbits/s speed=1.05x elapsed=0:00:12.50    frame=  408 fps= 31 q=17.0 size=   10752KiB time=00:00:13.60 bitrate=6476.5kbits/s speed=1.05x elapsed=0:00:13.00    frame=  423 fps= 31 q=17.0 size=   11008KiB time=00:00:14.10 bitrate=6395.6kbits/s speed=1.04x elapsed=0:00:13.50    frame=  438 fps= 31 q=17.0 size=   11520KiB time=00:00:14.60 bitrate=6463.9kbits/s speed=1.04x elapsed=0:00:14.00    frame=  453 fps= 31 q=17.0 size=   12032KiB time=00:00:15.10 bitrate=6527.6kbits/s speed=1.04x elapsed=0:00:14.50    frame=  468 fps= 31 q=17.0 size=   12544KiB time=00:00:15.60 bitrate=6587.2kbits/s speed=1.04x elapsed=0:00:15.00    frame=  483 fps= 31 q=17.0 size=   12544KiB time=00:00:16.10 bitrate=6382.7kbits/s speed=1.04x elapsed=0:00:15.50    frame=  498 fps= 31 q=17.0 size=   12800KiB time=00:00:16.60 bitrate=6316.7kbits/s speed=1.04x elapsed=0:00:16.00    frame=  513 fps= 31 q=17.0 size=   13056KiB time=00:00:17.10 bitrate=6254.7kbits/s speed=1.04x elapsed=0:00:16.50    frame=  528 fps= 31 q=16.0 size=   13312KiB time=00:00:17.60 bitrate=6196.2kbits/s speed=1.04x elapsed=0:00:17.00    frame=  543 fps= 31 q=16.0 size=   13312KiB time=00:00:18.10 bitrate=6025.0kbits/s speed=1.03x elapsed=0:00:17.50    frame=  558 fps= 31 q=15.0 size=   13568KiB time=00:00:18.60 bitrate=5975.8kbits/s speed=1.03x elapsed=0:00:18.00    frame=  573 fps= 31 q=15.0 size=   13824KiB time=00:00:19.10 bitrate=5929.1kbits/s speed=1.03x elapsed=0:00:18.50    frame=  588 fps= 31 q=14.0 size=   13824KiB time=00:00:19.60 bitrate=5777.9kbits/s speed=1.03x elapsed=0:00:19.00    frame=  603 fps= 31 q=14.0 size=   14080KiB time=00:00:20.10 bitrate=5738.5kbits/s speed=1.03x elapsed=0:00:19.50    frame=  618 fps= 31 q=13.0 size=   14336KiB time=00:00:20.60 bitrate=5701.0kbits/s speed=1.03x elapsed=0:00:20.00    frame=  633 fps= 31 q=13.0 size=   14336KiB time=00:00:21.10 bitrate=5565.9kbits/s speed=1.03x elapsed=0:00:20.50    frame=  648 fps= 31 q=13.0 size=   14592KiB time=00:00:21.60 bitrate=5534.2kbits/s speed=1.03x elapsed=0:00:21.00    frame=  663 fps= 31 q=13.0 size=   15104KiB time=00:00:22.10 bitrate=5598.7kbits/s speed=1.03x elapsed=0:00:21.50    frame=  678 fps= 31 q=13.0 size=   15616KiB time=00:00:22.60 bitrate=5660.5kbits/s speed=1.03x elapsed=0:00:22.00    frame=  693 fps= 31 q=13.0 size=   15872KiB time=00:00:23.10 bitrate=5628.7kbits/s speed=1.03x elapsed=0:00:22.50    frame=  708 fps= 31 q=13.0 size=   15872KiB time=00:00:23.60 bitrate=5509.5kbits/s speed=1.03x elapsed=0:00:23.00    frame=  723 fps= 31 q=14.0 size=   16640KiB time=00:00:24.10 bitrate=5656.2kbits/s speed=1.03x elapsed=0:00:23.50    frame=  738 fps= 31 q=14.0 size=   17152KiB time=00:00:24.60 bitrate=5711.8kbits/s speed=1.02x elapsed=0:00:24.00    frame=  753 fps= 31 q=16.0 size=   17920KiB time=00:00:25.10 bitrate=5848.6kbits/s speed=1.02x elapsed=0:00:24.50    frame=  768 fps= 31 q=17.0 size=   18688KiB time=00:00:25.60 bitrate=5980.2kbits/s speed=1.02x elapsed=0:00:25.00    [out#0/mp4 @ 0x5b9ca4133680] video:19272KiB audio:97KiB subtitle:0KiB other streams:0KiB global headers:0KiB muxing overhead: 0.054837%
+frame=  793 fps= 31 q=17.0 Lsize=   19379KiB time=00:00:26.43 bitrate=6005.9kbits/s speed=1.03x elapsed=0:00:25.63    
+[aac @ 0x5b9ca4044640] Qavg: 63958.066
+Exiting normally, received signal 15.
+
+ffmpeg version N-119739-gab37c7e49f Copyright (c) 2000-2025 the FFmpeg developers
+  built with gcc 11 (Ubuntu 11.4.0-1ubuntu1~22.04)
+  configuration: --enable-nonfree --enable-cuda --enable-cuvid --enable-nvenc --extra-cflags=-I/home/brainwave/Desktop/sdk/Video_Codec_SDK_13.0.19/Interface --extra-ldflags=-L/usr/local/cuda/lib64 --enable-libx264 --enable-libx265 --enable-gpl
+  libavutil      60.  3.100 / 60.  3.100
+  libavcodec     62.  3.101 / 62.  3.101
+  libavformat    62.  0.102 / 62.  0.102
+  libavdevice    62.  0.100 / 62.  0.100
+  libavfilter    11.  0.100 / 11.  0.100
+  libswscale      9.  0.100 /  9.  0.100
+  libswresample   6.  0.100 /  6.  0.100
+Input #0, rtsp, from 'rtsp://admin:123456@192.168.1.88/stream0':
+  Metadata:
+    title           : RTSP/RTP stream from icamra ipc
+  Duration: N/A, start: 0.000000, bitrate: N/A
+  Stream #0:0: Video: h264 (High), yuv420p(progressive), 3840x2160, 30 fps, 29.97 tbr, 90k tbn, Start 0.036000
+  Stream #0:1: Audio: pcm_mulaw, 8000 Hz, mono, s16, 64 kb/s
+Stream mapping:
+  Stream #0:0 -> #0:0 (h264 (native) -> h264 (h264_nvenc))
+  Stream #0:1 -> #0:1 (pcm_mulaw (native) -> aac (native))
+Press [q] to stop, [?] for help
+[aac @ 0x60932efb1f80] Too many bits 8832.000000 > 6144 per frame requested, clamping to max
+[h264_nvenc @ 0x60932e723980] The selected preset is deprecated. Use p1 to p7 + -tune or fast/medium/slow.
+Output #0, mp4, to '/home/brainwave/Delivered/medical_qt_app29/medical_qt_app/build/../recordings/P1001/1/recording_20250602_025024.mp4':
+  Metadata:
+    title           : RTSP/RTP stream from icamra ipc
+    encoder         : Lavf62.0.102
+  Stream #0:0: Video: h264 (Main) (avc1 / 0x31637661), yuv420p(tv, progressive), 3840x2160, q=2-31, 5000 kb/s, 29.97 fps, 30k tbn
+    Metadata:
+      encoder         : Lavc62.3.101 h264_nvenc
+    Side data:
+      cpb: bitrate max/min/avg: 0/0/5000000 buffer size: 10000000 vbv_delay: N/A
+  Stream #0:1: Audio: aac (LC) (mp4a / 0x6134706D), 8000 Hz, mono, fltp, 48 kb/s
+    Metadata:
+      encoder         : Lavc62.3.101 aac
+frame=   13 fps=0.0 q=24.0 size=       0KiB time=00:00:00.43 bitrate=   0.9kbits/s speed=0.867x elapsed=0:00:00.50    frame=   47 fps= 47 q=11.0 size=    1024KiB time=00:00:01.56 bitrate=5349.3kbits/s speed=1.57x elapsed=0:00:01.00    frame=   62 fps= 41 q=11.0 size=    1280KiB time=00:00:02.06 bitrate=5070.7kbits/s speed=1.38x elapsed=0:00:01.50    frame=   77 fps= 38 q=11.0 size=    1536KiB time=00:00:02.56 bitrate=4897.7kbits/s speed=1.28x elapsed=0:00:02.00    frame=   92 fps= 37 q=11.0 size=    1792KiB time=00:00:03.06 bitrate=4782.3kbits/s speed=1.23x elapsed=0:00:02.50    frame=  107 fps= 36 q=11.0 size=    1792KiB time=00:00:03.57 bitrate=4111.9kbits/s speed=1.19x elapsed=0:00:03.00    frame=  122 fps= 35 q=11.0 size=    2560KiB time=00:00:04.07 bitrate=5151.9kbits/s speed=1.16x elapsed=0:00:03.50    frame=  137 fps= 34 q=11.0 size=    2816KiB time=00:00:04.57 bitrate=5046.6kbits/s speed=1.14x elapsed=0:00:04.00    frame=  153 fps= 34 q=11.0 size=    3328KiB time=00:00:05.10 bitrate=5340.4kbits/s speed=1.13x elapsed=0:00:04.50    frame=  167 fps= 33 q=11.0 size=    3584KiB time=00:00:05.57 bitrate=5269.1kbits/s speed=1.11x elapsed=0:00:05.00    frame=  182 fps= 33 q=11.0 size=    3840KiB time=00:00:06.07 bitrate=5180.1kbits/s speed= 1.1x elapsed=0:00:05.50    frame=  197 fps= 33 q=11.0 size=    4096KiB time=00:00:06.51 bitrate=5149.6kbits/s speed=1.09x elapsed=0:00:06.00    frame=  212 fps= 33 q=11.0 size=    4352KiB time=00:00:07.07 bitrate=5040.0kbits/s speed=1.09x elapsed=0:00:06.50    frame=  227 fps= 32 q=11.0 size=    4864KiB time=00:00:07.57 bitrate=5260.8kbits/s speed=1.08x elapsed=0:00:07.00    frame=  242 fps= 32 q=12.0 size=    5376KiB time=00:00:08.06 bitrate=5461.4kbits/s speed=1.07x elapsed=0:00:07.50    frame=  257 fps= 32 q=12.0 size=    5888KiB time=00:00:08.57 bitrate=5624.9kbits/s speed=1.07x elapsed=0:00:08.00    frame=  272 fps= 32 q=13.0 size=    6656KiB time=00:00:09.07 bitrate=6007.9kbits/s speed=1.07x elapsed=0:00:08.50    frame=  287 fps= 32 q=15.0 size=    7424KiB time=00:00:09.57 bitrate=6350.9kbits/s speed=1.06x elapsed=0:00:09.00    frame=  302 fps= 32 q=16.0 size=    8192KiB time=00:00:10.07 bitrate=6659.8kbits/s speed=1.06x elapsed=0:00:09.50    frame=  317 fps= 32 q=17.0 size=    8704KiB time=00:00:10.57 bitrate=6741.2kbits/s speed=1.06x elapsed=0:00:10.00    frame=  332 fps= 32 q=17.0 size=    9216KiB time=00:00:11.07 bitrate=6815.3kbits/s speed=1.05x elapsed=0:00:10.50    frame=  347 fps= 32 q=17.0 size=    9728KiB time=00:00:11.57 bitrate=6882.9kbits/s speed=1.05x elapsed=0:00:11.00    frame=  362 fps= 31 q=19.0 size=    9984KiB time=00:00:12.07 bitrate=6771.3kbits/s speed=1.05x elapsed=0:00:11.50    frame=  377 fps= 31 q=17.0 size=   11008KiB time=00:00:12.53 bitrate=7195.8kbits/s speed=1.04x elapsed=0:00:12.00    frame=  393 fps= 31 q=17.0 size=   11776KiB time=00:00:13.11 bitrate=7356.7kbits/s speed=1.05x elapsed=0:00:12.50    frame=  407 fps= 31 q=17.0 size=   12032KiB time=00:00:13.58 bitrate=7258.1kbits/s speed=1.04x elapsed=0:00:13.00    frame=  422 fps= 31 q=17.0 size=   12288KiB time=00:00:14.08 bitrate=7149.0kbits/s speed=1.04x elapsed=0:00:13.50    frame=  437 fps= 31 q=17.0 size=   12544KiB time=00:00:14.58 bitrate=7047.5kbits/s speed=1.04x elapsed=0:00:14.00    frame=  452 fps= 31 q=17.0 size=   12800KiB time=00:00:15.08 bitrate=6952.6kbits/s speed=1.04x elapsed=0:00:14.50    frame=  468 fps= 31 q=17.0 size=   12800KiB time=00:00:15.61 bitrate=6715.0kbits/s speed=1.04x elapsed=0:00:15.00    frame=  482 fps= 31 q=17.0 size=   13056KiB time=00:00:16.08 bitrate=6650.3kbits/s speed=1.04x elapsed=0:00:15.50    frame=  497 fps= 31 q=17.0 size=   13056KiB time=00:00:16.54 bitrate=6464.9kbits/s speed=1.03x elapsed=0:00:16.00    frame=  512 fps= 31 q=17.0 size=   13312KiB time=00:00:17.08 bitrate=6383.4kbits/s speed=1.04x elapsed=0:00:16.50    frame=  527 fps= 31 q=17.0 size=   13312KiB time=00:00:17.58 bitrate=6201.7kbits/s speed=1.03x elapsed=0:00:17.00    frame=  542 fps= 31 q=16.0 size=   13568KiB time=00:00:18.07 bitrate=6151.0kbits/s speed=1.03x elapsed=0:00:17.50    frame=  557 fps= 31 q=16.0 size=   13824KiB time=00:00:18.54 bitrate=6106.3kbits/s speed=1.03x elapsed=0:00:18.00    frame=  572 fps= 31 q=15.0 size=   13824KiB time=00:00:19.05 bitrate=5944.0kbits/s speed=1.03x elapsed=0:00:18.50    frame=  587 fps= 31 q=15.0 size=   14080KiB time=00:00:19.55 bitrate=5899.1kbits/s speed=1.03x elapsed=0:00:19.00    frame=  602 fps= 31 q=15.0 size=   14336KiB time=00:00:20.05 bitrate=5856.4kbits/s speed=1.03x elapsed=0:00:19.50    frame=  618 fps= 31 q=15.0 size=   14592KiB time=00:00:20.58 bitrate=5806.4kbits/s speed=1.03x elapsed=0:00:20.00    frame=  632 fps= 31 q=15.0 size=   15104KiB time=00:00:21.05 bitrate=5876.8kbits/s speed=1.03x elapsed=0:00:20.50    frame=  648 fps= 31 q=15.0 size=   15616KiB time=00:00:21.58 bitrate=5925.8kbits/s speed=1.03x elapsed=0:00:21.00    frame=  662 fps= 31 q=15.0 size=   15872KiB time=00:00:22.05 bitrate=5895.3kbits/s speed=1.03x elapsed=0:00:21.50    frame=  677 fps= 31 q=15.0 size=   15872KiB time=00:00:22.55 bitrate=5764.5kbits/s speed=1.02x elapsed=0:00:22.00    frame=  692 fps= 31 q=16.0 size=   16640KiB time=00:00:23.05 bitrate=5912.3kbits/s speed=1.02x elapsed=0:00:22.50    frame=  707 fps= 31 q=17.0 size=   17152KiB time=00:00:23.55 bitrate=5964.7kbits/s speed=1.02x elapsed=0:00:23.00    [out#0/mp4 @ 0x60932e728780] video:18590KiB audio:94KiB subtitle:0KiB other streams:0KiB global headers:0KiB muxing overhead: 0.053042%
+frame=  732 fps= 31 q=17.0 Lsize=   18694KiB time=00:00:24.39 bitrate=6278.5kbits/s speed=1.03x elapsed=0:00:23.62    
+[aac @ 0x60932efb1f80] Qavg: 63711.922
+Exiting normally, received signal 15.
+
+ffmpeg version N-119739-gab37c7e49f Copyright (c) 2000-2025 the FFmpeg developers
+  built with gcc 11 (Ubuntu 11.4.0-1ubuntu1~22.04)
+  configuration: --enable-nonfree --enable-cuda --enable-cuvid --enable-nvenc --extra-cflags=-I/home/brainwave/Desktop/sdk/Video_Codec_SDK_13.0.19/Interface --extra-ldflags=-L/usr/local/cuda/lib64 --enable-libx264 --enable-libx265 --enable-gpl
+  libavutil      60.  3.100 / 60.  3.100
+  libavcodec     62.  3.101 / 62.  3.101
+  libavformat    62.  0.102 / 62.  0.102
+  libavdevice    62.  0.100 / 62.  0.100
+  libavfilter    11.  0.100 / 11.  0.100
+  libswscale      9.  0.100 /  9.  0.100
+  libswresample   6.  0.100 /  6.  0.100
+Input #0, rtsp, from 'rtsp://admin:123456@192.168.1.88/stream0':
+  Metadata:
+    title           : RTSP/RTP stream from icamra ipc
+  Duration: N/A, start: 0.000000, bitrate: N/A
+  Stream #0:0: Video: h264 (High), yuv420p(progressive), 3840x2160, 30 fps, 30 tbr, 90k tbn, Start 0.036000
+  Stream #0:1: Audio: pcm_mulaw, 8000 Hz, mono, s16, 64 kb/s
+Stream mapping:
+  Stream #0:0 -> #0:0 (h264 (native) -> h264 (h264_nvenc))
+  Stream #0:1 -> #0:1 (pcm_mulaw (native) -> aac (native))
+Press [q] to stop, [?] for help
+[aac @ 0x56571e160600] Too many bits 8832.000000 > 6144 per frame requested, clamping to max
+[h264_nvenc @ 0x56571d8ef440] The selected preset is deprecated. Use p1 to p7 + -tune or fast/medium/slow.
+Output #0, mp4, to '/home/brainwave/Delivered/medical_qt_app29/medical_qt_app/build/../recordings/P1001/1/recording_20250602_152817.mp4':
+  Metadata:
+    title           : RTSP/RTP stream from icamra ipc
+    encoder         : Lavf62.0.102
+  Stream #0:0: Video: h264 (Main) (avc1 / 0x31637661), yuv420p(tv, progressive), 3840x2160, q=2-31, 5000 kb/s, 30 fps, 15360 tbn
+    Metadata:
+      encoder         : Lavc62.3.101 h264_nvenc
+    Side data:
+      cpb: bitrate max/min/avg: 0/0/5000000 buffer size: 10000000 vbv_delay: N/A
+  Stream #0:1: Audio: aac (LC) (mp4a / 0x6134706D), 8000 Hz, mono, fltp, 48 kb/s
+    Metadata:
+      encoder         : Lavc62.3.101 aac
+frame=   12 fps=0.0 q=24.0 size=       0KiB time=00:00:00.40 bitrate=   1.0kbits/s speed= 0.8x elapsed=0:00:00.50    frame=   47 fps= 47 q=10.0 size=     512KiB time=00:00:01.56 bitrate=2677.5kbits/s speed=1.57x elapsed=0:00:01.00    frame=   63 fps= 42 q=10.0 size=     768KiB time=00:00:02.08 bitrate=3013.3kbits/s speed=1.39x elapsed=0:00:01.50    frame=   77 fps= 38 q=10.0 size=    1024KiB time=00:00:02.56 bitrate=3268.4kbits/s speed=1.28x elapsed=0:00:02.00    frame=   92 fps= 37 q=9.0 size=    1280KiB time=00:00:03.06 bitrate=3419.4kbits/s speed=1.23x elapsed=0:00:02.50    frame=  107 fps= 36 q=9.0 size=    1280KiB time=00:00:03.56 bitrate=2940.0kbits/s speed=1.19x elapsed=0:00:03.00    frame=  123 fps= 35 q=12.0 size=    2048KiB time=00:00:04.10 bitrate=4092.1kbits/s speed=1.17x elapsed=0:00:03.50    frame=  137 fps= 34 q=10.0 size=    2304KiB time=00:00:04.56 bitrate=4133.2kbits/s speed=1.14x elapsed=0:00:04.00    frame=  152 fps= 34 q=10.0 size=    2560KiB time=00:00:05.06 bitrate=4139.2kbits/s speed=1.13x elapsed=0:00:04.50    frame=  167 fps= 33 q=9.0 size=    2816KiB time=00:00:05.52 bitrate=4176.2kbits/s speed= 1.1x elapsed=0:00:05.00    frame=  182 fps= 33 q=9.0 size=    3072KiB time=00:00:06.06 bitrate=4148.3kbits/s speed= 1.1x elapsed=0:00:05.50    frame=  197 fps= 33 q=9.0 size=    3328KiB time=00:00:06.52 bitrate=4176.4kbits/s speed=1.09x elapsed=0:00:06.00    frame=  212 fps= 33 q=9.0 size=    3840KiB time=00:00:07.06 bitrate=4455.8kbits/s speed=1.09x elapsed=0:00:06.50    frame=  227 fps= 32 q=9.0 size=    4096KiB time=00:00:07.56 bitrate=4434.6kbits/s speed=1.08x elapsed=0:00:07.00    frame=  242 fps= 32 q=11.0 size=    4352KiB time=00:00:08.06 bitrate=4419.7kbits/s speed=1.08x elapsed=0:00:07.50    frame=  257 fps= 32 q=9.0 size=    4608KiB time=00:00:08.56 bitrate=4406.5kbits/s speed=1.07x elapsed=0:00:08.00    [out#0/mp4 @ 0x56571db39280] video:5173KiB audio:35KiB subtitle:0KiB other streams:0KiB global headers:0KiB muxing overhead: 0.090985%
+frame=  282 fps= 33 q=8.0 Lsize=    5213KiB time=00:00:09.40 bitrate=4542.6kbits/s speed=1.09x elapsed=0:00:08.62    
+[aac @ 0x56571e160600] Qavg: 61662.133
+Exiting normally, received signal 15.
+
+ffmpeg version N-119739-gab37c7e49f Copyright (c) 2000-2025 the FFmpeg developers
+  built with gcc 11 (Ubuntu 11.4.0-1ubuntu1~22.04)
+  configuration: --enable-nonfree --enable-cuda --enable-cuvid --enable-nvenc --extra-cflags=-I/home/brainwave/Desktop/sdk/Video_Codec_SDK_13.0.19/Interface --extra-ldflags=-L/usr/local/cuda/lib64 --enable-libx264 --enable-libx265 --enable-gpl
+  libavutil      60.  3.100 / 60.  3.100
+  libavcodec     62.  3.101 / 62.  3.101
+  libavformat    62.  0.102 / 62.  0.102
+  libavdevice    62.  0.100 / 62.  0.100
+  libavfilter    11.  0.100 / 11.  0.100
+  libswscale      9.  0.100 /  9.  0.100
+  libswresample   6.  0.100 /  6.  0.100
+Input #0, rtsp, from 'rtsp://admin:123456@192.168.1.88/stream0':
+  Metadata:
+    title           : RTSP/RTP stream from icamra ipc
+  Duration: N/A, start: 0.000000, bitrate: N/A
+  Stream #0:0: Video: h264 (High), yuv420p(progressive), 3840x2160, 30 fps, 29.97 tbr, 90k tbn, Start 0.034000
+  Stream #0:1: Audio: pcm_mulaw, 8000 Hz, mono, s16, 64 kb/s
+Stream mapping:
+  Stream #0:0 -> #0:0 (h264 (native) -> h264 (h264_nvenc))
+  Stream #0:1 -> #0:1 (pcm_mulaw (native) -> aac (native))
+Press [q] to stop, [?] for help
+[aac @ 0x5aee29218180] Too many bits 8832.000000 > 6144 per frame requested, clamping to max
+[h264_nvenc @ 0x5aee290a1300] The selected preset is deprecated. Use p1 to p7 + -tune or fast/medium/slow.
+Output #0, mp4, to '/home/brainwave/Delivered/medical_qt_app29/medical_qt_app/build/../recordings/P1001/1/recording_20250602_152904.mp4':
+  Metadata:
+    title           : RTSP/RTP stream from icamra ipc
+    encoder         : Lavf62.0.102
+  Stream #0:0: Video: h264 (Main) (avc1 / 0x31637661), yuv420p(tv, progressive), 3840x2160, q=2-31, 5000 kb/s, 29.97 fps, 30k tbn
+    Metadata:
+      encoder         : Lavc62.3.101 h264_nvenc
+    Side data:
+      cpb: bitrate max/min/avg: 0/0/5000000 buffer size: 10000000 vbv_delay: N/A
+  Stream #0:1: Audio: aac (LC) (mp4a / 0x6134706D), 8000 Hz, mono, fltp, 48 kb/s
+    Metadata:
+      encoder         : Lavc62.3.101 aac
+frame=   12 fps=0.0 q=24.0 size=       0KiB time=00:00:00.40 bitrate=   1.0kbits/s speed=0.801x elapsed=0:00:00.50    frame=   48 fps= 48 q=11.0 size=     768KiB time=00:00:01.58 bitrate=3962.1kbits/s speed=1.59x elapsed=0:00:01.00    frame=   63 fps= 42 q=11.0 size=    1280KiB time=00:00:02.08 bitrate=5022.1kbits/s speed=1.39x elapsed=0:00:01.50    frame=   77 fps= 38 q=11.0 size=    1536KiB time=00:00:02.56 bitrate=4897.7kbits/s speed=1.28x elapsed=0:00:02.00    frame=   93 fps= 37 q=11.0 size=    2048KiB time=00:00:03.10 bitrate=5406.7kbits/s speed=1.24x elapsed=0:00:02.50    frame=  108 fps= 36 q=12.0 size=    2560KiB time=00:00:03.58 bitrate=5854.8kbits/s speed=1.19x elapsed=0:00:03.00    frame=  123 fps= 35 q=12.0 size=    3072KiB time=00:00:04.10 bitrate=6132.0kbits/s speed=1.17x elapsed=0:00:03.50    frame=  137 fps= 34 q=13.0 size=    3584KiB time=00:00:04.57 bitrate=6422.9kbits/s speed=1.14x elapsed=0:00:04.00    frame=  152 fps= 34 q=13.0 size=    3840KiB time=00:00:05.06 bitrate=6212.0kbits/s speed=1.13x elapsed=0:00:04.50    frame=  168 fps= 34 q=13.0 size=    4352KiB time=00:00:05.60 bitrate=6360.1kbits/s speed=1.12x elapsed=0:00:05.00    frame=  182 fps= 33 q=14.0 size=    4864KiB time=00:00:06.07 bitrate=6561.5kbits/s speed= 1.1x elapsed=0:00:05.50    frame=  197 fps= 33 q=15.0 size=    5376KiB time=00:00:06.54 bitrate=6729.9kbits/s speed=1.09x elapsed=0:00:06.00    frame=  213 fps= 33 q=17.0 size=    6400KiB time=00:00:07.07 bitrate=7413.6kbits/s speed=1.09x elapsed=0:00:06.50    frame=  228 fps= 33 q=17.0 size=    7168KiB time=00:00:07.60 bitrate=7718.7kbits/s speed=1.09x elapsed=0:00:07.00    frame=  243 fps= 32 q=17.0 size=    7936KiB time=00:00:08.10 bitrate=8022.2kbits/s speed=1.08x elapsed=0:00:07.50    frame=  257 fps= 32 q=17.0 size=    8960KiB time=00:00:08.57 bitrate=8559.6kbits/s speed=1.07x elapsed=0:00:08.00    [out#0/mp4 @ 0x5aee2909d1c0] video:9721KiB audio:34KiB subtitle:0KiB other streams:0KiB global headers:0KiB muxing overhead: 0.047854%
+frame=  283 fps= 33 q=17.0 Lsize=    9759KiB time=00:00:09.44 bitrate=8469.1kbits/s speed=1.09x elapsed=0:00:08.62    
+[aac @ 0x5aee29218180] Qavg: 61833.152
+Exiting normally, received signal 15.
+
+ffmpeg version N-119739-gab37c7e49f Copyright (c) 2000-2025 the FFmpeg developers
+  built with gcc 11 (Ubuntu 11.4.0-1ubuntu1~22.04)
+  configuration: --enable-nonfree --enable-cuda --enable-cuvid --enable-nvenc --extra-cflags=-I/home/brainwave/Desktop/sdk/Video_Codec_SDK_13.0.19/Interface --extra-ldflags=-L/usr/local/cuda/lib64 --enable-libx264 --enable-libx265 --enable-gpl
+  libavutil      60.  3.100 / 60.  3.100
+  libavcodec     62.  3.101 / 62.  3.101
+  libavformat    62.  0.102 / 62.  0.102
+  libavdevice    62.  0.100 / 62.  0.100
+  libavfilter    11.  0.100 / 11.  0.100
+  libswscale      9.  0.100 /  9.  0.100
+  libswresample   6.  0.100 /  6.  0.100
+Input #0, rtsp, from 'rtsp://admin:123456@192.168.1.88/stream0':
+  Metadata:
+    title           : RTSP/RTP stream from icamra ipc
+  Duration: N/A, start: 0.000000, bitrate: N/A
+  Stream #0:0: Video: h264 (High), yuv420p(progressive), 3840x2160, 30 fps, 30 tbr, 90k tbn, Start 0.034000
+  Stream #0:1: Audio: pcm_mulaw, 8000 Hz, mono, s16, 64 kb/s
+Stream mapping:
+  Stream #0:0 -> #0:0 (h264 (native) -> h264 (h264_nvenc))
+  Stream #0:1 -> #0:1 (pcm_mulaw (native) -> aac (native))
+Press [q] to stop, [?] for help
+[aac @ 0x5815a8b76f00] Too many bits 8832.000000 > 6144 per frame requested, clamping to max
+[h264_nvenc @ 0x5815a82ee200] The selected preset is deprecated. Use p1 to p7 + -tune or fast/medium/slow.
+Output #0, mp4, to '/home/brainwave/Delivered/medical_qt_app29/medical_qt_app/build/../recordings/P1001/1/recording_20250602_165131.mp4':
+  Metadata:
+    title           : RTSP/RTP stream from icamra ipc
+    encoder         : Lavf62.0.102
+  Stream #0:0: Video: h264 (Main) (avc1 / 0x31637661), yuv420p(tv, progressive), 3840x2160, q=2-31, 5000 kb/s, 30 fps, 15360 tbn
+    Metadata:
+      encoder         : Lavc62.3.101 h264_nvenc
+    Side data:
+      cpb: bitrate max/min/avg: 0/0/5000000 buffer size: 10000000 vbv_delay: N/A
+  Stream #0:1: Audio: aac (LC) (mp4a / 0x6134706D), 8000 Hz, mono, fltp, 48 kb/s
+    Metadata:
+      encoder         : Lavc62.3.101 aac
+frame=   12 fps=0.0 q=28.0 size=       0KiB time=00:00:00.40 bitrate=   1.0kbits/s speed= 0.8x elapsed=0:00:00.50    frame=   48 fps= 48 q=11.0 size=    1024KiB time=00:00:01.60 bitrate=5243.1kbits/s speed= 1.6x elapsed=0:00:01.00    frame=   63 fps= 42 q=12.0 size=    1536KiB time=00:00:02.10 bitrate=5992.0kbits/s speed= 1.4x elapsed=0:00:01.50    frame=   78 fps= 39 q=11.0 size=    1792KiB time=00:00:02.60 bitrate=5646.3kbits/s speed= 1.3x elapsed=0:00:02.00    frame=   93 fps= 37 q=11.0 size=    2048KiB time=00:00:03.10 bitrate=5412.1kbits/s speed=1.24x elapsed=0:00:02.50    frame=  108 fps= 36 q=11.0 size=    2304KiB time=00:00:03.58 bitrate=5263.5kbits/s speed=1.19x elapsed=0:00:03.00    frame=  123 fps= 35 q=11.0 size=    2816KiB time=00:00:04.10 bitrate=5626.6kbits/s speed=1.17x elapsed=0:00:03.50    frame=  138 fps= 34 q=11.0 size=    2816KiB time=00:00:04.60 bitrate=5015.0kbits/s speed=1.15x elapsed=0:00:04.00    frame=  153 fps= 34 q=11.0 size=    2816KiB time=00:00:05.10 bitrate=4523.3kbits/s speed=1.13x elapsed=0:00:04.50    frame=  168 fps= 34 q=10.0 size=    3072KiB time=00:00:05.60 bitrate=4494.0kbits/s speed=1.12x elapsed=0:00:05.00    frame=  183 fps= 33 q=10.0 size=    3584KiB time=00:00:06.10 bitrate=4813.2kbits/s speed=1.11x elapsed=0:00:05.50    frame=  198 fps= 33 q=11.0 size=    3840KiB time=00:00:06.60 bitrate=4766.3kbits/s speed= 1.1x elapsed=0:00:06.00    frame=  213 fps= 33 q=11.0 size=    4352KiB time=00:00:07.10 bitrate=5021.4kbits/s speed=1.09x elapsed=0:00:06.50    frame=  228 fps= 33 q=11.0 size=    4608KiB time=00:00:07.57 bitrate=4982.7kbits/s speed=1.08x elapsed=0:00:07.00    frame=  243 fps= 32 q=13.0 size=    5376KiB time=00:00:08.07 bitrate=5453.3kbits/s speed=1.08x elapsed=0:00:07.50    frame=  258 fps= 32 q=12.0 size=    5888KiB time=00:00:08.60 bitrate=5608.7kbits/s speed=1.07x elapsed=0:00:08.00    frame=  273 fps= 32 q=12.0 size=    6400KiB time=00:00:09.10 bitrate=5761.4kbits/s speed=1.07x elapsed=0:00:08.50    frame=  288 fps= 32 q=12.0 size=    6656KiB time=00:00:09.59 bitrate=5685.7kbits/s speed=1.07x elapsed=0:00:09.00    frame=  303 fps= 32 q=12.0 size=    6912KiB time=00:00:10.10 bitrate=5606.3kbits/s speed=1.06x elapsed=0:00:09.50    frame=  318 fps= 32 q=12.0 size=    7168KiB time=00:00:10.60 bitrate=5539.7kbits/s speed=1.06x elapsed=0:00:10.00    frame=  333 fps= 32 q=12.0 size=    7424KiB time=00:00:11.10 bitrate=5479.1kbits/s speed=1.06x elapsed=0:00:10.50    frame=  348 fps= 32 q=11.0 size=    7424KiB time=00:00:11.60 bitrate=5242.9kbits/s speed=1.05x elapsed=0:00:11.00    frame=  363 fps= 32 q=12.0 size=    7680KiB time=00:00:12.08 bitrate=5206.5kbits/s speed=1.05x elapsed=0:00:11.50    frame=  378 fps= 31 q=11.0 size=    8192KiB time=00:00:12.52 bitrate=5358.5kbits/s speed=1.04x elapsed=0:00:12.00    frame=  393 fps= 31 q=11.0 size=    8704KiB time=00:00:13.10 bitrate=5443.0kbits/s speed=1.05x elapsed=0:00:12.50    [out#0/mp4 @ 0x5815a82ec880] video:9362KiB audio:48KiB subtitle:0KiB other streams:0KiB global headers:0KiB muxing overhead: 0.067587%
+frame=  418 fps= 32 q=11.0 Lsize=    9416KiB time=00:00:13.93 bitrate=5535.8kbits/s speed=1.06x elapsed=0:00:13.13    
+[aac @ 0x5815a8b76f00] Qavg: 63099.859
+Exiting normally, received signal 15.
+
+ffmpeg version N-119739-gab37c7e49f Copyright (c) 2000-2025 the FFmpeg developers
+  built with gcc 11 (Ubuntu 11.4.0-1ubuntu1~22.04)
+  configuration: --enable-nonfree --enable-cuda --enable-cuvid --enable-nvenc --extra-cflags=-I/home/brainwave/Desktop/sdk/Video_Codec_SDK_13.0.19/Interface --extra-ldflags=-L/usr/local/cuda/lib64 --enable-libx264 --enable-libx265 --enable-gpl
+  libavutil      60.  3.100 / 60.  3.100
+  libavcodec     62.  3.101 / 62.  3.101
+  libavformat    62.  0.102 / 62.  0.102
+  libavdevice    62.  0.100 / 62.  0.100
+  libavfilter    11.  0.100 / 11.  0.100
+  libswscale      9.  0.100 /  9.  0.100
+  libswresample   6.  0.100 /  6.  0.100
+Input #0, rtsp, from 'rtsp://admin:123456@192.168.1.88/stream0':
+  Metadata:
+    title           : RTSP/RTP stream from icamra ipc
+  Duration: N/A, start: 0.000000, bitrate: N/A
+  Stream #0:0: Video: h264 (High), yuv420p(progressive), 3840x2160, 30 fps, 30 tbr, 90k tbn, Start 0.032000
+  Stream #0:1: Audio: pcm_mulaw, 8000 Hz, mono, s16, 64 kb/s
+Stream mapping:
+  Stream #0:0 -> #0:0 (h264 (native) -> h264 (h264_nvenc))
+  Stream #0:1 -> #0:1 (pcm_mulaw (native) -> aac (native))
+Press [q] to stop, [?] for help
+[aac @ 0x5633170d1500] Too many bits 8832.000000 > 6144 per frame requested, clamping to max
+[h264_nvenc @ 0x56331685a100] The selected preset is deprecated. Use p1 to p7 + -tune or fast/medium/slow.
+Output #0, mp4, to '/home/brainwave/Delivered/medical_qt_app29/medical_qt_app/build/../recordings/P1001/1/recording_20250602_172358.mp4':
+  Metadata:
+    title           : RTSP/RTP stream from icamra ipc
+    encoder         : Lavf62.0.102
+  Stream #0:0: Video: h264 (Main) (avc1 / 0x31637661), yuv420p(tv, progressive), 3840x2160, q=2-31, 5000 kb/s, 30 fps, 15360 tbn
+    Metadata:
+      encoder         : Lavc62.3.101 h264_nvenc
+    Side data:
+      cpb: bitrate max/min/avg: 0/0/5000000 buffer size: 10000000 vbv_delay: N/A
+  Stream #0:1: Audio: aac (LC) (mp4a / 0x6134706D), 8000 Hz, mono, fltp, 48 kb/s
+    Metadata:
+      encoder         : Lavc62.3.101 aac
+frame=   13 fps=0.0 q=23.0 size=       0KiB time=00:00:00.43 bitrate=   0.9kbits/s speed=0.867x elapsed=0:00:00.50    frame=   48 fps= 48 q=12.0 size=    1280KiB time=00:00:01.60 bitrate=6553.8kbits/s speed= 1.6x elapsed=0:00:01.00    frame=   63 fps= 42 q=12.0 size=    1792KiB time=00:00:02.10 bitrate=6990.7kbits/s speed= 1.4x elapsed=0:00:01.50    frame=   78 fps= 39 q=12.0 size=    2048KiB time=00:00:02.60 bitrate=6452.9kbits/s speed= 1.3x elapsed=0:00:02.00    frame=   93 fps= 37 q=12.0 size=    2560KiB time=00:00:03.10 bitrate=6765.1kbits/s speed=1.24x elapsed=0:00:02.50    frame=  108 fps= 36 q=13.0 size=    2816KiB time=00:00:03.60 bitrate=6408.1kbits/s speed= 1.2x elapsed=0:00:03.00    frame=  123 fps= 35 q=14.0 size=    3584KiB time=00:00:04.10 bitrate=7161.1kbits/s speed=1.17x elapsed=0:00:03.50    frame=  138 fps= 34 q=13.0 size=    3840KiB time=00:00:04.59 bitrate=6841.6kbits/s speed=1.15x elapsed=0:00:04.00    frame=  153 fps= 34 q=13.0 size=    3840KiB time=00:00:05.10 bitrate=6168.2kbits/s speed=1.13x elapsed=0:00:04.50    frame=  168 fps= 34 q=12.0 size=    3840KiB time=00:00:05.60 bitrate=5617.4kbits/s speed=1.12x elapsed=0:00:05.00    frame=  183 fps= 33 q=11.0 size=    4096KiB time=00:00:06.10 bitrate=5500.8kbits/s speed=1.11x elapsed=0:00:05.50    frame=  198 fps= 33 q=12.0 size=    4608KiB time=00:00:06.60 bitrate=5719.6kbits/s speed= 1.1x elapsed=0:00:06.00    frame=  213 fps= 33 q=12.0 size=    4864KiB time=00:00:07.10 bitrate=5612.2kbits/s speed=1.09x elapsed=0:00:06.50    frame=  227 fps= 32 q=11.0 size=    5120KiB time=00:00:07.56 bitrate=5543.2kbits/s speed=1.08x elapsed=0:00:07.00    frame=  243 fps= 32 q=13.0 size=    5888KiB time=00:00:08.10 bitrate=5954.9kbits/s speed=1.08x elapsed=0:00:07.50    frame=  258 fps= 32 q=12.0 size=    6144KiB time=00:00:08.60 bitrate=5852.6kbits/s speed=1.07x elapsed=0:00:08.00    frame=  273 fps= 32 q=12.0 size=    6400KiB time=00:00:09.10 bitrate=5761.4kbits/s speed=1.07x elapsed=0:00:08.50    frame=  288 fps= 32 q=13.0 size=    6912KiB time=00:00:09.60 bitrate=5898.3kbits/s speed=1.07x elapsed=0:00:09.00    [out#0/mp4 @ 0x56331685fc00] video:7337KiB audio:38KiB subtitle:0KiB other streams:0KiB global headers:0KiB muxing overhead: 0.068854%
+frame=  313 fps= 32 q=12.0 Lsize=    7380KiB time=00:00:10.43 bitrate=5794.8kbits/s speed=1.08x elapsed=0:00:09.64    
+[aac @ 0x5633170d1500] Qavg: 60473.379
+Exiting normally, received signal 15.
+
+ffmpeg version N-119739-gab37c7e49f Copyright (c) 2000-2025 the FFmpeg developers
+  built with gcc 11 (Ubuntu 11.4.0-1ubuntu1~22.04)
+  configuration: --enable-nonfree --enable-cuda --enable-cuvid --enable-nvenc --extra-cflags=-I/home/brainwave/Desktop/sdk/Video_Codec_SDK_13.0.19/Interface --extra-ldflags=-L/usr/local/cuda/lib64 --enable-libx264 --enable-libx265 --enable-gpl
+  libavutil      60.  3.100 / 60.  3.100
+  libavcodec     62.  3.101 / 62.  3.101
+  libavformat    62.  0.102 / 62.  0.102
+  libavdevice    62.  0.100 / 62.  0.100
+  libavfilter    11.  0.100 / 11.  0.100
+  libswscale      9.  0.100 /  9.  0.100
+  libswresample   6.  0.100 /  6.  0.100
+Input #0, rtsp, from 'rtsp://admin:123456@192.168.1.88/stream0':
+  Metadata:
+    title           : RTSP/RTP stream from icamra ipc
+  Duration: N/A, start: 0.000000, bitrate: N/A
+  Stream #0:0: Video: h264 (High), yuv420p(progressive), 3840x2160, 30 fps, 30 tbr, 90k tbn, Start 0.034000
+  Stream #0:1: Audio: pcm_mulaw, 8000 Hz, mono, s16, 64 kb/s
+Stream mapping:
+  Stream #0:0 -> #0:0 (h264 (native) -> h264 (h264_nvenc))
+  Stream #0:1 -> #0:1 (pcm_mulaw (native) -> aac (native))
+Press [q] to stop, [?] for help
+[aac @ 0x5c1f60d6b980] Too many bits 8832.000000 > 6144 per frame requested, clamping to max
+[h264_nvenc @ 0x5c1f604e7100] The selected preset is deprecated. Use p1 to p7 + -tune or fast/medium/slow.
+Output #0, mp4, to '/home/brainwave/Delivered/medical_qt_app29/medical_qt_app/build/../recordings/P1001/1/recording_20250602_194817.mp4':
+  Metadata:
+    title           : RTSP/RTP stream from icamra ipc
+    encoder         : Lavf62.0.102
+  Stream #0:0: Video: h264 (Main) (avc1 / 0x31637661), yuv420p(tv, progressive), 3840x2160, q=2-31, 5000 kb/s, 30 fps, 15360 tbn
+    Metadata:
+      encoder         : Lavc62.3.101 h264_nvenc
+    Side data:
+      cpb: bitrate max/min/avg: 0/0/5000000 buffer size: 10000000 vbv_delay: N/A
+  Stream #0:1: Audio: aac (LC) (mp4a / 0x6134706D), 8000 Hz, mono, fltp, 48 kb/s
+    Metadata:
+      encoder         : Lavc62.3.101 aac
+frame=   13 fps=0.0 q=27.0 size=       0KiB time=00:00:00.43 bitrate=   0.9kbits/s speed=0.866x elapsed=0:00:00.50    frame=   48 fps= 48 q=11.0 size=     768KiB time=00:00:01.60 bitrate=3932.4kbits/s speed= 1.6x elapsed=0:00:01.00    frame=   63 fps= 42 q=11.0 size=    1280KiB time=00:00:02.10 bitrate=4993.4kbits/s speed= 1.4x elapsed=0:00:01.50    frame=   78 fps= 39 q=11.0 size=    1792KiB time=00:00:02.55 bitrate=5739.0kbits/s speed=1.28x elapsed=0:00:02.00    frame=   93 fps= 37 q=11.0 size=    2048KiB time=00:00:03.10 bitrate=5412.1kbits/s speed=1.24x elapsed=0:00:02.50    frame=  108 fps= 36 q=11.0 size=    2304KiB time=00:00:03.54 bitrate=5319.8kbits/s speed=1.18x elapsed=0:00:03.00    frame=  123 fps= 35 q=11.0 size=    2560KiB time=00:00:04.10 bitrate=5115.1kbits/s speed=1.17x elapsed=0:00:03.50    frame=  137 fps= 34 q=11.0 size=    2816KiB time=00:00:04.56 bitrate=5056.8kbits/s speed=1.14x elapsed=0:00:04.00    frame=  152 fps= 34 q=10.0 size=    2816KiB time=00:00:04.98 bitrate=4628.6kbits/s speed=1.11x elapsed=0:00:04.50    frame=  168 fps= 34 q=10.0 size=    3072KiB time=00:00:05.60 bitrate=4494.0kbits/s speed=1.12x elapsed=0:00:05.00    frame=  183 fps= 33 q=10.0 size=    3328KiB time=00:00:06.10 bitrate=4469.4kbits/s speed=1.11x elapsed=0:00:05.50    frame=  198 fps= 33 q=10.0 size=    3840KiB time=00:00:06.60 bitrate=4766.3kbits/s speed= 1.1x elapsed=0:00:06.00    frame=  213 fps= 33 q=10.0 size=    4096KiB time=00:00:06.99 bitrate=4797.7kbits/s speed=1.08x elapsed=0:00:06.50    frame=  227 fps= 32 q=11.0 size=    4864KiB time=00:00:07.56 bitrate=5266.0kbits/s speed=1.08x elapsed=0:00:07.00    frame=  242 fps= 32 q=13.0 size=    5376KiB time=00:00:08.02 bitrate=5487.2kbits/s speed=1.07x elapsed=0:00:07.50    frame=  257 fps= 32 q=12.0 size=    5888KiB time=00:00:08.56 bitrate=5630.5kbits/s speed=1.07x elapsed=0:00:08.00    frame=  272 fps= 32 q=12.0 size=    6144KiB time=00:00:09.06 bitrate=5555.4kbits/s speed=1.07x elapsed=0:00:08.50    frame=  287 fps= 32 q=12.0 size=    6400KiB time=00:00:09.56 bitrate=5480.4kbits/s speed=1.06x elapsed=0:00:09.00    frame=  303 fps= 32 q=12.0 size=    6912KiB time=00:00:10.10 bitrate=5606.3kbits/s speed=1.06x elapsed=0:00:09.50    frame=  317 fps= 32 q=12.0 size=    7168KiB time=00:00:10.56 bitrate=5557.2kbits/s speed=1.06x elapsed=0:00:10.00    frame=  332 fps= 32 q=11.0 size=    7424KiB time=00:00:11.06 bitrate=5495.6kbits/s speed=1.05x elapsed=0:00:10.50    frame=  347 fps= 32 q=11.0 size=    7424KiB time=00:00:11.56 bitrate=5258.0kbits/s speed=1.05x elapsed=0:00:11.00    frame=  362 fps= 31 q=12.0 size=    7680KiB time=00:00:12.06 bitrate=5213.9kbits/s speed=1.05x elapsed=0:00:11.50    [out#0/mp4 @ 0x5c1f604ec600] video:8692KiB audio:44KiB subtitle:0KiB other streams:0KiB global headers:0KiB muxing overhead: 0.068907%
+frame=  387 fps= 32 q=11.0 Lsize=    8742KiB time=00:00:12.90 bitrate=5551.4kbits/s speed=1.06x elapsed=0:00:12.11    
+[aac @ 0x5c1f60d6b980] Qavg: 62936.211
+Exiting normally, received signal 15.
+
+ffmpeg version N-119739-gab37c7e49f Copyright (c) 2000-2025 the FFmpeg developers
+  built with gcc 11 (Ubuntu 11.4.0-1ubuntu1~22.04)
+  configuration: --enable-nonfree --enable-cuda --enable-cuvid --enable-nvenc --extra-cflags=-I/home/brainwave/Desktop/sdk/Video_Codec_SDK_13.0.19/Interface --extra-ldflags=-L/usr/local/cuda/lib64 --enable-libx264 --enable-libx265 --enable-gpl
+  libavutil      60.  3.100 / 60.  3.100
+  libavcodec     62.  3.101 / 62.  3.101
+  libavformat    62.  0.102 / 62.  0.102
+  libavdevice    62.  0.100 / 62.  0.100
+  libavfilter    11.  0.100 / 11.  0.100
+  libswscale      9.  0.100 /  9.  0.100
+  libswresample   6.  0.100 /  6.  0.100
+Input #0, rtsp, from 'rtsp://admin:123456@192.168.1.88/stream0':
+  Metadata:
+    title           : RTSP/RTP stream from icamra ipc
+  Duration: N/A, start: 0.000000, bitrate: N/A
+  Stream #0:0: Video: h264 (High), yuv420p(progressive), 3840x2160, 30 fps, 30 tbr, 90k tbn, Start 0.034000
+  Stream #0:1: Audio: pcm_mulaw, 8000 Hz, mono, s16, 64 kb/s
+Stream mapping:
+  Stream #0:0 -> #0:0 (h264 (native) -> h264 (h264_nvenc))
+  Stream #0:1 -> #0:1 (pcm_mulaw (native) -> aac (native))
+Press [q] to stop, [?] for help
+[aac @ 0x5e234d857bc0] Too many bits 8832.000000 > 6144 per frame requested, clamping to max
+[h264_nvenc @ 0x5e234cfc9cc0] The selected preset is deprecated. Use p1 to p7 + -tune or fast/medium/slow.
+Output #0, mp4, to '/home/brainwave/Delivered/medical_qt_app29/medical_qt_app/build/../recordings/P1001/1/recording_20250602_195617.mp4':
+  Metadata:
+    title           : RTSP/RTP stream from icamra ipc
+    encoder         : Lavf62.0.102
+  Stream #0:0: Video: h264 (Main) (avc1 / 0x31637661), yuv420p(tv, progressive), 3840x2160, q=2-31, 5000 kb/s, 30 fps, 15360 tbn
+    Metadata:
+      encoder         : Lavc62.3.101 h264_nvenc
+    Side data:
+      cpb: bitrate max/min/avg: 0/0/5000000 buffer size: 10000000 vbv_delay: N/A
+  Stream #0:1: Audio: aac (LC) (mp4a / 0x6134706D), 8000 Hz, mono, fltp, 48 kb/s
+    Metadata:
+      encoder         : Lavc62.3.101 aac
+frame=   12 fps=0.0 q=28.0 size=       0KiB time=00:00:00.40 bitrate=   1.0kbits/s speed= 0.8x elapsed=0:00:00.50    frame=   47 fps= 47 q=11.0 size=    1024KiB time=00:00:01.56 bitrate=5354.7kbits/s speed=1.57x elapsed=0:00:01.00    frame=   62 fps= 41 q=11.0 size=    1536KiB time=00:00:02.06 bitrate=6088.7kbits/s speed=1.38x elapsed=0:00:01.50    frame=   78 fps= 39 q=11.0 size=    1792KiB time=00:00:02.60 bitrate=5646.3kbits/s speed= 1.3x elapsed=0:00:02.00    frame=   92 fps= 37 q=11.0 size=    1792KiB time=00:00:03.06 bitrate=4787.1kbits/s speed=1.23x elapsed=0:00:02.50    frame=  108 fps= 36 q=11.0 size=    2048KiB time=00:00:03.59 bitrate=4670.8kbits/s speed= 1.2x elapsed=0:00:03.00    frame=  123 fps= 35 q=11.0 size=    2560KiB time=00:00:04.10 bitrate=5115.1kbits/s speed=1.17x elapsed=0:00:03.50    frame=  138 fps= 34 q=11.0 size=    2560KiB time=00:00:04.59 bitrate=4563.1kbits/s speed=1.15x elapsed=0:00:04.00    frame=  152 fps= 34 q=11.0 size=    2816KiB time=00:00:05.06 bitrate=4553.1kbits/s speed=1.12x elapsed=0:00:04.50    frame=  168 fps= 34 q=11.0 size=    3328KiB time=00:00:05.60 bitrate=4868.5kbits/s speed=1.12x elapsed=0:00:05.00    frame=  183 fps= 33 q=11.0 size=    3584KiB time=00:00:06.10 bitrate=4813.2kbits/s speed=1.11x elapsed=0:00:05.50    frame=  197 fps= 33 q=11.0 size=    4096KiB time=00:00:06.56 bitrate=5109.9kbits/s speed=1.09x elapsed=0:00:06.00    frame=  212 fps= 33 q=12.0 size=    4864KiB time=00:00:07.06 bitrate=5638.6kbits/s speed=1.09x elapsed=0:00:06.50    frame=  227 fps= 32 q=12.0 size=    5376KiB time=00:00:07.56 bitrate=5820.3kbits/s speed=1.08x elapsed=0:00:07.00    [out#0/mp4 @ 0x5e234d2172c0] video:6263KiB audio:27KiB subtitle:0KiB other streams:0KiB global headers:0KiB muxing overhead: 0.069368%
+frame=  252 fps= 33 q=13.0 Lsize=    6294KiB time=00:00:08.38 bitrate=6153.2kbits/s speed= 1.1x elapsed=0:00:07.62    
+[aac @ 0x5e234d857bc0] Qavg: 61705.223
+Exiting normally, received signal 15.
+
+ffmpeg version N-119739-gab37c7e49f Copyright (c) 2000-2025 the FFmpeg developers
+  built with gcc 11 (Ubuntu 11.4.0-1ubuntu1~22.04)
+  configuration: --enable-nonfree --enable-cuda --enable-cuvid --enable-nvenc --extra-cflags=-I/home/brainwave/Desktop/sdk/Video_Codec_SDK_13.0.19/Interface --extra-ldflags=-L/usr/local/cuda/lib64 --enable-libx264 --enable-libx265 --enable-gpl
+  libavutil      60.  3.100 / 60.  3.100
+  libavcodec     62.  3.101 / 62.  3.101
+  libavformat    62.  0.102 / 62.  0.102
+  libavdevice    62.  0.100 / 62.  0.100
+  libavfilter    11.  0.100 / 11.  0.100
+  libswscale      9.  0.100 /  9.  0.100
+  libswresample   6.  0.100 /  6.  0.100
+Input #0, rtsp, from 'rtsp://admin:123456@192.168.1.88/stream0':
+  Metadata:
+    title           : RTSP/RTP stream from icamra ipc
+  Duration: N/A, start: 0.000000, bitrate: N/A
+  Stream #0:0: Video: h264 (High), yuv420p(progressive), 3840x2160, 30 fps, 30 tbr, 90k tbn, Start 0.032000
+  Stream #0:1: Audio: pcm_mulaw, 8000 Hz, mono, s16, 64 kb/s
+Stream mapping:
+  Stream #0:0 -> #0:0 (h264 (native) -> h264 (h264_nvenc))
+  Stream #0:1 -> #0:1 (pcm_mulaw (native) -> aac (native))
+Press [q] to stop, [?] for help
+[aac @ 0x5705ab66e540] Too many bits 8832.000000 > 6144 per frame requested, clamping to max
+[h264_nvenc @ 0x5705aae02980] The selected preset is deprecated. Use p1 to p7 + -tune or fast/medium/slow.
+Output #0, mp4, to '/home/brainwave/Delivered/medical_qt_app29/medical_qt_app/build/../recordings/P1001/1/recording_20250602_195945.mp4':
+  Metadata:
+    title           : RTSP/RTP stream from icamra ipc
+    encoder         : Lavf62.0.102
+  Stream #0:0: Video: h264 (Main) (avc1 / 0x31637661), yuv420p(tv, progressive), 3840x2160, q=2-31, 5000 kb/s, 30 fps, 15360 tbn
+    Metadata:
+      encoder         : Lavc62.3.101 h264_nvenc
+    Side data:
+      cpb: bitrate max/min/avg: 0/0/5000000 buffer size: 10000000 vbv_delay: N/A
+  Stream #0:1: Audio: aac (LC) (mp4a / 0x6134706D), 8000 Hz, mono, fltp, 48 kb/s
+    Metadata:
+      encoder         : Lavc62.3.101 aac
+frame=   13 fps=0.0 q=23.0 size=       0KiB time=00:00:00.43 bitrate=   0.9kbits/s speed=0.867x elapsed=0:00:00.50    frame=   48 fps= 48 q=10.0 size=     512KiB time=00:00:01.58 bitrate=2648.2kbits/s speed=1.58x elapsed=0:00:01.00    frame=   62 fps= 41 q=11.0 size=     768KiB time=00:00:02.06 bitrate=3044.4kbits/s speed=1.38x elapsed=0:00:01.50    frame=   78 fps= 39 q=11.0 size=    1280KiB time=00:00:02.56 bitrate=4096.1kbits/s speed=1.28x elapsed=0:00:02.00    frame=   93 fps= 37 q=11.0 size=    1536KiB time=00:00:03.10 bitrate=4059.1kbits/s speed=1.24x elapsed=0:00:02.50    frame=  108 fps= 36 q=11.0 size=    2304KiB time=00:00:03.60 bitrate=5243.0kbits/s speed= 1.2x elapsed=0:00:03.00    frame=  123 fps= 35 q=13.0 size=    3328KiB time=00:00:04.10 bitrate=6649.6kbits/s speed=1.17x elapsed=0:00:03.50    frame=  138 fps= 34 q=12.0 size=    3584KiB time=00:00:04.60 bitrate=6382.7kbits/s speed=1.15x elapsed=0:00:04.00    frame=  153 fps= 34 q=13.0 size=    3840KiB time=00:00:05.10 bitrate=6168.2kbits/s speed=1.13x elapsed=0:00:04.50    frame=  167 fps= 33 q=12.0 size=    4096KiB time=00:00:05.56 bitrate=6027.8kbits/s speed=1.11x elapsed=0:00:05.00    frame=  183 fps= 33 q=13.0 size=    4608KiB time=00:00:06.10 bitrate=6188.4kbits/s speed=1.11x elapsed=0:00:05.50    frame=  198 fps= 33 q=13.0 size=    4864KiB time=00:00:06.56 bitrate=6074.1kbits/s speed=1.09x elapsed=0:00:06.00    frame=  213 fps= 33 q=12.0 size=    5120KiB time=00:00:07.05 bitrate=5947.7kbits/s speed=1.08x elapsed=0:00:06.50    [out#0/mp4 @ 0x5705ab046600] video:5408KiB audio:32KiB subtitle:0KiB other streams:0KiB global headers:0KiB muxing overhead: 0.076909%
+frame=  238 fps= 33 q=11.0 Lsize=    5444KiB time=00:00:07.93 bitrate=5621.4kbits/s speed=1.11x elapsed=0:00:07.12    
+[aac @ 0x5705ab66e540] Qavg: 56084.414
+Exiting normally, received signal 15.
+
+ffmpeg version N-119739-gab37c7e49f Copyright (c) 2000-2025 the FFmpeg developers
+  built with gcc 11 (Ubuntu 11.4.0-1ubuntu1~22.04)
+  configuration: --enable-nonfree --enable-cuda --enable-cuvid --enable-nvenc --extra-cflags=-I/home/brainwave/Desktop/sdk/Video_Codec_SDK_13.0.19/Interface --extra-ldflags=-L/usr/local/cuda/lib64 --enable-libx264 --enable-libx265 --enable-gpl
+  libavutil      60.  3.100 / 60.  3.100
+  libavcodec     62.  3.101 / 62.  3.101
+  libavformat    62.  0.102 / 62.  0.102
+  libavdevice    62.  0.100 / 62.  0.100
+  libavfilter    11.  0.100 / 11.  0.100
+  libswscale      9.  0.100 /  9.  0.100
+  libswresample   6.  0.100 /  6.  0.100
+Input #0, rtsp, from 'rtsp://admin:123456@192.168.1.88/stream0':
+  Metadata:
+    title           : RTSP/RTP stream from icamra ipc
+  Duration: N/A, start: 0.000000, bitrate: N/A
+  Stream #0:0: Video: h264 (High), yuv420p(progressive), 3840x2160, 30 fps, 30 tbr, 90k tbn, Start 0.036000
+  Stream #0:1: Audio: pcm_mulaw, 8000 Hz, mono, s16, 64 kb/s
+Stream mapping:
+  Stream #0:0 -> #0:0 (h264 (native) -> h264 (h264_nvenc))
+  Stream #0:1 -> #0:1 (pcm_mulaw (native) -> aac (native))
+Press [q] to stop, [?] for help
+[aac @ 0x568085717a00] Too many bits 8832.000000 > 6144 per frame requested, clamping to max
+[h264_nvenc @ 0x568084e93cc0] The selected preset is deprecated. Use p1 to p7 + -tune or fast/medium/slow.
+Output #0, mp4, to '/home/brainwave/Delivered/medical_qt_app29/medical_qt_app/build/../recordings/P1001/1/recording_20250602_202428.mp4':
+  Metadata:
+    title           : RTSP/RTP stream from icamra ipc
+    encoder         : Lavf62.0.102
+  Stream #0:0: Video: h264 (Main) (avc1 / 0x31637661), yuv420p(tv, progressive), 3840x2160, q=2-31, 5000 kb/s, 30 fps, 15360 tbn
+    Metadata:
+      encoder         : Lavc62.3.101 h264_nvenc
+    Side data:
+      cpb: bitrate max/min/avg: 0/0/5000000 buffer size: 10000000 vbv_delay: N/A
+  Stream #0:1: Audio: aac (LC) (mp4a / 0x6134706D), 8000 Hz, mono, fltp, 48 kb/s
+    Metadata:
+      encoder         : Lavc62.3.101 aac
+frame=   14 fps=0.0 q=26.0 size=       0KiB time=00:00:00.46 bitrate=   0.8kbits/s speed=0.933x elapsed=0:00:00.50    frame=   48 fps= 48 q=11.0 size=     768KiB time=00:00:01.60 bitrate=3932.4kbits/s speed= 1.6x elapsed=0:00:01.00    frame=   63 fps= 42 q=11.0 size=    1024KiB time=00:00:02.10 bitrate=3994.8kbits/s speed= 1.4x elapsed=0:00:01.50    frame=   78 fps= 39 q=11.0 size=    1536KiB time=00:00:02.60 bitrate=4839.7kbits/s speed= 1.3x elapsed=0:00:02.00    frame=   92 fps= 37 q=11.0 size=    1792KiB time=00:00:03.06 bitrate=4787.1kbits/s speed=1.23x elapsed=0:00:02.50    frame=  108 fps= 36 q=11.0 size=    2048KiB time=00:00:03.58 bitrate=4678.6kbits/s speed= 1.2x elapsed=0:00:03.00    frame=  122 fps= 35 q=12.0 size=    2816KiB time=00:00:04.06 bitrate=5672.7kbits/s speed=1.16x elapsed=0:00:03.50    frame=  137 fps= 34 q=11.0 size=    3072KiB time=00:00:04.56 bitrate=5510.8kbits/s speed=1.14x elapsed=0:00:04.00    frame=  153 fps= 34 q=12.0 size=    3584KiB time=00:00:05.10 bitrate=5757.0kbits/s speed=1.13x elapsed=0:00:04.50    frame=  168 fps= 34 q=11.0 size=    3840KiB time=00:00:05.60 bitrate=5617.4kbits/s speed=1.12x elapsed=0:00:05.00    frame=  183 fps= 33 q=11.0 size=    4096KiB time=00:00:06.10 bitrate=5500.8kbits/s speed=1.11x elapsed=0:00:05.50    frame=  197 fps= 33 q=11.0 size=    4352KiB time=00:00:06.56 bitrate=5429.2kbits/s speed=1.09x elapsed=0:00:06.00    frame=  213 fps= 33 q=11.0 size=    4608KiB time=00:00:07.10 bitrate=5316.8kbits/s speed=1.09x elapsed=0:00:06.50    frame=  228 fps= 33 q=11.0 size=    4608KiB time=00:00:07.59 bitrate=4973.5kbits/s speed=1.08x elapsed=0:00:07.00    frame=  243 fps= 32 q=12.0 size=    5120KiB time=00:00:08.10 bitrate=5178.2kbits/s speed=1.08x elapsed=0:00:07.50    [out#0/mp4 @ 0x568084e99a40] video:5520KiB audio:30KiB subtitle:0KiB other streams:0KiB global headers:0KiB muxing overhead: 0.081784%
+frame=  268 fps= 33 q=10.0 Lsize=    5555KiB time=00:00:08.93 bitrate=5093.7kbits/s speed= 1.1x elapsed=0:00:08.12    
+[aac @ 0x568085717a00] Qavg: 62529.480
+Exiting normally, received signal 15.
+
+ffmpeg version N-119739-gab37c7e49f Copyright (c) 2000-2025 the FFmpeg developers
+  built with gcc 11 (Ubuntu 11.4.0-1ubuntu1~22.04)
+  configuration: --enable-nonfree --enable-cuda --enable-cuvid --enable-nvenc --extra-cflags=-I/home/brainwave/Desktop/sdk/Video_Codec_SDK_13.0.19/Interface --extra-ldflags=-L/usr/local/cuda/lib64 --enable-libx264 --enable-libx265 --enable-gpl
+  libavutil      60.  3.100 / 60.  3.100
+  libavcodec     62.  3.101 / 62.  3.101
+  libavformat    62.  0.102 / 62.  0.102
+  libavdevice    62.  0.100 / 62.  0.100
+  libavfilter    11.  0.100 / 11.  0.100
+  libswscale      9.  0.100 /  9.  0.100
+  libswresample   6.  0.100 /  6.  0.100
+Input #0, rtsp, from 'rtsp://admin:123456@192.168.1.88/stream0':
+  Metadata:
+    title           : RTSP/RTP stream from icamra ipc
+  Duration: N/A, start: 0.000000, bitrate: N/A
+  Stream #0:0: Video: h264 (High), yuv420p(progressive), 3840x2160, 30 fps, 30 tbr, 90k tbn, Start 0.036000
+  Stream #0:1: Audio: pcm_mulaw, 8000 Hz, mono, s16, 64 kb/s
+Stream mapping:
+  Stream #0:0 -> #0:0 (h264 (native) -> h264 (h264_nvenc))
+  Stream #0:1 -> #0:1 (pcm_mulaw (native) -> aac (native))
+Press [q] to stop, [?] for help
+[aac @ 0x63ebefa511c0] Too many bits 8832.000000 > 6144 per frame requested, clamping to max
+[h264_nvenc @ 0x63ebef1d0100] The selected preset is deprecated. Use p1 to p7 + -tune or fast/medium/slow.
+Output #0, mp4, to '/home/brainwave/Delivered/medical_qt_app29/medical_qt_app/build/../recordings/P1001/1/recording_20250603_183904.mp4':
+  Metadata:
+    title           : RTSP/RTP stream from icamra ipc
+    encoder         : Lavf62.0.102
+  Stream #0:0: Video: h264 (Main) (avc1 / 0x31637661), yuv420p(tv, progressive), 3840x2160, q=2-31, 5000 kb/s, 30 fps, 15360 tbn
+    Metadata:
+      encoder         : Lavc62.3.101 h264_nvenc
+    Side data:
+      cpb: bitrate max/min/avg: 0/0/5000000 buffer size: 10000000 vbv_delay: N/A
+  Stream #0:1: Audio: aac (LC) (mp4a / 0x6134706D), 8000 Hz, mono, fltp, 48 kb/s
+    Metadata:
+      encoder         : Lavc62.3.101 aac
+frame=   12 fps=0.0 q=28.0 size=       0KiB time=00:00:00.40 bitrate=   1.0kbits/s speed= 0.8x elapsed=0:00:00.50    frame=   48 fps= 48 q=11.0 size=    1024KiB time=00:00:01.60 bitrate=5243.1kbits/s speed= 1.6x elapsed=0:00:01.00    frame=   63 fps= 42 q=11.0 size=    1280KiB time=00:00:02.03 bitrate=5145.3kbits/s speed=1.36x elapsed=0:00:01.50    frame=   77 fps= 38 q=12.0 size=    1792KiB time=00:00:02.55 bitrate=5752.5kbits/s speed=1.28x elapsed=0:00:02.00    frame=   93 fps= 37 q=12.0 size=    2304KiB time=00:00:03.10 bitrate=6088.6kbits/s speed=1.24x elapsed=0:00:02.50    frame=  107 fps= 36 q=12.0 size=    2560KiB time=00:00:03.56 bitrate=5880.0kbits/s speed=1.19x elapsed=0:00:03.00    frame=  123 fps= 35 q=13.0 size=    3328KiB time=00:00:04.10 bitrate=6649.6kbits/s speed=1.17x elapsed=0:00:03.50    frame=  137 fps= 34 q=13.0 size=    3584KiB time=00:00:04.56 bitrate=6429.3kbits/s speed=1.14x elapsed=0:00:04.00    frame=  153 fps= 34 q=13.0 size=    3840KiB time=00:00:05.10 bitrate=6168.2kbits/s speed=1.13x elapsed=0:00:04.50    frame=  168 fps= 34 q=12.0 size=    4096KiB time=00:00:05.60 bitrate=5991.9kbits/s speed=1.12x elapsed=0:00:05.00    frame=  183 fps= 33 q=12.0 size=    4352KiB time=00:00:06.10 bitrate=5844.6kbits/s speed=1.11x elapsed=0:00:05.50    frame=  198 fps= 33 q=12.0 size=    4608KiB time=00:00:06.60 bitrate=5719.6kbits/s speed= 1.1x elapsed=0:00:06.00    frame=  213 fps= 33 q=11.0 size=    4608KiB time=00:00:07.07 bitrate=5337.8kbits/s speed=1.09x elapsed=0:00:06.50    frame=  227 fps= 32 q=11.0 size=    4864KiB time=00:00:07.56 bitrate=5266.0kbits/s speed=1.08x elapsed=0:00:07.00    frame=  243 fps= 32 q=11.0 size=    4864KiB time=00:00:08.07 bitrate=4933.9kbits/s speed=1.08x elapsed=0:00:07.50    frame=  258 fps= 32 q=11.0 size=    5376KiB time=00:00:08.60 bitrate=5121.0kbits/s speed=1.07x elapsed=0:00:08.00    frame=  272 fps= 32 q=11.0 size=    5632KiB time=00:00:09.06 bitrate=5088.7kbits/s speed=1.07x elapsed=0:00:08.50    frame=  288 fps= 32 q=11.0 size=    5888KiB time=00:00:09.60 bitrate=5024.5kbits/s speed=1.07x elapsed=0:00:09.00    frame=  303 fps= 32 q=11.0 size=    6400KiB time=00:00:10.10 bitrate=5191.0kbits/s speed=1.06x elapsed=0:00:09.50    frame=  318 fps= 32 q=12.0 size=    7168KiB time=00:00:10.60 bitrate=5539.7kbits/s speed=1.06x elapsed=0:00:10.00    frame=  333 fps= 32 q=12.0 size=    7680KiB time=00:00:11.10 bitrate=5668.0kbits/s speed=1.06x elapsed=0:00:10.50    [out#0/mp4 @ 0x63ebef1d5c00] video:8506KiB audio:39KiB subtitle:0KiB other streams:0KiB global headers:0KiB muxing overhead: 0.065961%
+frame=  358 fps= 32 q=12.0 Lsize=    8551KiB time=00:00:11.93 bitrate=5870.2kbits/s speed=1.07x elapsed=0:00:11.14    
+[aac @ 0x63ebefa511c0] Qavg: 62800.914
+Exiting normally, received signal 15.
+
+ffmpeg version N-119739-gab37c7e49f Copyright (c) 2000-2025 the FFmpeg developers
+  built with gcc 11 (Ubuntu 11.4.0-1ubuntu1~22.04)
+  configuration: --enable-nonfree --enable-cuda --enable-cuvid --enable-nvenc --extra-cflags=-I/home/brainwave/Desktop/sdk/Video_Codec_SDK_13.0.19/Interface --extra-ldflags=-L/usr/local/cuda/lib64 --enable-libx264 --enable-libx265 --enable-gpl
+  libavutil      60.  3.100 / 60.  3.100
+  libavcodec     62.  3.101 / 62.  3.101
+  libavformat    62.  0.102 / 62.  0.102
+  libavdevice    62.  0.100 / 62.  0.100
+  libavfilter    11.  0.100 / 11.  0.100
+  libswscale      9.  0.100 /  9.  0.100
+  libswresample   6.  0.100 /  6.  0.100
+Input #0, rtsp, from 'rtsp://admin:123456@192.168.1.88/stream0':
+  Metadata:
+    title           : RTSP/RTP stream from icamra ipc
+  Duration: N/A, start: 0.000000, bitrate: N/A
+  Stream #0:0: Video: h264 (High), yuv420p(progressive), 3840x2160, 30 fps, 29.97 tbr, 90k tbn, Start 0.034000
+  Stream #0:1: Audio: pcm_mulaw, 8000 Hz, mono, s16, 64 kb/s
+Stream mapping:
+  Stream #0:0 -> #0:0 (h264 (native) -> h264 (h264_nvenc))
+  Stream #0:1 -> #0:1 (pcm_mulaw (native) -> aac (native))
+Press [q] to stop, [?] for help
+[aac @ 0x61b65a8eda00] Too many bits 8832.000000 > 6144 per frame requested, clamping to max
+[h264_nvenc @ 0x61b65a755ec0] The selected preset is deprecated. Use p1 to p7 + -tune or fast/medium/slow.
+Output #0, mp4, to '/home/brainwave/Delivered/medical_qt_app29/medical_qt_app/build/../recordings/P1001/1/recording_20250604_110923.mp4':
+  Metadata:
+    title           : RTSP/RTP stream from icamra ipc
+    encoder         : Lavf62.0.102
+  Stream #0:0: Video: h264 (Main) (avc1 / 0x31637661), yuv420p(tv, progressive), 3840x2160, q=2-31, 5000 kb/s, 29.97 fps, 30k tbn
+    Metadata:
+      encoder         : Lavc62.3.101 h264_nvenc
+    Side data:
+      cpb: bitrate max/min/avg: 0/0/5000000 buffer size: 10000000 vbv_delay: N/A
+  Stream #0:1: Audio: aac (LC) (mp4a / 0x6134706D), 8000 Hz, mono, fltp, 48 kb/s
+    Metadata:
+      encoder         : Lavc62.3.101 aac
+frame=   11 fps=0.0 q=31.0 size=       0KiB time=00:00:00.36 bitrate=   1.0kbits/s speed=0.734x elapsed=0:00:00.50    frame=   47 fps= 47 q=11.0 size=     768KiB time=00:00:01.56 bitrate=4012.1kbits/s speed=1.57x elapsed=0:00:01.00    frame=   62 fps= 41 q=11.0 size=    1024KiB time=00:00:02.04 bitrate=4100.2kbits/s speed=1.36x elapsed=0:00:01.50    frame=   77 fps= 38 q=11.0 size=    1280KiB time=00:00:02.56 bitrate=4081.4kbits/s speed=1.28x elapsed=0:00:02.00    frame=   92 fps= 37 q=10.0 size=    1536KiB time=00:00:03.06 bitrate=4099.1kbits/s speed=1.23x elapsed=0:00:02.50    frame=  107 fps= 36 q=10.0 size=    1792KiB time=00:00:03.57 bitrate=4111.9kbits/s speed=1.19x elapsed=0:00:03.00    frame=  122 fps= 35 q=13.0 size=    2816KiB time=00:00:04.07 bitrate=5667.1kbits/s speed=1.16x elapsed=0:00:03.50    frame=  137 fps= 34 q=11.0 size=    2816KiB time=00:00:04.57 bitrate=5046.6kbits/s speed=1.14x elapsed=0:00:04.00    frame=  152 fps= 34 q=11.0 size=    3328KiB time=00:00:05.07 bitrate=5375.6kbits/s speed=1.13x elapsed=0:00:04.50    frame=  167 fps= 33 q=12.0 size=    3840KiB time=00:00:05.57 bitrate=5645.4kbits/s speed=1.11x elapsed=0:00:05.00    frame=  182 fps= 33 q=12.0 size=    4352KiB time=00:00:06.07 bitrate=5870.8kbits/s speed= 1.1x elapsed=0:00:05.50    frame=  197 fps= 33 q=12.0 size=    4608KiB time=00:00:06.54 bitrate=5765.0kbits/s speed=1.09x elapsed=0:00:06.00    frame=  212 fps= 33 q=13.0 size=    5376KiB time=00:00:07.07 bitrate=6225.9kbits/s speed=1.09x elapsed=0:00:06.50    frame=  227 fps= 32 q=13.0 size=    5632KiB time=00:00:07.57 bitrate=6091.4kbits/s speed=1.08x elapsed=0:00:07.00    frame=  242 fps= 32 q=14.0 size=    5888KiB time=00:00:08.06 bitrate=5981.5kbits/s speed=1.07x elapsed=0:00:07.50    frame=  257 fps= 32 q=14.0 size=    6656KiB time=00:00:08.57 bitrate=6358.6kbits/s speed=1.07x elapsed=0:00:08.00    frame=  272 fps= 32 q=14.0 size=    6912KiB time=00:00:09.07 bitrate=6239.0kbits/s speed=1.07x elapsed=0:00:08.50    frame=  287 fps= 32 q=14.0 size=    7424KiB time=00:00:09.57 bitrate=6350.9kbits/s speed=1.06x elapsed=0:00:09.00    frame=  302 fps= 32 q=14.0 size=    7680KiB time=00:00:10.02 bitrate=6277.7kbits/s speed=1.05x elapsed=0:00:09.50    frame=  317 fps= 32 q=15.0 size=    8192KiB time=00:00:10.57 bitrate=6344.7kbits/s speed=1.06x elapsed=0:00:10.00    frame=  332 fps= 32 q=15.0 size=    8448KiB time=00:00:11.04 bitrate=6264.2kbits/s speed=1.05x elapsed=0:00:10.50    frame=  347 fps= 32 q=15.0 size=    8704KiB time=00:00:11.57 bitrate=6158.4kbits/s speed=1.05x elapsed=0:00:11.00    frame=  362 fps= 31 q=16.0 size=    9216KiB time=00:00:12.07 bitrate=6252.9kbits/s speed=1.05x elapsed=0:00:11.50    frame=  377 fps= 31 q=16.0 size=    9728KiB time=00:00:12.56 bitrate=6342.9kbits/s speed=1.05x elapsed=0:00:12.00    frame=  392 fps= 31 q=15.0 size=    9984KiB time=00:00:13.07 bitrate=6253.1kbits/s speed=1.05x elapsed=0:00:12.50    frame=  407 fps= 31 q=15.0 size=    9984KiB time=00:00:13.58 bitrate=6022.7kbits/s speed=1.04x elapsed=0:00:13.00    frame=  422 fps= 31 q=14.0 size=   10240KiB time=00:00:14.08 bitrate=5957.8kbits/s speed=1.04x elapsed=0:00:13.50    frame=  437 fps= 31 q=14.0 size=   10496KiB time=00:00:14.58 bitrate=5896.9kbits/s speed=1.04x elapsed=0:00:14.00    frame=  452 fps= 31 q=13.0 size=   10496KiB time=00:00:15.08 bitrate=5701.2kbits/s speed=1.04x elapsed=0:00:14.50    frame=  467 fps= 31 q=13.0 size=   10752KiB time=00:00:15.54 bitrate=5664.8kbits/s speed=1.04x elapsed=0:00:15.00    frame=  482 fps= 31 q=13.0 size=   11264KiB time=00:00:16.04 bitrate=5749.5kbits/s speed=1.04x elapsed=0:00:15.50    frame=  497 fps= 31 q=13.0 size=   11520KiB time=00:00:16.57 bitrate=5694.7kbits/s speed=1.04x elapsed=0:00:16.00    frame=  512 fps= 31 q=14.0 size=   12032KiB time=00:00:17.06 bitrate=5776.3kbits/s speed=1.03x elapsed=0:00:16.50    frame=  527 fps= 31 q=13.0 size=   12288KiB time=00:00:17.55 bitrate=5735.5kbits/s speed=1.03x elapsed=0:00:17.00    frame=  542 fps= 31 q=13.0 size=   12544KiB time=00:00:18.05 bitrate=5692.7kbits/s speed=1.03x elapsed=0:00:17.50    frame=  557 fps= 31 q=13.0 size=   12544KiB time=00:00:18.55 bitrate=5539.1kbits/s speed=1.03x elapsed=0:00:18.00    frame=  572 fps= 31 q=12.0 size=   12800KiB time=00:00:19.05 bitrate=5503.7kbits/s speed=1.03x elapsed=0:00:18.50    frame=  587 fps= 31 q=11.0 size=   12800KiB time=00:00:19.55 bitrate=5362.8kbits/s speed=1.03x elapsed=0:00:19.00    frame=  602 fps= 31 q=13.0 size=   13568KiB time=00:00:20.05 bitrate=5542.7kbits/s speed=1.03x elapsed=0:00:19.50    frame=  618 fps= 31 q=12.0 size=   13568KiB time=00:00:20.58 bitrate=5398.9kbits/s speed=1.03x elapsed=0:00:20.00    frame=  632 fps= 31 q=11.0 size=   13824KiB time=00:00:21.05 bitrate=5378.8kbits/s speed=1.03x elapsed=0:00:20.50    frame=  648 fps= 31 q=11.0 size=   13824KiB time=00:00:21.58 bitrate=5245.8kbits/s speed=1.03x elapsed=0:00:21.00    frame=  662 fps= 31 q=10.0 size=   14080KiB time=00:00:22.05 bitrate=5229.7kbits/s speed=1.03x elapsed=0:00:21.50    frame=  678 fps= 31 q=10.0 size=   14336KiB time=00:00:22.55 bitrate=5208.0kbits/s speed=1.02x elapsed=0:00:22.00    frame=  693 fps= 31 q=10.0 size=   14592KiB time=00:00:23.08 bitrate=5178.8kbits/s speed=1.03x elapsed=0:00:22.50    [out#0/mp4 @ 0x61b65a757c80] video:15203KiB audio:83KiB subtitle:0KiB other streams:0KiB global headers:0KiB muxing overhead: 0.063861%
+frame=  717 fps= 31 q=10.0 Lsize=   15296KiB time=00:00:23.89 bitrate=5244.8kbits/s speed=1.03x elapsed=0:00:23.13    
+[aac @ 0x61b65a8eda00] Qavg: 63964.676
+Exiting normally, received signal 15.
+
+ffmpeg version N-119739-gab37c7e49f Copyright (c) 2000-2025 the FFmpeg developers
+  built with gcc 11 (Ubuntu 11.4.0-1ubuntu1~22.04)
+  configuration: --enable-nonfree --enable-cuda --enable-cuvid --enable-nvenc --extra-cflags=-I/home/brainwave/Desktop/sdk/Video_Codec_SDK_13.0.19/Interface --extra-ldflags=-L/usr/local/cuda/lib64 --enable-libx264 --enable-libx265 --enable-gpl
+  libavutil      60.  3.100 / 60.  3.100
+  libavcodec     62.  3.101 / 62.  3.101
+  libavformat    62.  0.102 / 62.  0.102
+  libavdevice    62.  0.100 / 62.  0.100
+  libavfilter    11.  0.100 / 11.  0.100
+  libswscale      9.  0.100 /  9.  0.100
+  libswresample   6.  0.100 /  6.  0.100
+Input #0, rtsp, from 'rtsp://admin:123456@192.168.1.88/stream0':
+  Metadata:
+    title           : RTSP/RTP stream from icamra ipc
+  Duration: N/A, start: 0.000000, bitrate: N/A
+  Stream #0:0: Video: h264 (High), yuv420p(progressive), 3840x2160, 30 fps, 30 tbr, 90k tbn, Start 0.036000
+  Stream #0:1: Audio: pcm_mulaw, 8000 Hz, mono, s16, 64 kb/s
+Stream mapping:
+  Stream #0:0 -> #0:0 (h264 (native) -> h264 (h264_nvenc))
+  Stream #0:1 -> #0:1 (pcm_mulaw (native) -> aac (native))
+Press [q] to stop, [?] for help
+[aac @ 0x5c6f9b4f46c0] Too many bits 8832.000000 > 6144 per frame requested, clamping to max
+[h264_nvenc @ 0x5c6f9ac7a880] The selected preset is deprecated. Use p1 to p7 + -tune or fast/medium/slow.
+Output #0, mp4, to '/home/brainwave/Delivered/AppBuild/build/../recordings/P2001/2/recording_20250604_150311.mp4':
+  Metadata:
+    title           : RTSP/RTP stream from icamra ipc
+    encoder         : Lavf62.0.102
+  Stream #0:0: Video: h264 (Main) (avc1 / 0x31637661), yuv420p(tv, progressive), 3840x2160, q=2-31, 5000 kb/s, 30 fps, 15360 tbn
+    Metadata:
+      encoder         : Lavc62.3.101 h264_nvenc
+    Side data:
+      cpb: bitrate max/min/avg: 0/0/5000000 buffer size: 10000000 vbv_delay: N/A
+  Stream #0:1: Audio: aac (LC) (mp4a / 0x6134706D), 8000 Hz, mono, fltp, 48 kb/s
+    Metadata:
+      encoder         : Lavc62.3.101 aac
+frame=   12 fps=0.0 q=28.0 size=       0KiB time=00:00:00.40 bitrate=   1.0kbits/s speed= 0.8x elapsed=0:00:00.50    frame=   47 fps= 47 q=10.0 size=     512KiB time=00:00:01.56 bitrate=2677.5kbits/s speed=1.57x elapsed=0:00:01.00    frame=   63 fps= 42 q=10.0 size=     768KiB time=00:00:02.10 bitrate=2996.1kbits/s speed= 1.4x elapsed=0:00:01.50    frame=   77 fps= 38 q=10.0 size=    1024KiB time=00:00:02.56 bitrate=3268.4kbits/s speed=1.28x elapsed=0:00:02.00    frame=   92 fps= 37 q=9.0 size=    1024KiB time=00:00:03.06 bitrate=2735.5kbits/s speed=1.23x elapsed=0:00:02.50    frame=  107 fps= 36 q=9.0 size=    1280KiB time=00:00:03.56 bitrate=2940.0kbits/s speed=1.19x elapsed=0:00:03.00    frame=  122 fps= 35 q=13.0 size=    2048KiB time=00:00:04.06 bitrate=4125.6kbits/s speed=1.16x elapsed=0:00:03.50    frame=  138 fps= 34 q=9.0 size=    2048KiB time=00:00:04.60 bitrate=3647.3kbits/s speed=1.15x elapsed=0:00:04.00    frame=  152 fps= 34 q=9.0 size=    2304KiB time=00:00:05.06 bitrate=3725.3kbits/s speed=1.13x elapsed=0:00:04.50    frame=  167 fps= 33 q=9.0 size=    2560KiB time=00:00:05.56 bitrate=3767.4kbits/s speed=1.11x elapsed=0:00:05.00    frame=  182 fps= 33 q=8.0 size=    2816KiB time=00:00:06.06 bitrate=3802.6kbits/s speed= 1.1x elapsed=0:00:05.50    frame=  198 fps= 33 q=8.0 size=    3072KiB time=00:00:06.60 bitrate=3813.1kbits/s speed= 1.1x elapsed=0:00:06.00    frame=  212 fps= 33 q=8.0 size=    3328KiB time=00:00:07.06 bitrate=3858.0kbits/s speed=1.09x elapsed=0:00:06.50    frame=  227 fps= 32 q=8.0 size=    3584KiB time=00:00:07.56 bitrate=3880.2kbits/s speed=1.08x elapsed=0:00:07.00    frame=  243 fps= 32 q=13.0 size=    4352KiB time=00:00:08.10 bitrate=4401.5kbits/s speed=1.08x elapsed=0:00:07.50    frame=  257 fps= 32 q=9.0 size=    4352KiB time=00:00:08.56 bitrate=4161.7kbits/s speed=1.07x elapsed=0:00:08.00    frame=  272 fps= 32 q=8.0 size=    4608KiB time=00:00:09.06 bitrate=4163.5kbits/s speed=1.07x elapsed=0:00:08.50    frame=  288 fps= 32 q=8.0 size=    4864KiB time=00:00:09.60 bitrate=4150.7kbits/s speed=1.07x elapsed=0:00:09.00    frame=  303 fps= 32 q=8.0 size=    5120KiB time=00:00:10.10 bitrate=4152.8kbits/s speed=1.06x elapsed=0:00:09.50    frame=  317 fps= 32 q=8.0 size=    5376KiB time=00:00:10.56 bitrate=4167.9kbits/s speed=1.06x elapsed=0:00:10.00    frame=  333 fps= 32 q=8.0 size=    5632KiB time=00:00:11.10 bitrate=4156.6kbits/s speed=1.06x elapsed=0:00:10.50    frame=  348 fps= 32 q=8.0 size=    5632KiB time=00:00:11.60 bitrate=3977.4kbits/s speed=1.05x elapsed=0:00:11.00    [out#0/mp4 @ 0x5c6f9ac823c0] video:6626KiB audio:45KiB subtitle:0KiB other streams:0KiB global headers:0KiB muxing overhead: 0.086546%
+frame=  373 fps= 32 q=8.0 Lsize=    6677KiB time=00:00:12.43 bitrate=4399.1kbits/s speed=1.07x elapsed=0:00:11.63    
+[aac @ 0x5c6f9b4f46c0] Qavg: 62571.051
+Exiting normally, received signal 15.
+
+ffmpeg version N-119739-gab37c7e49f Copyright (c) 2000-2025 the FFmpeg developers
+  built with gcc 11 (Ubuntu 11.4.0-1ubuntu1~22.04)
+  configuration: --enable-nonfree --enable-cuda --enable-cuvid --enable-nvenc --extra-cflags=-I/home/brainwave/Desktop/sdk/Video_Codec_SDK_13.0.19/Interface --extra-ldflags=-L/usr/local/cuda/lib64 --enable-libx264 --enable-libx265 --enable-gpl
+  libavutil      60.  3.100 / 60.  3.100
+  libavcodec     62.  3.101 / 62.  3.101
+  libavformat    62.  0.102 / 62.  0.102
+  libavdevice    62.  0.100 / 62.  0.100
+  libavfilter    11.  0.100 / 11.  0.100
+  libswscale      9.  0.100 /  9.  0.100
+  libswresample   6.  0.100 /  6.  0.100
+Input #0, rtsp, from 'rtsp://admin:123456@192.168.1.88/stream0':
+  Metadata:
+    title           : RTSP/RTP stream from icamra ipc
+  Duration: N/A, start: 0.000000, bitrate: N/A
+  Stream #0:0: Video: h264 (High), yuv420p(progressive), 3840x2160, 30 fps, 30 tbr, 90k tbn, Start 0.034000
+  Stream #0:1: Audio: pcm_mulaw, 8000 Hz, mono, s16, 64 kb/s
+Stream mapping:
+  Stream #0:0 -> #0:0 (h264 (native) -> h264 (h264_nvenc))
+  Stream #0:1 -> #0:1 (pcm_mulaw (native) -> aac (native))
+Press [q] to stop, [?] for help
+[aac @ 0x583aa5cbaf80] Too many bits 8832.000000 > 6144 per frame requested, clamping to max
+[h264_nvenc @ 0x583aa5b67540] The selected preset is deprecated. Use p1 to p7 + -tune or fast/medium/slow.
+Output #0, mp4, to '/home/brainwave/medical_qt_app_5_June/medical_qt_app/build/../recordings/P1001/1/recording_20250605_183936.mp4':
+  Metadata:
+    title           : RTSP/RTP stream from icamra ipc
+    encoder         : Lavf62.0.102
+  Stream #0:0: Video: h264 (Main) (avc1 / 0x31637661), yuv420p(tv, progressive), 3840x2160, q=2-31, 5000 kb/s, 30 fps, 15360 tbn
+    Metadata:
+      encoder         : Lavc62.3.101 h264_nvenc
+    Side data:
+      cpb: bitrate max/min/avg: 0/0/5000000 buffer size: 10000000 vbv_delay: N/A
+  Stream #0:1: Audio: aac (LC) (mp4a / 0x6134706D), 8000 Hz, mono, fltp, 48 kb/s
+    Metadata:
+      encoder         : Lavc62.3.101 aac
+frame=   14 fps=0.0 q=23.0 size=       0KiB time=00:00:00.46 bitrate=   0.8kbits/s speed=0.933x elapsed=0:00:00.50    frame=   49 fps= 49 q=10.0 size=     512KiB time=00:00:01.63 bitrate=2568.2kbits/s speed=1.63x elapsed=0:00:01.00    frame=   64 fps= 43 q=10.0 size=     512KiB time=00:00:02.05 bitrate=2038.2kbits/s speed=1.37x elapsed=0:00:01.50    frame=   80 fps= 40 q=9.0 size=     768KiB time=00:00:02.59 bitrate=2429.3kbits/s speed=1.29x elapsed=0:00:02.00    frame=   94 fps= 38 q=9.0 size=    1024KiB time=00:00:03.13 bitrate=2677.3kbits/s speed=1.25x elapsed=0:00:02.50    frame=  109 fps= 36 q=8.0 size=    1280KiB time=00:00:03.59 bitrate=2920.9kbits/s speed= 1.2x elapsed=0:00:03.00    frame=  125 fps= 36 q=12.0 size=    1792KiB time=00:00:04.13 bitrate=3547.7kbits/s speed=1.18x elapsed=0:00:03.50    frame=  140 fps= 35 q=9.0 size=    2048KiB time=00:00:04.62 bitrate=3625.2kbits/s speed=1.16x elapsed=0:00:04.00    frame=  155 fps= 34 q=11.0 size=    3072KiB time=00:00:05.13 bitrate=4903.8kbits/s speed=1.14x elapsed=0:00:04.50    frame=  169 fps= 34 q=12.0 size=    3840KiB time=00:00:05.53 bitrate=5682.4kbits/s speed=1.11x elapsed=0:00:05.00    frame=  185 fps= 34 q=14.0 size=    4864KiB time=00:00:06.15 bitrate=6470.7kbits/s speed=1.12x elapsed=0:00:05.50    frame=  199 fps= 33 q=16.0 size=    5632KiB time=00:00:06.55 bitrate=7043.9kbits/s speed=1.09x elapsed=0:00:06.00    frame=  214 fps= 33 q=16.0 size=    6400KiB time=00:00:07.13 bitrate=7349.9kbits/s speed= 1.1x elapsed=0:00:06.50    frame=  229 fps= 33 q=16.0 size=    6656KiB time=00:00:07.59 bitrate=7180.2kbits/s speed=1.08x elapsed=0:00:07.00    frame=  245 fps= 33 q=16.0 size=    6912KiB time=00:00:08.09 bitrate=6994.0kbits/s speed=1.08x elapsed=0:00:07.50    frame=  259 fps= 32 q=16.0 size=    7168KiB time=00:00:08.63 bitrate=6801.6kbits/s speed=1.08x elapsed=0:00:08.00    frame=  274 fps= 32 q=15.0 size=    7168KiB time=00:00:09.12 bitrate=6438.7kbits/s speed=1.07x elapsed=0:00:08.50    frame=  289 fps= 32 q=15.0 size=    7680KiB time=00:00:09.54 bitrate=6593.5kbits/s speed=1.06x elapsed=0:00:09.00    frame=  304 fps= 32 q=15.0 size=    7936KiB time=00:00:10.13 bitrate=6415.7kbits/s speed=1.07x elapsed=0:00:09.50    frame=  319 fps= 32 q=15.0 size=    8192KiB time=00:00:10.63 bitrate=6311.2kbits/s speed=1.06x elapsed=0:00:10.00    frame=  335 fps= 32 q=15.0 size=    8448KiB time=00:00:11.01 bitrate=6285.8kbits/s speed=1.05x elapsed=0:00:10.50    frame=  349 fps= 32 q=14.0 size=    8704KiB time=00:00:11.56 bitrate=6168.1kbits/s speed=1.05x elapsed=0:00:11.00    frame=  364 fps= 32 q=14.0 size=    8960KiB time=00:00:12.11 bitrate=6059.2kbits/s speed=1.05x elapsed=0:00:11.50    [out#0/mp4 @ 0x583aa5daf240] video:9249KiB audio:45KiB subtitle:0KiB other streams:0KiB global headers:0KiB muxing overhead: 0.063966%
+frame=  388 fps= 32 q=13.0 Lsize=    9300KiB time=00:00:12.89 bitrate=5908.9kbits/s speed=1.07x elapsed=0:00:12.10    
+[aac @ 0x583aa5cbaf80] Qavg: 62780.070
+Exiting normally, received signal 15.
+

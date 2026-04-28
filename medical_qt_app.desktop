@@ -1,0 +1,6 @@
+[Desktop Entry]
+Name=MedicalQtApp
+Exec=medical_qt_app
+Icon=MedicalQtApp
+Type=Application
+Categories=Utility;

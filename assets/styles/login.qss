@@ -1,0 +1,67 @@
+/* #loginRoot {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                                stop:0 #b31217, stop:1 #2c3e50);
+}
+
+#loginContainer {
+    background-color: rgba(255, 255, 255, 0.9); slightly see-through white
+    border-radius: 12px;
+    padding: 30px 24px;
+    min-height: 700px;
+    max-width: 720px;
+    border: 1px solid grey
+}
+
+
+#titleLabel {
+    font-size: 34px;
+    font-weight: bold;
+    margin-top: 8px;
+    margin-bottom: 16px;
+    color: #222;
+}
+
+QLabel {
+    font-weight: bold;
+    font-size: 24px;
+    color: #222;
+}
+
+#usernameEdit, #passwordEdit {
+    height: 46px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    padding-left: 10px;
+    font-size: 20px;
+    background-color: #fafafa;
+}
+
+#togglePasswordBtn {
+    height: 56px;
+    border: none;
+    background-color: transparent;
+    color: #003366;
+    font-size: 23px;
+    font-weight: bold;
+}
+
+#loginButton {
+    background-color: #003366;
+    color: white;
+    font-weight: bold;
+    font-size: 24px;
+    height: 40px;
+    border-radius: 6px;
+    margin-top: 16px;
+}
+
+#loginButton:hover {
+    background-color: #005599;
+}
+
+#statusLabel {
+    font-size: 13px;
+    color: red;
+    margin-top: 6px;
+    font-weight: normal;
+} */

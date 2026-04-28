@@ -1,0 +1,27 @@
+<RCC>
+    <qresource prefix="/assets">
+        <!-- Images -->
+        <file>logo.png</file>
+
+        <!-- Styles -->
+        <file>styles/login.qss</file>
+        <file>styles/dashboard.qss</file>
+        <file>styles/patient.qss</file>
+        <file>styles/surgerydetails.qss</file>
+        <file>styles/AddPatient.qss</file>
+        <file>styles/surgeryrecordingpage.qss</file>
+
+        <!-- Icons (used in sidebar and buttons) -->
+        <file>icons/apps.png</file>
+        <file>icons/person-simple.png</file>
+        <file>icons/user1.png</file>
+        <file>icons/sign-out-alt.png</file>
+        <file>icons/rotate-right.png</file>
+        <file>icons/power.png</file>
+        <file>icons/settings.png</file>
+        <file>icons/zoom-in.png</file>
+        <file>icons/zoom-out.png</file>
+        <file>icons/play-button.png</file>
+        <file>icons/restart.png</file>
+    </qresource>
+</RCC>

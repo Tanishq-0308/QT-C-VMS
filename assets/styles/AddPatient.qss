@@ -1,0 +1,59 @@
+/* 
+QDialog {
+    background-color: white;
+    border-radius: 10px;
+    padding: 20px;
+}
+
+QLabel {
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 4px;
+}
+
+QLineEdit, QDateEdit, QComboBox, QTextEdit {
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    padding: 6px 8px;
+    font-size: 14px;
+}
+
+QLineEdit:focus, QDateEdit:focus, QComboBox:focus, QTextEdit:focus {
+    border: 1px solid #007bff;
+}
+
+QPushButton {
+    border-radius: 6px;
+    padding: 6px 16px;
+    font-weight: bold;
+}
+
+QPushButton#AddButton {
+    background-color: #003e7e;
+    color: white;
+}
+
+QPushButton#AddButton:hover {
+    background-color: #0059b3;
+}
+
+QPushButton#CancelButton {
+    background-color: #dc3545;
+    color: white;
+}
+
+QPushButton#CancelButton:hover {
+    background-color: #c82333;
+}
+
+QPushButton#CloseButton {
+    background-color: transparent;
+    border: none;
+    font-size: 16px;
+    font-weight: bold;
+    color: #666;
+}
+
+QPushButton#CloseButton:hover {
+    color: #000;
+} */

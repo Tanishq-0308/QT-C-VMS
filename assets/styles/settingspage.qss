@@ -1,0 +1,33 @@
+#loginRoot {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                stop:0 #C02425, stop:1 #302b63);
+    color: white;
+    font-family: "Segoe UI";
+}
+/* 
+QLabel {
+    color: white;
+    font-weight: normal;
+}
+
+QLineEdit[class="SettingsInput"] {
+    background: white;
+    color: black;
+    padding: 6px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    min-height: 26px;
+    max-width: 280px;
+}
+
+QPushButton[class="SettingsButton"] {
+    background: white;
+    color: #C02425;
+    font-weight: bold;
+    padding: 6px 12px;
+    border-radius: 6px;
+}
+
+QPushButton[class="SettingsButton"]:hover {
+    background: #f2f2f2;
+} */

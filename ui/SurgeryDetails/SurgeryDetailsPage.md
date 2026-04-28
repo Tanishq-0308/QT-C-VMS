@@ -1,0 +1,1 @@
+moc ui/SurgeryDetails/SurgeryDetailsPage.hpp -o moc_SurgeryDetailsPage.cpp

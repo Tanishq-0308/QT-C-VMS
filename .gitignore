@@ -1,0 +1,44 @@
+/build
+
+# Qt generated MOC files
+moc_*.cpp
+
+# AppImage files
+*.AppImage
+
+# User data directories
+/recordings/
+/snapshots/
+recordings/
+reports/
+# Database file
+*.db
+sqlite.db
+
+# IDE files
+.vscode/
+.idea/
+*.user
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Compiled files
+*.o
+*.obj
+*.exe
+
+# CMake generated
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+
+# Python cache (for flask_zoom_api)
+__pycache__/
+*.pyc
+*.pyo
+
+# Reports generated
+reports/__pycache__/

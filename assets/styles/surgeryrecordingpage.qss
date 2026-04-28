@@ -1,0 +1,57 @@
+
+QLabel#surgerytitleLabel,
+QLabel#recordingsLabel,
+QLabel#snapshotsLabel {
+    color: red;
+    font-size: 24px;
+    font-weight: bold;
+    padding: 10px 0;
+}
+
+QPushButton {
+    background-color: #002b5c;
+    color: white;
+    padding: 6px 16px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+QPushButton:hover {
+    background-color: #004080;
+}
+
+QPushButton#recordBtn,
+QPushButton#reportBtn {
+    background-color: #e60000;
+    font-weight: bold;
+}
+
+QPushButton#recordBtn:hover,
+QPushButton#reportBtn:hover {
+    background-color: #cc0000;
+}
+
+QPushButton#downloadBtn {
+    background-color: #d9d9d9;
+    color: black;
+    font-weight: bold;
+    padding: 6px 12px;
+    border-radius: 4px;
+}
+
+QPushButton#downloadBtn:hover {
+    background-color: #c0c0c0;
+}
+
+QLabel.thumbnail {
+    border: 1px solid #cccccc;
+    border-radius: 4px;
+    padding: 2px;
+    margin: 3px;
+}
+
+QLabel.thumbnail:hover {
+    border: 1px solid #999999;
+    box-shadow: 0px 0px 4px rgba(0,0,0,0.3);
+}

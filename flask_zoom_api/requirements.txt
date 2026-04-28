@@ -1,0 +1,4 @@
+flask
+zeep
+onvif_zeep
+requests
