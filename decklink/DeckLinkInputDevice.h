@@ -47,6 +47,7 @@
 #include "DeckLinkAPI.h"
 #include "com_ptr.h"
 #include "CapturePreviewEvents.h"
+#include "VideoFrameSink.h"
 
 class DeckLinkInputDevice : public IDeckLinkInputCallback
 {
@@ -66,6 +67,10 @@ public:
 
 	bool						startCapture(BMDDisplayMode displayMode, IDeckLinkScreenPreviewCallback* screenPreviewCallback, bool applyDetectedInputMode);
 	void						stopCapture(void);
+
+	// Receives every captured frame on the capture thread (e.g. the recorder); nullptr to detach.
+	// The sink must outlive the capture: stop the capture before destroying it.
+	void						setVideoFrameSink(IVideoFrameSink* sink) { m_frameSink = sink; }
 
 	com_ptr<IDeckLink>					getDeckLinkInstance() const { return m_deckLink; }
 	com_ptr<IDeckLinkInput>				getDeckLinkInput() const { return m_deckLinkInput; }
@@ -95,6 +100,12 @@ private:
 	bool								m_applyDetectedInputMode;
 	int64_t								m_supportedInputConnections;
 
+	// Last signal state reported to the owner (-1 = none yet); written on the DeckLink thread
+	std::atomic<int>					m_lastSignalValid{-1};
+	std::atomic<IVideoFrameSink*>		m_frameSink{nullptr};
+	// Mode / pixel format the input is currently enabled with (DeckLink thread after start)
+	BMDDisplayMode						m_currentDisplayMode = bmdModeUnknown;
+	BMDPixelFormat						m_currentPixelFormat = bmdFormat8BitYUV;
 };
 
 class DeckLinkInputFormatChangedEvent : public QEvent

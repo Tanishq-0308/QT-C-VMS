@@ -392,6 +392,11 @@ void HomePage::customEvent(QEvent* event) {
         com_ptr<IDeckLink> decklink(discoveryEvent->deckLink());
         addDevice(decklink);
     }
+    else if (event->type() == kRemoveDeviceEvent) {
+        auto* discoveryEvent = dynamic_cast<DeckLinkDeviceDiscoveryEvent*>(event);
+        if (discoveryEvent)
+            removeDevice(discoveryEvent->deckLink());
+    }
     else if (event->type() == kVideoFrameArrivedEvent) {
         auto* frameEvent = dynamic_cast<DeckLinkInputFrameArrivedEvent*>(event);
         if (!frameEvent || !frameEvent->SignalValid())
@@ -403,8 +408,26 @@ void HomePage::customEvent(QEvent* event) {
     }
 }
 
+// Initial capture mode. 1080p60 8-bit YUV is the highest mode the capture card's PCIe x1 link
+// carries reliably; format detection still follows the source if it sends something else.
+static const BMDDisplayMode kCaptureDisplayMode = bmdModeHD1080p6000;
+
 void HomePage::addDevice(com_ptr<IDeckLink>& deckLink) {
-    m_currentDeckLink = deckLink;
+    const intptr_t key = (intptr_t)deckLink.get();
+
+    // A device that is re-announced must not leave its previous capture running
+    auto existing = m_inputDevices.find(key);
+    if (existing != m_inputDevices.end()) {
+        if (existing->second) {
+            existing->second->stopCapture();
+            existing->second->setVideoFrameSink(nullptr);
+        }
+        if (existing->second == m_selectedDevice) {
+            m_selectedDevice = nullptr;
+            m_currentDeckLink = nullptr;
+        }
+        m_inputDevices.erase(existing);
+    }
 
     auto inputDevice = make_com_ptr<DeckLinkInputDevice>(this, deckLink);
     if (!inputDevice->Init())
@@ -412,7 +435,7 @@ void HomePage::addDevice(com_ptr<IDeckLink>& deckLink) {
 
     QString selectedInput = "SDI";
     {
-        QSqlQuery q("SELECT video_input FROM settings LIMIT 1");
+        QSqlQuery q("SELECT video_input FROM settings ORDER BY id LIMIT 1");
         if (q.next())
             selectedInput = q.value(0).toString();
     }
@@ -422,7 +445,7 @@ void HomePage::addDevice(com_ptr<IDeckLink>& deckLink) {
                                 : bmdVideoConnectionHDMI;
 
     com_ptr<IDeckLinkConfiguration> config;
-    deckLink->QueryInterface(IID_IDeckLinkConfiguration, reinterpret_cast<void**>(&config));
+    deckLink->QueryInterface(IID_IDeckLinkConfiguration, reinterpret_cast<void**>(config.releaseAndGetAddressOf()));
     if (config) {
         if (config->SetInt(bmdDeckLinkConfigVideoInputConnection, inputConnection) != S_OK) {
             qWarning() << "Failed to set DeckLink input connection to" << selectedInput;
@@ -431,7 +454,15 @@ void HomePage::addDevice(com_ptr<IDeckLink>& deckLink) {
         }
     }
 
-    m_inputDevices[(intptr_t)deckLink.get()] = inputDevice;
+    m_inputDevices[key] = inputDevice;
+
+    // Only one input feeds the live view. Starting every discovered device into the same
+    // preview would interleave different sources and multiply the frame rate.
+    if (m_selectedDevice) {
+        qWarning() << "Additional DeckLink device detected; not capturing from it:" << inputDevice->getDeviceName();
+        return;
+    }
+    m_currentDeckLink = deckLink;
 
     if (!m_sharedDelegate) {
         m_sharedDelegate = dashboardPage->createSharedDelegate();
@@ -444,13 +475,43 @@ void HomePage::addDevice(com_ptr<IDeckLink>& deckLink) {
 
     // After setInputSource line, add:
     bool showLabel = true;
-    QSqlQuery labelQuery("SELECT show_video_label FROM settings LIMIT 1");
+    QSqlQuery labelQuery("SELECT show_video_label FROM settings ORDER BY id LIMIT 1");
     if (labelQuery.next()) {
         showLabel = labelQuery.value(0).toInt() == 1;
     }
     dashboardPage->sharedGLWidget()->setShowLabel(showLabel);
-    inputDevice->startCapture(bmdMode4K2160p30, m_sharedDelegate.get(), true);
+
+    // Frames go to the recorder straight from the capture thread
+    inputDevice->setVideoFrameSink(recordingPage->recorder());
+    inputDevice->startCapture(kCaptureDisplayMode, m_sharedDelegate.get(), true);
     m_selectedDevice = inputDevice;
+}
+
+void HomePage::removeDevice(const com_ptr<IDeckLink>& deckLink) {
+    auto it = m_inputDevices.find((intptr_t)deckLink.get());
+    if (it == m_inputDevices.end())
+        return;
+
+    com_ptr<DeckLinkInputDevice> device = it->second;
+    m_inputDevices.erase(it);
+    if (device) {
+        device->stopCapture();
+        device->setVideoFrameSink(nullptr);
+    }
+
+    if (!(device == m_selectedDevice))
+        return;
+
+    qWarning() << "Selected DeckLink device removed";
+    m_selectedDevice = nullptr;
+    m_currentDeckLink = nullptr;
+
+    // Fall back to another connected device, if any
+    if (!m_inputDevices.empty()) {
+        com_ptr<IDeckLink> next = m_inputDevices.begin()->second->getDeckLinkInstance();
+        m_inputDevices.erase(m_inputDevices.begin());
+        addDevice(next);
+    }
 }
 
 void HomePage::reconfigureVideoInput() {
@@ -460,7 +521,7 @@ void HomePage::reconfigureVideoInput() {
     m_selectedDevice->stopCapture();
 
     QString selectedInput = "SDI";
-    QSqlQuery q("SELECT video_input FROM settings LIMIT 1");
+    QSqlQuery q("SELECT video_input FROM settings ORDER BY id LIMIT 1");
     if (q.next())
         selectedInput = q.value(0).toString();
     
@@ -474,17 +535,20 @@ void HomePage::reconfigureVideoInput() {
                                 : bmdVideoConnectionHDMI;
 
     com_ptr<IDeckLinkConfiguration> config;
-    m_currentDeckLink->QueryInterface(IID_IDeckLinkConfiguration, reinterpret_cast<void**>(&config));
+    m_currentDeckLink->QueryInterface(IID_IDeckLinkConfiguration, reinterpret_cast<void**>(config.releaseAndGetAddressOf()));
     if (config)
         config->SetInt(bmdDeckLinkConfigVideoInputConnection, inputConnection);
 
-    m_selectedDevice->startCapture(bmdMode4K2160p30, m_sharedDelegate.get(), true);
+    m_selectedDevice->startCapture(kCaptureDisplayMode, m_sharedDelegate.get(), true);
 }
 
 HomePage::~HomePage() {
+    // Stop capture before child pages (and the recorder the capture thread feeds) are destroyed
     for (auto& pair : m_inputDevices) {
-        if (pair.second)
+        if (pair.second) {
             pair.second->stopCapture();
+            pair.second->setVideoFrameSink(nullptr);
+        }
     }
     m_inputDevices.clear();
 }

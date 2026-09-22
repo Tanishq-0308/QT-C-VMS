@@ -21,6 +21,12 @@ QJsonObject CameraZoomController::getCameraSettings() {
         response["username"] = row["user"];
         response["password"] = row["password"];
         response["model"] = row["camera_type"];
+    } else {
+        // The schema in database/migrations/init.sql has no camera columns
+        // (camera_ip, camera_type, user, password, video_streaming) in `company`
+        // or any other table, so this read fails until they are added.
+        qWarning() << "CameraZoomController: camera settings unavailable (the schema has no "
+                      "camera_ip/camera_type/user/password/video_streaming columns in company)";
     }
     return response;
 }

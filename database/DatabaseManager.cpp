@@ -28,7 +28,10 @@ void DatabaseManager::closeDatabase() {
 
 bool DatabaseManager::executeQuery(const QString &queryStr, const QVariantList &bindValues) {
     QSqlQuery query(m_database);
-    query.prepare(queryStr);
+    if (!query.prepare(queryStr)) {
+        qDebug() << "Query prepare failed:" << query.lastError().text();
+        return false;
+    }
     for (int i = 0; i < bindValues.size(); ++i) {
         query.bindValue(i, bindValues.at(i));
     }
@@ -42,7 +45,10 @@ bool DatabaseManager::executeQuery(const QString &queryStr, const QVariantList &
 QJsonArray DatabaseManager::selectQuery(const QString &queryStr, const QVariantList &bindValues) {
     QJsonArray resultArray;
     QSqlQuery query(m_database);
-    query.prepare(queryStr);
+    if (!query.prepare(queryStr)) {
+        qDebug() << "Select query prepare failed:" << query.lastError().text();
+        return resultArray;
+    }
     for (int i = 0; i < bindValues.size(); ++i) {
         query.bindValue(i, bindValues.at(i));
     }

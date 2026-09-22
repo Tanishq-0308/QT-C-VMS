@@ -44,6 +44,8 @@
 
 #include "com_ptr.h"
 #include "DeckLinkInputDevice.h"
+#include <QDebug>
+#include "diag/DiagProbe.h"
 
 DeckLinkInputDevice::DeckLinkInputDevice(QObject* owner, com_ptr<IDeckLink>& device) : 
 	m_owner(owner),
@@ -57,7 +59,7 @@ DeckLinkInputDevice::DeckLinkInputDevice(QObject* owner, com_ptr<IDeckLink>& dev
 	m_applyDetectedInputMode(false),
 	m_supportedInputConnections(0)
 {
-	m_deckLink->AddRef();
+	// m_deckLink(device) already holds a reference; an extra AddRef() here was never released
 }
 
 HRESULT	DeckLinkInputDevice::QueryInterface(REFIID iid, LPVOID *ppv)
@@ -190,11 +192,16 @@ bool DeckLinkInputDevice::startCapture(BMDDisplayMode displayMode, IDeckLinkScre
 
 	// Set the video input mode
 	result = m_deckLinkInput->EnableVideoInput(displayMode, bmdFormat8BitYUV, videoInputFlags);
+	m_currentDisplayMode = displayMode;
+	m_currentPixelFormat = bmdFormat8BitYUV;
 	if (result != S_OK)
 	{
 		QMessageBox::critical(qobject_cast<QWidget*>(m_owner), "Error starting the capture", "This application was unable to select the chosen video mode. Perhaps, the selected device is currently in-use.");
 		return false;
 	}
+
+	// Report the first signal state after (re)starting
+	m_lastSignalValid = -1;
 
 	// Start the capture
 	result = m_deckLinkInput->StartStreams();
@@ -238,58 +245,70 @@ HRESULT DeckLinkInputDevice::VideoInputFormatChanged (BMDVideoInputFormatChanged
 	if (!m_applyDetectedInputMode)
 		return E_FAIL;
 
+	// Capture in the source's colour model at 8 bits (the smallest format per colour model):
+	//  - YCbCr 4:2:2 -> 8-bit YUV, 2 bytes/pixel
+	//  - RGB 4:4:4   -> 8-bit ARGB, 4 bytes/pixel. The Mini Recorder 4K does not convert an RGB
+	//    input to YUV (it delivers only "no input" frames), so RGB must be captured as RGB.
+	// Both formats are supported by the recorder.
 	if (detectedSignalFlags & bmdDetectedVideoInputRGB444)
-	{
-		if (detectedSignalFlags & bmdDetectedVideoInput8BitDepth)
-			pixelFormat = bmdFormat8BitARGB;
-		else if (detectedSignalFlags & bmdDetectedVideoInput10BitDepth)
-			pixelFormat = bmdFormat10BitRGB;
-		else if (detectedSignalFlags & bmdDetectedVideoInput12BitDepth)
-			pixelFormat = bmdFormat12BitRGB;
-		else
-			// Invalid color depth for RGB 444
-			return E_INVALIDARG;
-	}
+		pixelFormat = bmdFormat8BitARGB;
 	else if (detectedSignalFlags & bmdDetectedVideoInputYCbCr422)
-	{
-		if (detectedSignalFlags & bmdDetectedVideoInput8BitDepth)
-			pixelFormat = bmdFormat8BitYUV;
-		else if (detectedSignalFlags & bmdDetectedVideoInput10BitDepth)
-			pixelFormat = bmdFormat10BitYUV;
-		else
-			// Invalid color depth for YUV 422
-			return E_INVALIDARG;
-	}
+		pixelFormat = bmdFormat8BitYUV;
 	else
 		// Unexpected detected video input format flags
 		return E_INVALIDARG;
 
-	// Restart stream if either display mode or colorspace has changed
-	if (notificationEvents & (bmdVideoInputDisplayModeChanged | bmdVideoInputColorspaceChanged))
+	// Restart only if the display mode or the pixel format we capture in actually changes.
+	// Restarting on every colorspace notification looped endlessly (the card keeps reporting the
+	// difference between the source and the capture format) and delivered no picture.
+	const BMDDisplayMode displayMode = newMode->GetDisplayMode();
+	if (displayMode == m_currentDisplayMode && pixelFormat == m_currentPixelFormat)
+		return S_OK;
+
+	BMDTimeValue frameDuration = 0;
+	BMDTimeScale timeScale = 0;
+	newMode->GetFrameRate(&frameDuration, &timeScale);
+	const double fps = frameDuration ? double(timeScale) / frameDuration : 0.0;
+	qInfo().nospace() << "DeckLink input detected: " << newMode->GetWidth() << "x" << newMode->GetHeight()
+	                  << " @ " << fps << " fps, "
+	                  << ((detectedSignalFlags & bmdDetectedVideoInputRGB444) ? "RGB 4:4:4" : "YCbCr 4:2:2")
+	                  << ((detectedSignalFlags & bmdDetectedVideoInput10BitDepth) ? " 10-bit" :
+	                      (detectedSignalFlags & bmdDetectedVideoInput12BitDepth) ? " 12-bit" : " 8-bit")
+	                  << "; capturing as " << (pixelFormat == bmdFormat8BitARGB ? "8-bit ARGB" : "8-bit YUV");
+
+	// The capture card sits on a PCIe Gen2 x1 link (~400 MB/s usable). Above that the card can
+	// only deliver part of the frames and the picture stutters/lags.
+	const double bytesPerPixel = (pixelFormat == bmdFormat8BitARGB) ? 4.0 : 2.0;
+	const double megabytesPerSecond = double(newMode->GetWidth()) * newMode->GetHeight() * bytesPerPixel * fps / 1e6;
+	if (megabytesPerSecond > 380.0)
+		qWarning().nospace() << "DeckLink: input needs " << int(megabytesPerSecond) << " MB/s but the capture card's PCIe x1 link "
+		                     << "carries ~400 MB/s: expect about " << int(fps * 400.0 / megabytesPerSecond) << " of " << int(fps)
+		                     << " frames per second. Set the camera to 1080p (YCbCr for 1080p60).";
+
+	// Stop the capture
+	m_deckLinkInput->StopStreams();
+
+	result = m_deckLinkInput->EnableVideoInput(displayMode, pixelFormat, bmdVideoInputEnableFormatDetection);
+	if (result != S_OK)
 	{
-		// Stop the capture
-		m_deckLinkInput->StopStreams();
-
-		// Set the video input mode
-		result = m_deckLinkInput->EnableVideoInput(newMode->GetDisplayMode(), pixelFormat, bmdVideoInputEnableFormatDetection);
-		if (result != S_OK)
-		{
-			QMessageBox::critical(qobject_cast<QWidget*>(m_owner), "Error restarting the capture", "This application was unable to set new display mode");
-			return result;
-		}
-
-		// Start the capture
-		result = m_deckLinkInput->StartStreams();
-		if (result != S_OK)
-		{
-			QMessageBox::critical(qobject_cast<QWidget*>(m_owner), "Error restarting the capture", "This application was unable to restart capture");
-			return result;
-		}
-
-		// Notify UI of new display mode
-		if ((m_owner != nullptr) && (notificationEvents & bmdVideoInputDisplayModeChanged))
-			QCoreApplication::postEvent(m_owner, new DeckLinkInputFormatChangedEvent(newMode->GetDisplayMode()));
+		// Called on the DeckLink thread: no widgets here
+		qCritical() << "DeckLink: unable to set the detected input mode";
+		return result;
 	}
+	m_currentDisplayMode = displayMode;
+	m_currentPixelFormat = pixelFormat;
+
+	// Start the capture
+	result = m_deckLinkInput->StartStreams();
+	if (result != S_OK)
+	{
+		qCritical() << "DeckLink: unable to restart capture after an input format change";
+		return result;
+	}
+
+	// Notify UI of new display mode
+	if ((m_owner != nullptr) && (notificationEvents & bmdVideoInputDisplayModeChanged))
+		QCoreApplication::postEvent(m_owner, new DeckLinkInputFormatChangedEvent(displayMode));
 
 	return S_OK;
 }
@@ -299,13 +318,20 @@ HRESULT DeckLinkInputDevice::VideoInputFrameArrived(IDeckLinkVideoInputFrame* vi
     if (videoFrame == nullptr)
         return S_OK;
 
+    DIAG_INPUT_FRAME();
     bool signalValid = (videoFrame->GetFlags() & bmdFrameHasNoInputSource) == 0;
 
-    if (m_owner != nullptr)
+    // Only notify the GUI when the signal state changes; posting an event for every frame
+    // added avoidable load to the GUI thread's event queue.
+    if (m_owner != nullptr && m_lastSignalValid.exchange(signalValid ? 1 : 0) != (signalValid ? 1 : 0))
     {
         auto* event = new DeckLinkInputFrameArrivedEvent(signalValid);
         QCoreApplication::postEvent(m_owner, event);
     }
+
+    // Hand the frame to the recorder directly from the capture thread (no GUI involvement)
+    if (IVideoFrameSink* sink = m_frameSink.load())
+        sink->onVideoFrame(videoFrame);
 
     return S_OK;
 }

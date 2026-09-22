@@ -33,6 +33,9 @@ public:
     // Show toast-like messages
     void showToast(const QString& message, int durationMs = 2000);
 
+    // Recorder fed directly by the capture device (see HomePage::addDevice)
+    VideoRecorder* recorder() const { return m_videoRecorder; }
+
         // DeckLinkOpenGLWidget* sharedGLWidget() const;
 
 signals:
@@ -44,11 +47,18 @@ private slots:
     void onAddComment();          // 💬 Add comment to video
     void onExit();                // ❌ Exit recording page
     void onRotate();              // 🔄 Rotate view
-    void captureAndRecordFrame(); // 🆕 Called by QTimer to record frames
+    void onRecordingStarted(const QString& path);
+    void onRecorderError(const QString& message);
+    void onRecordingStopped(const QString& path, qint64 framesEncoded, qint64 framesDropped);
+    void onSegmentStarted(const QString& path);
+    void onFramesDropped(qint64 totalDropped);
 
 private:
     // void ensureAppFoldersExist(); // Create folders for patient/surgery recording & snapshot
     void ensureFoldersExist();
+    int insertRecordingRow(const QString& path);
+    void updateRecordingLabel();
+    void resetRecordingUi();
     // Qt Designer UI (optional; currently unused)
     Ui::RecordingPage* ui = nullptr;
     // std::chrono::time_point<std::chrono::steady_clock> m_startTime;
@@ -80,8 +90,7 @@ private:
     // Zoom control API
     CameraZoomAPI* zoomAPI = nullptr;
 
-    // 🔁 Frame polling timer
-    QTimer* m_recordingTimer = nullptr;  // 🆕 Add this to trigger frame capture loop
+    qint64 m_droppedFrames = 0;
 
     QLabel* recordingTimeLabel;
     QTimer* uiRecordingTimer;

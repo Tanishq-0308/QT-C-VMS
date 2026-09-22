@@ -2,9 +2,11 @@
 
 VideoController::VideoController(DatabaseManager* db, QObject *parent) : QObject(parent), m_db(db) {}
 
+// Videos are stored in the `recordings` table (patient_id, surgery_id, file_path).
+// Data keys: "path" -> file_path, optional "patient_id". recordings has no title column.
 bool VideoController::addVideo(int surgeryId, const QJsonObject &data, QJsonObject &response) {
-    QString q = "INSERT INTO videos (surgery_id, path, title) VALUES (?, ?, ?)";
-    QVariantList v = {surgeryId, data["path"].toString(), data["title"].toString()};
+    QString q = "INSERT INTO recordings (patient_id, surgery_id, file_path) VALUES (?, ?, ?)";
+    QVariantList v = {data["patient_id"].toVariant(), surgeryId, data["path"].toString()};
 
     if (m_db->executeQuery(q, v)) {
         // Fetch the last inserted ID
@@ -26,21 +28,21 @@ bool VideoController::addVideo(int surgeryId, const QJsonObject &data, QJsonObje
 
 
 bool VideoController::editVideo(int id, const QJsonObject &data, QJsonObject &response) {
-    QString q = "UPDATE videos SET path=?, title=? WHERE id=?";
-    QVariantList v = {data["path"].toString(), data["title"].toString(), id};
+    QString q = "UPDATE recordings SET file_path=? WHERE id=?";
+    QVariantList v = {data["path"].toString(), id};
     if (m_db->executeQuery(q, v)) { response = data; return true; }
     return false;
 }
 
 QJsonArray VideoController::getVideosBySurgeryId(int surgeryId) {
-    return m_db->selectQuery("SELECT * FROM videos WHERE surgery_id = ?", {surgeryId});
+    return m_db->selectQuery("SELECT * FROM recordings WHERE surgery_id = ?", {surgeryId});
 }
 
 QJsonObject VideoController::getVideoById(int id) {
-    auto r = m_db->selectQuery("SELECT * FROM videos WHERE id = ?", {id});
+    auto r = m_db->selectQuery("SELECT * FROM recordings WHERE id = ?", {id});
     return r.isEmpty() ? QJsonObject() : r.first().toObject();
 }
 
 bool VideoController::deleteVideo(int id) {
-    return m_db->executeQuery("DELETE FROM videos WHERE id = ?", {id});
+    return m_db->executeQuery("DELETE FROM recordings WHERE id = ?", {id});
 }

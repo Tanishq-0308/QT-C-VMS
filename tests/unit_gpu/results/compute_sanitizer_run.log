@@ -1,0 +1,39 @@
+********* Start testing of TstVideoRecorder *********
+Config: Using QtTest library 5.15.3, Qt 5.15.3 (x86_64-little_endian-lp64 shared (dynamic) release build; by GCC 11.3.0), ubuntu 22.04
+# out=/tmp/claude-1000/vr_tests relax=1 nvenc=0x77cc63e1eba0 h264dec=0x77cc63e13f20 libavcodec=4.4.2-0ubuntu0.22.04.1 pid=45312
+PASS   : TstVideoRecorder::initTestCase()
+QINFO  : TstVideoRecorder::basic1080p60() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/basic.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::basic1080p60() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/basic.mp4" 1920 x 1080 @ 60 fps
+QWARN  : TstVideoRecorder::basic1080p60() [VideoRecorder] Frames dropped so far: 34
+QWARN  : TstVideoRecorder::basic1080p60() [VideoRecorder] Frames dropped so far: 128
+QINFO  : TstVideoRecorder::basic1080p60() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/basic.mp4" encoded 117 dropped 128
+  [basic] size=31095 opened=1 err='' codec=h264 1920x1080 fmt_dur=3.0167s last_pts_end=3.0167s avg_fps=38.7845 packets=117 keyframes=2 bitrate=0.08Mbps decoded=117 dec_err=0 read_err=EOF tb=1/120000
+  METRIC basic1080p60 fed=181 encoded=117 dropped=128 feed_fps=59.99 start_call_ms=0.40 recordingStarted_ms=585 stop_call_ms=0.001 finalise_ms=1047 file_dur=3.0167s
+  [ok  ] (relaxed) feeder kept a realistic 60 fps pace (59.99 fps, max late 0.0 ms)
+  [FAIL] encoded == fed (117 == 181)
+  [FAIL] dropped == 0 (got 128)
+  [ok  ] file opens with libavformat: 
+  [ok  ] h264 1920x1080 (got h264 1920x1080)
+  [ok  ] packets in file == encoded (117 == 117)
+  [ok  ] last pts end 3.0167 s within 1 frame of fed stream time 3.0167 s
+  [ok  ] container duration 3.0167 s within 1 frame of fed 3.0167 s
+  [FAIL] pts timeline exact vs capture clock (mismatches=124 first_bad=57)
+  [FAIL] all frames decode (117 decoded, 0 errors)
+  [FAIL] decoded frame content == fed frame, in order, no duplicates (60 mismatches)
+  [FAIL] avg_frame_rate 60 fps (got 38.7845)
+  [ok  ] first packet is a keyframe
+  [FAIL] keyframe every 60 frames (~1 s): 2 keyframes, 0 bad intervals
+  [FAIL] no errorOccurred / framesDropped: 
+  [ok  ] recordingStopped path == requested path
+  [ok  ] (relaxed) startRecording() returns on GUI thread in < 50 ms (0.40 ms)
+  [ok  ] (relaxed) recordingStarted within 2 s (585 ms)
+  [ok  ] (relaxed) stopRecording() < 50 ms (0.001 ms)
+  [ok  ] (relaxed) finalisation (stop -> recordingStopped delivered) < 2 s (1047 ms, emitted at 1045 ms)
+FAIL!  : TstVideoRecorder::basic1080p60() 'fails.isEmpty()' returned FALSE. (encoded == fed (117 == 181) ; dropped == 0 (got 128) ; pts timeline exact vs capture clock (mismatches=124 first_bad=57) ; all frames decode (117 decoded, 0 errors) ; decoded frame content == fed frame, in order, no duplicates (60 mismatches) ; avg_frame_rate 60 fps (got 38.7845) ; keyframe every 60 frames (~1 s): 2 keyframes, 0 bad intervals ; no errorOccurred / framesDropped: )
+   Loc: [/home/brainwave/QT-C-VMS/tests/unit_gpu/tst_videorecorder.cpp(890)]
+
+==================== SUMMARY ====================
+FAIL  basic1080p60 | fed=181 encoded=117 dropped=128 feed_fps=59.99 start_call_ms=0.40 recordingStarted_ms=585 stop_call_ms=0.001 finalise_ms=1047 file_dur=3.0167s | FAILED: encoded == fed (117 == 181) ; dropped == 0 (got 128) ; pts timeline exact vs capture clock (mismatches=124 first_bad=57) ; all frames decode (117 decoded, 0 errors) ; decoded frame content == fed frame, in order, no duplicates (60 mismatches) ; avg_frame_rate 60 fps (got 38.7845) ; keyframe every 60 frames (~1 s): 2 keyframes, 0 bad intervals ; no errorOccurred / framesDropped: 
+PASS   : TstVideoRecorder::cleanupTestCase()
+Totals: 2 passed, 1 failed, 0 skipped, 0 blacklisted, 4921ms
+********* Finished testing of TstVideoRecorder *********

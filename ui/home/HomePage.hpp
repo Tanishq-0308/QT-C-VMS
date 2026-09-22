@@ -51,6 +51,7 @@ private:
     void setupMainLayout();
     void setUp();
     void addDevice(com_ptr<IDeckLink>& decklink);
+    void removeDevice(const com_ptr<IDeckLink>& decklink);
     void reconfigureVideoInput();
     void updateLogo(const QString &logoPath = "");
     void applyStaticStyles();

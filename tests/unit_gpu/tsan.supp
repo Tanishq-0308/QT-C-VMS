@@ -1,0 +1,11 @@
+# ThreadSanitizer suppressions: uninstrumented NVIDIA driver / CUDA runtime / D-Bus internals.
+# NOTE: called_from_lib must only name libraries that are never dlclose()d (TSan aborts otherwise);
+# libnvidia-encode / libnvcuvid are unloaded by FFmpeg at encoder close, so they use race: only.
+called_from_lib:libcuda.so
+race:libcuda.so
+race:libnvidia-encode.so
+race:libnvcuvid.so
+race:libcudart.so
+race:libdbus-1.so
+mutex:libcuda.so
+deadlock:libcuda.so

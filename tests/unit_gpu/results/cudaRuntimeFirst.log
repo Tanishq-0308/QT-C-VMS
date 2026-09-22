@@ -1,0 +1,20 @@
+********* Start testing of TstVideoRecorder *********
+Config: Using QtTest library 5.15.3, Qt 5.15.3 (x86_64-little_endian-lp64 shared (dynamic) release build; by GCC 11.3.0), ubuntu 22.04
+# out=/tmp/claude-1000/vr_tests relax=0 nvenc=0x753d4b01eba0 h264dec=0x753d4b013f20 libavcodec=4.4.2-0ubuntu0.22.04.1 pid=44986
+PASS   : TstVideoRecorder::initTestCase()
+[AVHWDeviceContext @ 0x73008c000900] Primary context already active with incompatible flags.
+[qt:W] [VideoRecorder] "Could not initialise the GPU for recording (Unknown error occurred)."
+[errorOccurred] Could not initialise the GPU for recording (Unknown error occurred).
+REPORT cudaFree=0 start_ret=1 started=0 enc=-1 errors=1
+MSG Could not initialise the GPU for recording (Unknown error occurred).
+  METRIC cudaRuntimeFirst child exited(0): cudaFree(0)=0, startRecording()=1, recordingStarted=0, encoded=-1, error='Could not initialise the GPU for recording (Unknown error occurred).'
+  [ok  ] CUDA runtime initialised
+  [FAIL] recording starts although the CUDA runtime was initialised first
+FAIL!  : TstVideoRecorder::cudaRuntimeFirst() 'fails.isEmpty()' returned FALSE. (recording starts although the CUDA runtime was initialised first)
+   Loc: [/home/brainwave/QT-C-VMS/tests/unit_gpu/tst_videorecorder.cpp(890)]
+
+==================== SUMMARY ====================
+FAIL  cudaRuntimeFirst | child exited(0): cudaFree(0)=0, startRecording()=1, recordingStarted=0, encoded=-1, error='Could not initialise the GPU for recording (Unknown error occurred).' | FAILED: recording starts although the CUDA runtime was initialised first
+PASS   : TstVideoRecorder::cleanupTestCase()
+Totals: 2 passed, 1 failed, 0 skipped, 0 blacklisted, 583ms
+********* Finished testing of TstVideoRecorder *********

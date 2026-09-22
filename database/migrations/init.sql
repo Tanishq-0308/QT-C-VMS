@@ -149,13 +149,21 @@ CREATE TABLE IF NOT EXISTS settings (
     show_video_label INTEGER DEFAULT 1
 );
 
+-- 🔹 settings is a single-row table. Older builds inserted the default row on
+-- every launch; collapse those duplicates to the row the app reads (lowest id).
+DELETE FROM settings WHERE id <> (SELECT MIN(id) FROM settings);
+
+-- 🔹 Insert the default settings row (only if the table is empty)
 INSERT INTO settings (
     hospital_logo_path, hospital_name, software_name, hospital_email, hospital_address,
     state, district, pin, about_hospital, watermark_logo_path, storage_path, hospital_phone, rtsp_link, video_input, show_video_label
-) VALUES (
+)
+SELECT
     '/logo.png', 'Brainwave', 'VMS', 'cognet@gmail.com', 'Delhi',
     'Delhi', 'Okhla', '803119', 'Hospital description goes here',
     '/watermark.png', '/home/brainwave/app/store', '9876543210', 'rtsp://admin:123456@192.168.1.88/stream0', 'SDI', 1
+WHERE NOT EXISTS (
+    SELECT 1 FROM settings
 );
 
 

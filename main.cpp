@@ -66,6 +66,84 @@ QString loadMergedStyleSheets(const QStringList &files) {
     return merged;
 }
 
+// Split a migration script into statements. A ';' ends a statement only when it
+// is outside '...', "..." and `...` literals, outside -- and /* */ comments, and
+// not inside a CREATE TRIGGER ... BEGIN ... END body. Comments are dropped.
+static QStringList splitSqlStatements(const QString& sql) {
+    QStringList statements;
+    QString current;
+    QString word;
+    QStringList leadingWords;   // first words of the current statement
+    bool inTrigger = false;
+    int blockDepth = 0;         // BEGIN/CASE ... END nesting inside a trigger
+
+    auto endWord = [&]() {
+        if (word.isEmpty()) return;
+        const QString w = word.toUpper();
+        if (leadingWords.size() < 4) {   // CREATE [TEMP|TEMPORARY] TRIGGER
+            leadingWords << w;
+            if (leadingWords.first() == "CREATE" && w == "TRIGGER") inTrigger = true;
+        }
+        if (inTrigger) {
+            if (w == "BEGIN" || w == "CASE") ++blockDepth;
+            else if (w == "END" && blockDepth > 0) --blockDepth;
+        }
+        word.clear();
+    };
+
+    const int n = sql.size();
+    for (int i = 0; i < n; ++i) {
+        const QChar c = sql.at(i);
+        const QChar next = (i + 1 < n) ? sql.at(i + 1) : QChar();
+
+        if (c.isLetterOrNumber() || c == '_') {
+            word += c;
+            current += c;
+            continue;
+        }
+        endWord();
+
+        if (c == '\'' || c == '"' || c == '`') {
+            // Copy the literal verbatim; a doubled quote is an escaped quote.
+            int j = i + 1;
+            while (j < n) {
+                if (sql.at(j) == c) {
+                    if (j + 1 < n && sql.at(j + 1) == c) { j += 2; continue; }
+                    break;
+                }
+                ++j;
+            }
+            current += sql.mid(i, j - i + 1);
+            i = j;
+            continue;
+        }
+        if (c == '-' && next == '-') {
+            while (i < n && sql.at(i) != '\n') ++i;
+            current += '\n';
+            continue;
+        }
+        if (c == '/' && next == '*') {
+            const int close = sql.indexOf("*/", i + 2);
+            i = (close < 0) ? n : close + 1;
+            current += ' ';
+            continue;
+        }
+        if (c == ';' && blockDepth == 0) {
+            const QString stmt = current.trimmed();
+            if (!stmt.isEmpty()) statements << stmt;
+            current.clear();
+            leadingWords.clear();
+            inTrigger = false;
+            continue;
+        }
+        current += c;
+    }
+    endWord();
+    const QString stmt = current.trimmed();
+    if (!stmt.isEmpty()) statements << stmt;
+    return statements;
+}
+
 bool runMigrations(const QString& path) {
     QFile file(path);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
@@ -78,13 +156,10 @@ bool runMigrations(const QString& path) {
     file.close();
 
     QSqlQuery query;
-    for (const QString& stmt : sql.split(';', Qt::SkipEmptyParts)) {
-        QString trimmed = stmt.trimmed();
-        if (!trimmed.isEmpty()) {
-            if (!query.exec(trimmed)) {
-                qCritical() << "❌ SQL Error:" << query.lastError().text();
-                return false;
-            }
+    for (const QString& stmt : splitSqlStatements(sql)) {
+        if (!query.exec(stmt)) {
+            qCritical() << "❌ SQL Error:" << query.lastError().text();
+            return false;
         }
     }
     return true;

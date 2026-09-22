@@ -17,6 +17,7 @@
 #include <QSqlQuery>
 #include <QSqlError>
 #include <QMessageBox>
+#include "diag/DiagProbe.h"
 
 // Ensure necessary folders exist
 void RecordingPage::ensureFoldersExist() {
@@ -32,8 +33,7 @@ void RecordingPage::ensureFoldersExist() {
 // Constructor
 RecordingPage::RecordingPage(QWidget* parent)
     : QWidget(parent), m_recording(false), currentRecordingId(-1),
-      m_videoRecorder(nullptr), m_recordingTimer(nullptr),
-      recordingSeconds(0)
+      m_videoRecorder(nullptr), recordingSeconds(0)
 {
     this->setStyleSheet(R"(
         QWidget {
@@ -124,28 +124,26 @@ RecordingPage::RecordingPage(QWidget* parent)
     connect(rotateBtn, &QPushButton::clicked, this, &RecordingPage::onRotate);
     connect(commentBtn, &QPushButton::clicked, this, &RecordingPage::onAddComment);
     connect(exitBtn, &QPushButton::clicked, this, [this]() {
-        if (m_recording) {
+        if (m_recording || m_videoRecorder->isRecording()) {
             QMessageBox::warning(this, "Recording in Progress", "Stop the recording first before exiting.");
         } else {
             emit goBackToRecordingPage();
         }
     });
 
-    // Frame capture timer
-    m_recordingTimer = new QTimer(this);
-    connect(m_recordingTimer, &QTimer::timeout, this, &RecordingPage::captureAndRecordFrame);
+    // Recorder: fed by the capture device on its own thread, reports back through signals
+    m_videoRecorder = new VideoRecorder(this);
+    connect(m_videoRecorder, &VideoRecorder::recordingStarted, this, &RecordingPage::onRecordingStarted);
+    connect(m_videoRecorder, &VideoRecorder::errorOccurred, this, &RecordingPage::onRecorderError);
+    connect(m_videoRecorder, &VideoRecorder::recordingStopped, this, &RecordingPage::onRecordingStopped);
+    connect(m_videoRecorder, &VideoRecorder::segmentStarted, this, &RecordingPage::onSegmentStarted);
+    connect(m_videoRecorder, &VideoRecorder::framesDropped, this, &RecordingPage::onFramesDropped);
 
     // UI timer for recording time
     uiRecordingTimer = new QTimer(this);
     connect(uiRecordingTimer, &QTimer::timeout, this, [this]() {
         recordingSeconds++;
-        int hours = recordingSeconds / 3600;
-        int minutes = (recordingSeconds % 3600) / 60;
-        int seconds = recordingSeconds % 60;
-        recordingTimeLabel->setText(QString("⏱ %1:%2:%3")
-                                    .arg(hours, 2, 10, QChar('0'))
-                                    .arg(minutes, 2, 10, QChar('0'))
-                                    .arg(seconds, 2, 10, QChar('0')));
+        updateRecordingLabel();
     });
 
     recordingTimeLabel->hide();  // hide initially
@@ -159,78 +157,129 @@ RecordingPage::RecordingPage(QWidget* parent)
 
 // Destructor
 RecordingPage::~RecordingPage() {
-    if (m_videoRecorder) {
+    // The recorder (a child) finalises the file in its own destructor
+    if (m_videoRecorder)
         m_videoRecorder->stopRecording();
-    }
 }
 
-// Capture and record frame
-void RecordingPage::captureAndRecordFrame() {
-    if (!m_recording || !m_videoRecorder)
-        return;
+int RecordingPage::insertRecordingRow(const QString& path) {
+    QSqlQuery query;
+    query.prepare("INSERT INTO recordings (patient_id, surgery_id, file_path) VALUES (?, ?, ?)");
+    query.addBindValue(m_patientId);
+    query.addBindValue(m_surgeryId);
+    query.addBindValue(path);
 
-    QImage frame = m_previewView->grabFramebuffer();
-    if (!frame.isNull()) {
-        m_videoRecorder->recordFrame(frame);
+    if (!query.exec()) {
+        qWarning() << "❌ Failed to insert into recordings table:" << query.lastError().text();
+        return -1;
     }
+    const int id = query.lastInsertId().toInt();
+    qDebug() << "✅ Recording saved to DB with id:" << id;
+    return id;
+}
+
+void RecordingPage::updateRecordingLabel() {
+    int hours = recordingSeconds / 3600;
+    int minutes = (recordingSeconds % 3600) / 60;
+    int seconds = recordingSeconds % 60;
+    QString text = QString("⏱ %1:%2:%3")
+                       .arg(hours, 2, 10, QChar('0'))
+                       .arg(minutes, 2, 10, QChar('0'))
+                       .arg(seconds, 2, 10, QChar('0'));
+    if (m_droppedFrames > 0)
+        text += QString("   ⚠ %1 frames lost").arg(m_droppedFrames);
+    recordingTimeLabel->setText(text);
+}
+
+void RecordingPage::resetRecordingUi() {
+    if (uiRecordingTimer)
+        uiRecordingTimer->stop();
+    recordingTimeLabel->hide();
+    recordBtn->setText("⏺ Start Recording");
+    recordBtn->setEnabled(true);
+    m_recording = false;
+    currentRecordingId = -1;
 }
 
 // Toggle recording
 void RecordingPage::onToggleRecording() {
     if (!m_recording) {
+        if (m_videoRecorder->isRecording()) {
+            showToast("⏳ Previous recording is still being saved…");
+            return;
+        }
+
         ensureFoldersExist();
 
         QString timestamp = QDateTime::currentDateTime().toString("yyyyMMdd_HHmmss");
         QString outputDir = QCoreApplication::applicationDirPath() + QString("/../recordings/%1/%2")
                                 .arg(m_patientId, QString::number(m_surgeryId));
         QDir().mkpath(outputDir);
-        QString outputPath = QString("%1/recording_%2.mp4").arg(outputDir, timestamp);
+        QString outputPath = QDir::cleanPath(QString("%1/recording_%2.mp4").arg(outputDir, timestamp));
 
         qDebug() << "🔴 Starting recording to:" << outputPath;
 
-        if (!m_videoRecorder) {
-            m_videoRecorder = new VideoRecorder(this);
-            qDebug() << "📦 VideoRecorder instance created";
+        m_videoRecorder->setFlipStep(m_flipStep);
+        QString error;
+        if (!m_videoRecorder->startRecording(outputPath, &error)) {
+            // Nothing was started: no DB row, no "recording" state
+            QMessageBox::critical(this, "Recording could not start", error);
+            return;
         }
 
-        m_videoRecorder->startRecording(outputPath);
-        m_recordingTimer->start(33); // ~30 FPS
-        uiRecordingTimer->start(1000);  // UI timer for HH:MM:SS
-        recordingTimeLabel->setText("⏱ 00:00:00");
-        recordingTimeLabel->show();
-        recordingSeconds = 0;
-        recordBtn->setText("⏹ Stop Recording");
-
-        // Insert into DB
-        QSqlQuery query;
-        query.prepare("INSERT INTO recordings (patient_id, surgery_id, file_path) VALUES (?, ?, ?)");
-        query.addBindValue(m_patientId);
-        query.addBindValue(m_surgeryId);
-        query.addBindValue(outputPath);
-
-        if (!query.exec()) {
-            qWarning() << "❌ Failed to insert into recordings table:" << query.lastError().text();
-            currentRecordingId = -1;
-        } else {
-            currentRecordingId = query.lastInsertId().toInt();
-            qDebug() << "✅ Recording saved to DB with id:" << currentRecordingId;
-        }
-
-        m_recording = true;
+        // The encoder opens on the recorder thread; onRecordingStarted() confirms it
+        recordBtn->setText("⏳ Starting…");
+        recordBtn->setEnabled(false);
     } else {
         qDebug() << "⏹️ Stopping recording...";
-        if (m_videoRecorder)
-            m_videoRecorder->stopRecording();
-        if (m_recordingTimer)
-            m_recordingTimer->stop();
+        // Returns immediately; onRecordingStopped() runs once the file is finalised
+        m_videoRecorder->stopRecording();
         if (uiRecordingTimer)
             uiRecordingTimer->stop();
-
-        recordingTimeLabel->hide();
-        recordBtn->setText("⏺ Start Recording");
-        m_recording = false;
-        currentRecordingId = -1;
+        recordBtn->setText("💾 Saving…");
+        recordBtn->setEnabled(false);
     }
+}
+
+void RecordingPage::onRecordingStarted(const QString& path) {
+    m_droppedFrames = 0;
+    recordingSeconds = 0;
+    updateRecordingLabel();
+    recordingTimeLabel->show();
+    uiRecordingTimer->start(1000);  // UI timer for HH:MM:SS
+    recordBtn->setText("⏹ Stop Recording");
+    recordBtn->setEnabled(true);
+
+    currentRecordingId = insertRecordingRow(path);
+    m_recording = true;
+}
+
+void RecordingPage::onRecorderError(const QString& message) {
+    qWarning() << "❌ Recording error:" << message;
+    QMessageBox::critical(this, "Recording problem", message);
+}
+
+void RecordingPage::onRecordingStopped(const QString& path, qint64 framesEncoded, qint64 framesDropped) {
+    qDebug() << "✅ Recording finalised:" << path << "frames" << framesEncoded << "lost" << framesDropped;
+    const bool wasRecording = m_recording;
+    resetRecordingUi();
+    if (!wasRecording)
+        return; // start failed; errorOccurred() already told the user
+    if (framesDropped > 0)
+        showToast(QString("⚠ Recording saved, %1 frames were lost").arg(framesDropped), 5000);
+    else
+        showToast("✅ Recording saved", 2000);
+}
+
+void RecordingPage::onSegmentStarted(const QString& path) {
+    // The input format changed; the recorder continued in a new file
+    insertRecordingRow(path);
+    showToast("ℹ Video input changed — recording continues in a new file", 4000);
+}
+
+void RecordingPage::onFramesDropped(qint64 totalDropped) {
+    m_droppedFrames = totalDropped;
+    updateRecordingLabel();
 }
 
 // Other methods stay the same (onSnapshot, onAddComment, onExit, showToast, onRotate, etc.)
@@ -239,34 +288,46 @@ void RecordingPage::onToggleRecording() {
 
 void RecordingPage::onSnapshot()
 {
-    QString timestamp = QDateTime::currentDateTime().toString("yyyyMMdd_HHmmss");
+    const QDateTime now = QDateTime::currentDateTime();
+    QString timestamp = now.toString("yyyyMMdd_HHmmss");
     QString outputDir = QCoreApplication::applicationDirPath() + QString("/../snapshots/%1/%2")
                             .arg(m_patientId, QString::number(m_surgeryId));
     QDir().mkpath(outputDir);
 
-    QString outputPath = QString("%1/snapshot_%2.png").arg(outputDir, timestamp);
+    // Millisecond file names: several snapshots in the same second must not overwrite each other.
+    // JPEG data, so the extension says .jpg.
+    QString outputPath = QString("%1/snapshot_%2.jpg").arg(outputDir, now.toString("yyyyMMdd_HHmmss_zzz"));
     QString cleanPath = QDir::cleanPath(outputPath);
     QString title = QString("Snapshot at %1").arg(timestamp);
+    const QString patientId = m_patientId;
+    const int surgeryId = m_surgeryId;
 
-    if (m_previewView && m_previewView->saveSnapshot(outputPath)) {
-        qDebug() << "Snapshot saved to:" << outputPath;
-                    // Save snapshot record to DB
-            QSqlQuery query;
-            query.prepare("INSERT INTO snapshots (patient_id, surgery_id, file_path, title) VALUES (?, ?, ?, ?)");
-            query.addBindValue(m_patientId);
-            query.addBindValue(m_surgeryId);
-            query.addBindValue(cleanPath);
-            query.addBindValue(title);
+    // The DB row and the success message only follow once the file is really on disk
+    auto onSaved = [this, cleanPath, title, patientId, surgeryId](bool saved) {
+        if (!saved) {
+            qWarning() << "❌ Snapshot could not be written:" << cleanPath;
+            showToast("❌ Failed to save snapshot");
+            return;
+        }
+        QSqlQuery query;
+        query.prepare("INSERT INTO snapshots (patient_id, surgery_id, file_path, title) VALUES (?, ?, ?, ?)");
+        query.addBindValue(patientId);
+        query.addBindValue(surgeryId);
+        query.addBindValue(cleanPath);
+        query.addBindValue(title);
 
-            if (!query.exec()) {
-                qDebug() << "❌ Failed to insert snapshot path into DB:" << query.lastError().text();
-            } else {
-                qDebug() << "✅ Snapshot saved to DB:" << title;
-                showToast("📸 Snapshot taken successfully!");
-            }
-    } else {
-            qWarning() << "❌ Snapshot :";
-            showToast("❌ Failed to take snapshot");
+        if (!query.exec()) {
+            qDebug() << "❌ Failed to insert snapshot path into DB:" << query.lastError().text();
+            showToast("❌ Snapshot saved but not added to the surgery record");
+        } else {
+            qDebug() << "✅ Snapshot saved to DB:" << title;
+            showToast("📸 Snapshot taken successfully!");
+        }
+    };
+
+    if (!m_previewView || !m_previewView->saveSnapshot(outputPath, onSaved)) {
+        qWarning() << "❌ Snapshot: no image to capture";
+        showToast("❌ Failed to take snapshot");
     }
 }
 
@@ -408,6 +469,9 @@ void RecordingPage::onRotate() {
 
     if (m_previewView)
         m_previewView->setFlipStep(m_flipStep);
+    // Keep the recording oriented like the preview
+    if (m_videoRecorder)
+        m_videoRecorder->setFlipStep(m_flipStep);
 }
 
 void RecordingPage::setSharedDelegate(const com_ptr<DeckLinkOpenGLDelegate>& delegate)

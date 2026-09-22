@@ -68,7 +68,7 @@ def get_rtsp_url_from_db(db_path="../sqlite.db"):
     try:
         conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
-        cursor.execute("SELECT rtsp_link FROM settings ORDER BY id DESC LIMIT 1")
+        cursor.execute("SELECT rtsp_link FROM settings ORDER BY id LIMIT 1")
         row = cursor.fetchone()
         conn.close()
         return row[0] if row and row[0] else None

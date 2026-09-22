@@ -1,0 +1,2 @@
+GLIBC_2.2.5 { global: dlvsym; };
+Qt_5 { global: _ZN11QBasicMutex*; _ZN6QMutex*; _ZN14QWaitCondition*; local: *; };

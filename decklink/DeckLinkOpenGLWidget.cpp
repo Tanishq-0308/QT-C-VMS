@@ -42,7 +42,11 @@
 #include <QOpenGLFunctions>
 #include <QDebug>
 #include <QPainter>
+#include <QMatrix4x4>
+#include <QOpenGLExtraFunctions>
 #include <QtConcurrent/QtConcurrent>
+#include <QFutureWatcher>
+#include "diag/DiagProbe.h"
 
 ///
 /// DeckLinkOpenGLDelegate
@@ -107,9 +111,34 @@ ULONG DeckLinkOpenGLDelegate::Release()
 
 HRESULT DeckLinkOpenGLDelegate::DrawFrame(IDeckLinkVideoFrame *frame)
 {
-    // qDebug() << "[DeckLink] Frame received:" << (frame ? "OK" : "NULL");
-    emit frameArrived(com_ptr<IDeckLinkVideoFrame>(frame));
+    // Called on the DeckLink thread. Replace the pending frame instead of queueing every frame:
+    // queued copies are never dropped, so a GUI thread that falls behind would show ever older video.
+    {
+        std::lock_guard<std::mutex> lock(m_frameMutex);
+        m_latestFrame = com_ptr<IDeckLinkVideoFrame>(frame);
+    }
+
+    const bool schedule = !m_deliveryPending.exchange(true);
+    DIAG_FRAME_EMITTED(frame, schedule ? 1 : 0);
+    if (schedule)
+        QMetaObject::invokeMethod(this, [this]() { deliverLatestFrame(); }, Qt::QueuedConnection);
+
     return S_OK;
+}
+
+void DeckLinkOpenGLDelegate::deliverLatestFrame()
+{
+    // Clear the flag before taking the frame so a frame arriving meanwhile schedules a new delivery
+    m_deliveryPending = false;
+
+    com_ptr<IDeckLinkVideoFrame> frame;
+    {
+        std::lock_guard<std::mutex> lock(m_frameMutex);
+        frame = m_latestFrame;
+    }
+
+    DIAG_FRAME_RECEIVED(frame.get());
+    emit frameArrived(frame);
 }
 
 // HRESULT DeckLinkOpenGLDelegate::DrawFrame(IDeckLinkVideoFrame* frame)
@@ -129,7 +158,18 @@ DeckLinkOpenGLWidget::DeckLinkOpenGLWidget(QWidget *parent) : QOpenGLWidget(pare
     m_deckLinkScreenPreviewHelper = CreateOpenGL3ScreenPreviewHelper();
     m_delegate = make_com_ptr<DeckLinkOpenGLDelegate>();
 
-    connect(m_delegate.get(), &DeckLinkOpenGLDelegate::frameArrived, this, &DeckLinkOpenGLWidget::setFrame, Qt::QueuedConnection);
+    // The delegate already hands frames over to the GUI thread (latest frame only)
+    connect(m_delegate.get(), &DeckLinkOpenGLDelegate::frameArrived, this, &DeckLinkOpenGLWidget::setFrame);
+}
+
+DeckLinkOpenGLWidget::~DeckLinkOpenGLWidget()
+{
+    // GL resources must be released with the widget's context current
+    makeCurrent();
+    m_flipFbo.reset();
+    if (m_blitter.isCreated())
+        m_blitter.destroy();
+    doneCurrent();
 }
 
 void DeckLinkOpenGLWidget::clear()
@@ -149,6 +189,9 @@ void DeckLinkOpenGLWidget::initializeGL()
         std::lock_guard<std::mutex> lock(m_mutex);
         m_deckLinkScreenPreviewHelper->InitializeGL();
     }
+
+    if (!m_blitter.isCreated() && !m_blitter.create())
+        qWarning() << "[DeckLinkOpenGLWidget] Could not create texture blitter; flip is disabled";
 }
 
 // void DeckLinkOpenGLWidget::paintGL()
@@ -215,47 +258,52 @@ void DeckLinkOpenGLWidget::setInputSource(const QString &source)
 void DeckLinkOpenGLWidget::paintGL()
 {
     // qDebug() << "[paintGL] this=" << this << ", m_inputSource=" << m_inputSource;
+    DIAG_SCOPE_PAINT();
 
     std::lock_guard<std::mutex> lock(m_mutex);
 
     if (!m_deckLinkScreenPreviewHelper)
         return;
 
-    // Step 1: Draw raw video frame to OpenGL buffer
-    m_deckLinkScreenPreviewHelper->PaintGL();
+    // Flip entirely on the GPU. Reading the framebuffer back and mirroring it on the CPU every
+    // frame stalled the GUI thread and let the live view fall behind the camera.
+    const bool flipH = (m_flipStep == 1 || m_flipStep == 2);
+    const bool flipV = (m_flipStep == 2 || m_flipStep == 3);
 
-    // Step 2: Grab current frame
-    QImage frame = grabFramebuffer();
-
-    // Step 3: Apply flip based on m_flipStep
-    QImage flippedFrame;
-    switch (m_flipStep)
+    if ((flipH || flipV) && m_blitter.isCreated())
     {
-    case 0:
-        flippedFrame = frame;
-        break;
-    case 1:
-        flippedFrame = frame.mirrored(true, false); // horizontal
-        break;
-    case 2:
-        flippedFrame = frame.mirrored(true, true); // horizontal + vertical
-        break;
-    case 3:
-        flippedFrame = frame.mirrored(false, true); // vertical
-        break;
-    default:
-        flippedFrame = frame;
-        break;
+        QOpenGLExtraFunctions *f = context()->extraFunctions();
+        const QSize fbSize = size() * devicePixelRatioF();
+
+        if (!m_flipFbo || m_flipFbo->size() != fbSize)
+            m_flipFbo = std::make_unique<QOpenGLFramebufferObject>(fbSize);
+
+        // Step 1: Draw raw video frame into the offscreen buffer
+        m_flipFbo->bind();
+        f->glViewport(0, 0, fbSize.width(), fbSize.height());
+        f->glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        f->glClear(GL_COLOR_BUFFER_BIT);
+        m_deckLinkScreenPreviewHelper->PaintGL();
+
+        // Step 2: Draw it mirrored into the widget
+        f->glBindFramebuffer(GL_FRAMEBUFFER, defaultFramebufferObject());
+        f->glViewport(0, 0, fbSize.width(), fbSize.height());
+        QMatrix4x4 target;
+        target.scale(flipH ? -1.0f : 1.0f, flipV ? -1.0f : 1.0f);
+        m_blitter.bind();
+        m_blitter.blit(m_flipFbo->texture(), target, QOpenGLTextureBlitter::OriginBottomLeft);
+        m_blitter.release();
+    }
+    else
+    {
+        // Draw raw video frame straight into the widget
+        m_deckLinkScreenPreviewHelper->PaintGL();
     }
 
-    // Step 4: Draw flipped image
-    QPainter painter(this);
-    painter.setRenderHint(QPainter::SmoothPixmapTransform);
-    painter.drawImage(0, 0, flippedFrame);
-    
-    // Step 5: Overlay text based on input source (only if enabled)
+    // Step 3: Overlay text based on input source (only if enabled)
     if (m_showLabel)
     {
+        QPainter painter(this);
         painter.setPen(Qt::white);
         painter.setFont(QFont("Arial", 24, QFont::Bold));
 
@@ -267,17 +315,6 @@ void DeckLinkOpenGLWidget::paintGL()
         {
             // SDI or AHD
             painter.drawText(20, 40, QStringLiteral("🔴 Live • 1080@60"));
-        }
-    }
-
-    painter.end();
-
-    // ✅ Step 6: Send frame to recorder
-    if (m_recording && m_videoRecorder)
-    {
-        if (!flippedFrame.isNull())
-        {
-            m_videoRecorder->recordFrame(flippedFrame);
         }
     }
 }
@@ -331,7 +368,7 @@ void DeckLinkOpenGLWidget::setSharedDelegate(const com_ptr<DeckLinkOpenGLDelegat
 
     m_delegate = delegate;
 
-    connect(m_delegate.get(), &DeckLinkOpenGLDelegate::frameArrived, this, &DeckLinkOpenGLWidget::setFrame, Qt::QueuedConnection);
+    connect(m_delegate.get(), &DeckLinkOpenGLDelegate::frameArrived, this, &DeckLinkOpenGLWidget::setFrame);
 }
 
 com_ptr<DeckLinkOpenGLDelegate> DeckLinkOpenGLWidget::delegate()
@@ -356,7 +393,7 @@ void DeckLinkOpenGLWidget::setFlipStep(int step)
 //     return snapshot.save(path);  // Automatically infers format from extension
 // }
 
-bool DeckLinkOpenGLWidget::saveSnapshot(const QString &path)
+bool DeckLinkOpenGLWidget::saveSnapshot(const QString &path, std::function<void(bool ok)> onSaved)
 {
     QImage snapshot = grabFramebuffer();
 
@@ -366,11 +403,18 @@ bool DeckLinkOpenGLWidget::saveSnapshot(const QString &path)
         return false;
     }
 
-    // Save asynchronously
-    QtConcurrent::run([snapshot, path]()
-                      {
-        bool success = snapshot.save(path, "JPG", 95);  // or "PNG"
-        qDebug() << (success ? "✅ Snapshot saved:" : "❌ Save failed:") << path; });
+    // Encode and write off the GUI thread; report the real outcome afterwards
+    auto *watcher = new QFutureWatcher<bool>(this);
+    connect(watcher, &QFutureWatcher<bool>::finished, this, [watcher, path, onSaved]() {
+        const bool success = watcher->result();
+        watcher->deleteLater();
+        qDebug() << (success ? "✅ Snapshot saved:" : "❌ Save failed:") << path;
+        if (onSaved)
+            onSaved(success);
+    });
+    watcher->setFuture(QtConcurrent::run([snapshot, path]() {
+        return snapshot.save(path, nullptr, 95); // format from the extension (.jpg / .png)
+    }));
 
     return true;
 }

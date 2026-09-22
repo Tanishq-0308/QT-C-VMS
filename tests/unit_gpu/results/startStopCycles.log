@@ -1,0 +1,181 @@
+********* Start testing of TstVideoRecorder *********
+Config: Using QtTest library 5.15.3, Qt 5.15.3 (x86_64-little_endian-lp64 shared (dynamic) release build; by GCC 11.3.0), ubuntu 22.04
+# out=/tmp/claude-1000/vr_tests relax=0 nvenc=0x72809a41eba0 h264dec=0x72809a413f20 libavcodec=4.4.2-0ubuntu0.22.04.1 pid=44999
+PASS   : TstVideoRecorder::initTestCase()
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_0.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_0.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_0.mp4" encoded 120 dropped 0
+  cycle 1: enc=120 drop=0 packets=120 dur=2.000 init=247ms fin=174ms rss=283212KB hwm=291384KB threads=6 fds=37 gpu_pid=44MiB gpu_dev=-1MiB
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_1.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_1.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_1.mp4" encoded 120 dropped 0
+  cycle 2: enc=120 drop=0 packets=120 dur=2.000 init=98ms fin=169ms rss=286412KB hwm=435340KB threads=6 fds=37 gpu_pid=44MiB gpu_dev=-1MiB
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_2.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_2.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_2.mp4" encoded 120 dropped 0
+  cycle 3: enc=120 drop=0 packets=120 dur=2.000 init=103ms fin=169ms rss=287224KB hwm=435628KB threads=6 fds=37 gpu_pid=44MiB gpu_dev=-1MiB
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_3.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_3.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_3.mp4" encoded 121 dropped 0
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_4.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_4.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_4.mp4" encoded 120 dropped 0
+  cycle 5: enc=120 drop=0 packets=120 dur=2.000 init=41ms fin=226ms rss=412904KB hwm=440072KB threads=6 fds=37 gpu_pid=44MiB gpu_dev=-1MiB
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_5.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_5.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_5.mp4" encoded 120 dropped 0
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_6.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_6.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_6.mp4" encoded 121 dropped 0
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_7.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_7.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_7.mp4" encoded 120 dropped 0
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_8.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_8.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_8.mp4" encoded 120 dropped 0
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_9.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_9.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_9.mp4" encoded 120 dropped 0
+  cycle 10: enc=120 drop=0 packets=120 dur=2.000 init=39ms fin=228ms rss=413132KB hwm=440564KB threads=6 fds=37 gpu_pid=44MiB gpu_dev=-1MiB
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_10.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_10.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_10.mp4" encoded 120 dropped 0
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_11.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_11.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_11.mp4" encoded 121 dropped 0
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_12.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_12.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_12.mp4" encoded 120 dropped 0
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_13.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_13.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_13.mp4" encoded 120 dropped 0
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_14.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_14.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_14.mp4" encoded 120 dropped 0
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_15.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_15.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_15.mp4" encoded 120 dropped 0
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_16.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_16.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_16.mp4" encoded 120 dropped 0
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_17.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_17.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_17.mp4" encoded 120 dropped 0
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_18.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_18.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_18.mp4" encoded 120 dropped 0
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_19.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_19.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_19.mp4" encoded 120 dropped 0
+  cycle 20: enc=120 drop=0 packets=120 dur=2.000 init=36ms fin=230ms rss=409148KB hwm=440884KB threads=6 fds=37 gpu_pid=44MiB gpu_dev=-1MiB
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_20.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_20.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_20.mp4" encoded 120 dropped 0
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_21.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_21.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_21.mp4" encoded 120 dropped 0
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_22.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_22.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_22.mp4" encoded 120 dropped 0
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_23.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_23.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_23.mp4" encoded 120 dropped 0
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_24.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_24.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_24.mp4" encoded 120 dropped 0
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_25.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_25.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_25.mp4" encoded 120 dropped 0
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_26.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_26.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_26.mp4" encoded 120 dropped 0
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_27.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_27.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_27.mp4" encoded 120 dropped 0
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_28.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_28.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_28.mp4" encoded 120 dropped 0
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_29.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_29.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_29.mp4" encoded 120 dropped 0
+  cycle 30: enc=120 drop=0 packets=120 dur=2.000 init=40ms fin=226ms rss=409232KB hwm=440884KB threads=6 fds=37 gpu_pid=44MiB gpu_dev=-1MiB
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_30.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_30.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_30.mp4" encoded 120 dropped 0
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_31.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_31.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_31.mp4" encoded 120 dropped 0
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_32.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_32.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_32.mp4" encoded 120 dropped 0
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_33.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_33.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_33.mp4" encoded 120 dropped 0
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_34.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_34.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_34.mp4" encoded 120 dropped 0
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_35.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_35.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_35.mp4" encoded 120 dropped 0
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_36.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_36.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_36.mp4" encoded 120 dropped 0
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_37.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_37.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_37.mp4" encoded 120 dropped 0
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_38.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_38.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_38.mp4" encoded 121 dropped 0
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_39.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_39.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_39.mp4" encoded 120 dropped 0
+  cycle 40: enc=120 drop=0 packets=120 dur=2.000 init=39ms fin=226ms rss=413356KB hwm=440884KB threads=6 fds=37 gpu_pid=44MiB gpu_dev=-1MiB
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_40.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_40.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_40.mp4" encoded 120 dropped 0
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_41.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_41.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_41.mp4" encoded 120 dropped 0
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_42.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_42.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_42.mp4" encoded 120 dropped 0
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_43.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_43.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_43.mp4" encoded 120 dropped 0
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_44.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_44.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_44.mp4" encoded 120 dropped 0
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_45.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_45.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_45.mp4" encoded 120 dropped 0
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_46.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_46.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_46.mp4" encoded 120 dropped 0
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_47.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_47.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_47.mp4" encoded 120 dropped 0
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_48.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_48.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_48.mp4" encoded 120 dropped 0
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_49.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_49.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_49.mp4" encoded 120 dropped 0
+  cycle 50: enc=120 drop=0 packets=120 dur=2.000 init=35ms fin=231ms rss=413464KB hwm=441168KB threads=6 fds=37 gpu_pid=44MiB gpu_dev=-1MiB
+  METRIC startStopCycles 50 cycles x 2 s; cycle 5 -> 50: RSS 412904 -> 413464 KB (560 KB), GPU/pid 44 -> 44 MiB, fds 37 -> 37, threads 6 -> 6; init ms med 38 max 247; finalise ms med 228 max 233; not playable 0, accounting errors 0, cycles with drops 0
+  [ok  ] every cycle started
+  [ok  ] all files playable (open, decode every packet without error)
+  [ok  ] file packets == reported encoded in every cycle
+  [ok  ] no dropped frames in any cycle (0 cycles with drops)
+  METRIC startStopCycles RSS before first cycle 42952 KB, after cycle 1 283212 KB (idle retention 240260 KB); envelope max(c5..10)=413132 KB max(last5)=413464 KB
+  METRIC startStopCycles spec comparison cycle 5 -> 50: RSS 560 KB (threshold 20480 KB)
+  [ok  ] RSS envelope growth <= 20 MB (332 KB)
+  [ok  ] GPU per-process growth <= 16 MiB (0 MiB)
+  [ok  ] fds flat (37 -> 37)
+  [ok  ] threads flat (6 -> 6)
+PASS   : TstVideoRecorder::startStopCycles()
+
+==================== SUMMARY ====================
+PASS  startStopCycles | 50 cycles x 2 s; cycle 5 -> 50: RSS 412904 -> 413464 KB (560 KB), GPU/pid 44 -> 44 MiB, fds 37 -> 37, threads 6 -> 6; init ms med 38 max 247; finalise ms med 228 max 233; not playable 0, accounting errors 0, cycles with drops 0; RSS before first cycle 42952 KB, after cycle 1 283212 KB (idle retention 240260 KB); envelope max(c5..10)=413132 KB max(last5)=413464 KB; spec comparison cycle 5 -> 50: RSS 560 KB (threshold 20480 KB)
+PASS   : TstVideoRecorder::cleanupTestCase()
+Totals: 3 passed, 0 failed, 0 skipped, 0 blacklisted, 120891ms
+********* Finished testing of TstVideoRecorder *********
