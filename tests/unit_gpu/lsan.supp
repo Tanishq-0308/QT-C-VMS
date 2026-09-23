@@ -1,0 +1,17 @@
+# LeakSanitizer suppressions: third-party driver / runtime noise only.
+# Application leaks (stacks through VideoRecorder.cpp into libav*) are NOT suppressed unless a
+# frame of the listed driver libraries appears in the allocation stack.
+leak:libcuda.so
+leak:libnvidia-
+leak:libnvcuvid.so
+leak:libcudart.so
+leak:libfontconfig.so
+leak:libdbus-1.so
+leak:libglib-2.0.so
+leak:libgobject-2.0.so
+leak:libQt5XcbQpa.so
+leak:libqoffscreen.so
+leak:QPlatformIntegrationFactory
+leak:QFactoryLoader
+leak:_dl_open
+leak:_dl_init

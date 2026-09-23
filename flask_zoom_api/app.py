@@ -68,7 +68,7 @@ def get_rtsp_url_from_db(db_path="../sqlite.db"):
     try:
         conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
-        cursor.execute("SELECT rtsp_link FROM settings ORDER BY id DESC LIMIT 1")
+        cursor.execute("SELECT rtsp_link FROM settings ORDER BY id LIMIT 1")
         row = cursor.fetchone()
         conn.close()
         return row[0] if row and row[0] else None
@@ -241,4 +241,6 @@ def status():
 
 # --- Entry Point ---
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8001)
+    # Bind to localhost only: this API is used by the local desktop app. On 0.0.0.0 it exposed
+    # patient report data and camera credentials to everyone on the network, unauthenticated.
+    app.run(host="127.0.0.1", port=8001)

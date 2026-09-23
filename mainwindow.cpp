@@ -16,7 +16,7 @@
 
 QString getRtspLinkFromDatabase() {
     QSqlQuery query;
-    if (query.exec("SELECT rtsp_link FROM settings LIMIT 1") && query.next()) {
+    if (query.exec("SELECT rtsp_link FROM settings ORDER BY id LIMIT 1") && query.next()) {
         return query.value(0).toString();
     }
     qWarning() << "❌ Failed to fetch RTSP link:" << query.lastError().text();

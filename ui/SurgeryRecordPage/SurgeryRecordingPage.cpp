@@ -28,6 +28,55 @@
 #include <QFile>
 #include <QDir>
 #include "ClickableSlider.hpp"
+#include <QFutureWatcher>
+#include <QProgressDialog>
+#include <QSaveFile>
+#include <QtConcurrent/QtConcurrent>
+#include <atomic>
+#include <memory>
+#include <unistd.h>
+
+namespace {
+
+struct UsbCopyResult {
+    int succeeded = 0;
+    QStringList failed;
+};
+
+// Runs on a worker thread. Each file is written to a temporary file next to the destination,
+// flushed to the device and then renamed over the destination, so an existing copy is only
+// replaced by a complete one (pulling the stick mid-copy never destroys a previous copy).
+UsbCopyResult copyFilesToUsb(const QStringList &sources, const QString &destDir,
+                             std::shared_ptr<std::atomic<qint64>> bytesDone)
+{
+    UsbCopyResult result;
+    QByteArray buffer(4 << 20, Qt::Uninitialized);
+
+    for (const QString &sourcePath : sources) {
+        QFile in(sourcePath);
+        QSaveFile out(destDir + "/" + QFileInfo(sourcePath).fileName());
+        bool ok = in.open(QIODevice::ReadOnly) && out.open(QIODevice::WriteOnly);
+
+        while (ok && !in.atEnd()) {
+            const qint64 n = in.read(buffer.data(), buffer.size());
+            ok = n >= 0 && out.write(buffer.constData(), n) == n;
+            if (ok)
+                *bytesDone += n;
+        }
+
+        ok = ok && out.flush() && ::fdatasync(out.handle()) == 0 && out.commit();
+        if (!ok) {
+            out.cancelWriting();
+            result.failed << QFileInfo(sourcePath).fileName();
+            qWarning() << "Failed to copy:" << sourcePath << in.errorString() << out.errorString();
+        } else {
+            result.succeeded++;
+        }
+    }
+    return result;
+}
+
+} // namespace
 
 // ============== Responsive Helper Methods ==============
 
@@ -149,6 +198,7 @@ void SurgeryRecordingPage::setupUI() {
         if (dialog->exec() == QDialog::Accepted) {
             loadSurgeryDetails();
         }
+        dialog->deleteLater();
     });
 
     connect(reportBtn, &QPushButton::clicked, this, &SurgeryRecordingPage::generateReport);
@@ -1025,7 +1075,7 @@ void SurgeryRecordingPage::handleThumbnailClick(const QString &filePath, int fil
         dialog->exec();
 
         player->stop();
-        player->deleteLater();
+        dialog->deleteLater(); // also deletes the player, video widget and controls (children)
     } else {
         // Image
         QDialog *dialog = new QDialog(this);
@@ -1128,6 +1178,7 @@ void SurgeryRecordingPage::handleThumbnailClick(const QString &filePath, int fil
 
         dialog->setLayout(dialogLayout);
         dialog->exec();
+        dialog->deleteLater();
     }
 }
 
@@ -1138,11 +1189,12 @@ void SurgeryRecordingPage::generateReport() {
 
     QNetworkRequest request(QUrl("http://localhost:8001/generate-pdf"));
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+    request.setTransferTimeout(60000); // never wait forever on the report service
 
     QNetworkAccessManager *manager = new QNetworkAccessManager(this);
     QNetworkReply *reply = manager->post(request, QJsonDocument(json).toJson());
 
-    connect(reply, &QNetworkReply::finished, this, [this, reply]() {
+    connect(reply, &QNetworkReply::finished, this, [this, reply, manager]() {
         if (reply->error() == QNetworkReply::NoError) {
             QByteArray responseData = reply->readAll();
             QJsonDocument doc = QJsonDocument::fromJson(responseData);
@@ -1159,6 +1211,7 @@ void SurgeryRecordingPage::generateReport() {
             QMessageBox::information(this, "Warning", "Failed to Generate PDF.");
         }
         reply->deleteLater();
+        manager->deleteLater(); // one manager per report request
     });
 }
 
@@ -1188,40 +1241,50 @@ void SurgeryRecordingPage::downloadSelectedFiles() {
         return;
     }
 
-    QDir().mkpath(destDir);
+    if (!QDir().mkpath(destDir)) {
+        QMessageBox::warning(this, "Download Error", "Could not create the folder on the USB device:\n" + destDir);
+        return;
+    }
 
-    int successCount = 0;
-    int failCount = 0;
+    QStringList sources = selectedSnapshots.values();
+    sources += selectedRecordings.values();
+    qint64 totalBytes = 0;
+    for (const QString &path : sources)
+        totalBytes += QFileInfo(path).size();
 
-    auto copyFile = [&](const QString &sourcePath) {
-        QFileInfo fileInfo(sourcePath);
-        QString destPath = destDir + "/" + fileInfo.fileName();
+    // Copy on a worker thread: multi-GB recordings must not freeze the UI (and the live view)
+    auto bytesDone = std::make_shared<std::atomic<qint64>>(0);
+    const int totalMb = int(qMax<qint64>(1, totalBytes >> 20));
 
-        if (QFile::exists(destPath)) {
-            QFile::remove(destPath);
+    auto *progress = new QProgressDialog("Copying files to the USB device…", QString(), 0, totalMb, this);
+    progress->setWindowTitle("Download");
+    progress->setWindowModality(Qt::WindowModal);
+    progress->setMinimumDuration(0);
+    progress->setAutoClose(false);
+    progress->setValue(0);
+    downloadBtn->setEnabled(false);
+
+    auto *poll = new QTimer(progress);
+    connect(poll, &QTimer::timeout, progress, [progress, bytesDone]() {
+        progress->setValue(int(bytesDone->load() >> 20));
+    });
+    poll->start(200);
+
+    auto *watcher = new QFutureWatcher<UsbCopyResult>(this);
+    connect(watcher, &QFutureWatcher<UsbCopyResult>::finished, this, [this, watcher, progress]() {
+        const UsbCopyResult result = watcher->result();
+        watcher->deleteLater();
+        progress->deleteLater();
+        downloadBtn->setEnabled(true);
+
+        showToast("Downloaded " + QString::number(result.succeeded) + " file(s) successfully");
+        if (!result.failed.isEmpty()) {
+            QMessageBox::warning(this, "Download Error",
+                                 QString::number(result.failed.size()) + " file(s) could not be copied:\n" +
+                                 result.failed.join("\n"));
         }
-
-        if (QFile::copy(sourcePath, destPath)) {
-            successCount++;
-        } else {
-            failCount++;
-            qWarning() << "Failed to copy:" << sourcePath;
-        }
-    };
-
-    for (const QString &path : selectedSnapshots) {
-        copyFile(path);
-    }
-
-    for (const QString &path : selectedRecordings) {
-        copyFile(path);
-    }
-
-    showToast("Downloaded " + QString::number(successCount) + " file(s) successfully");
-
-    if (failCount > 0) {
-        QMessageBox::warning(this, "Download Error", QString::number(failCount) + " file(s) could not be copied.");
-    }
+    });
+    watcher->setFuture(QtConcurrent::run(copyFilesToUsb, sources, destDir, bytesDone));
 
     selectedSnapshots.clear();
     selectedRecordings.clear();

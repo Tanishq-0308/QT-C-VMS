@@ -47,6 +47,7 @@
 #include "DeckLinkAPI.h"
 #include "com_ptr.h"
 #include "CapturePreviewEvents.h"
+#include "VideoFrameSink.h"
 
 class DeckLinkInputDevice : public IDeckLinkInputCallback
 {
@@ -66,6 +67,13 @@ public:
 
 	bool						startCapture(BMDDisplayMode displayMode, IDeckLinkScreenPreviewCallback* screenPreviewCallback, bool applyDetectedInputMode);
 	void						stopCapture(void);
+
+	// Receives every captured frame on the capture thread (e.g. the recorder); nullptr to detach.
+	// The sink must outlive the capture: stop the capture before destroying it.
+	void						setVideoFrameSink(IVideoFrameSink* sink) { m_frameSink = sink; }
+
+	// Usable bandwidth of the card's PCIe link in MB/s (0 if unknown)
+	double						pcieLinkCapacityMBps();
 
 	com_ptr<IDeckLink>					getDeckLinkInstance() const { return m_deckLink; }
 	com_ptr<IDeckLinkInput>				getDeckLinkInput() const { return m_deckLinkInput; }
@@ -89,24 +97,38 @@ private:
 	com_ptr<IDeckLinkInput>				m_deckLinkInput;
 	com_ptr<IDeckLinkConfiguration>		m_deckLinkConfig;
 	com_ptr<IDeckLinkHDMIInputEDID>		m_deckLinkHDMIInputEDID;
+	com_ptr<IDeckLinkStatus>			m_deckLinkStatus;
 
 	bool								m_supportsFormatDetection;
 	bool								m_currentlyCapturing;
 	bool								m_applyDetectedInputMode;
 	int64_t								m_supportedInputConnections;
 
+	// Last signal state reported to the owner (-1 = none yet); written on the DeckLink thread
+	std::atomic<int>					m_lastSignalValid{-1};
+	std::atomic<IVideoFrameSink*>		m_frameSink{nullptr};
+	// Mode / pixel format the input is currently enabled with (DeckLink thread after start)
+	BMDDisplayMode						m_currentDisplayMode = bmdModeUnknown;
+	BMDPixelFormat						m_currentPixelFormat = bmdFormat8BitYUV;
 };
 
 class DeckLinkInputFormatChangedEvent : public QEvent
 {
 public:
-	DeckLinkInputFormatChangedEvent(BMDDisplayMode displayMode);
+	DeckLinkInputFormatChangedEvent(BMDDisplayMode displayMode, long width = 0, long height = 0, double fps = 0.0);
 	virtual ~DeckLinkInputFormatChangedEvent() {}
 
 	BMDDisplayMode DisplayMode() const { return m_displayMode; }
+	// Real detected format, for the on-screen label
+	long Width() const { return m_width; }
+	long Height() const { return m_height; }
+	double Fps() const { return m_fps; }
 
 private:
 	BMDDisplayMode m_displayMode;
+	long m_width;
+	long m_height;
+	double m_fps;
 };
 
 class DeckLinkInputFrameArrivedEvent : public QEvent

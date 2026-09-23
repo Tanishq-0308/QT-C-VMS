@@ -174,14 +174,20 @@ void SettingsPage::setupUI() {
     rightCol->addLayout(labelToggleVbox);
     rightCol->addSpacing(50);
 
-    // Hidden fields
-    watermarkPathEdit = new QLineEdit;
+    // Hidden fields (not in any layout; parented to this so they are deleted
+    // with the page, and hidden so they are not shown at (0,0) as orphan children)
+    watermarkPathEdit = new QLineEdit(this);
     watermarkPathEdit->setReadOnly(true);
-    uploadWatermarkBtn = new QPushButton("Upload");
-    storagePathEdit = new QLineEdit;
-    rtspLinkEdit = new QLineEdit;
+    watermarkPathEdit->hide();
+    uploadWatermarkBtn = new QPushButton("Upload", this);
+    uploadWatermarkBtn->hide();
+    storagePathEdit = new QLineEdit(this);
+    storagePathEdit->hide();
+    rtspLinkEdit = new QLineEdit(this);
     rtspLinkEdit->setEchoMode(QLineEdit::Password);
-    togglePasswordBtn = new QPushButton("Show");
+    rtspLinkEdit->hide();
+    togglePasswordBtn = new QPushButton("Show", this);
+    togglePasswordBtn->hide();
 
     twoColLayout->addLayout(leftCol);
     twoColLayout->addSpacing(90);
@@ -357,7 +363,7 @@ void SettingsPage::togglePasswordVisibility() {
 
 void SettingsPage::loadSettingsFromDatabase() {
     QSqlQuery query;
-    if (query.exec("SELECT * FROM settings LIMIT 1")) {
+    if (query.exec("SELECT * FROM settings ORDER BY id LIMIT 1")) {
         if (query.next()) {
             logoPathEdit->setText(query.value("hospital_logo_path").toString());
             hospitalNameEdit->setText(query.value("hospital_name").toString());
@@ -393,7 +399,8 @@ void SettingsPage::saveSettingsToDatabase() {
         query.prepare("UPDATE settings SET hospital_logo_path=?, hospital_name=?, software_name=?, "
                       "hospital_email=?, hospital_address=?, state=?, district=?, pin=?, "
                       "about_hospital=?, watermark_logo_path=?, storage_path=?, hospital_phone=?, "
-                      "rtsp_link=?, video_input=?, show_video_label=?");
+                      "rtsp_link=?, video_input=?, show_video_label=? "
+                      "WHERE id = (SELECT MIN(id) FROM settings)");
     } else {
         query.prepare("INSERT INTO settings (hospital_logo_path, hospital_name, software_name, "
                       "hospital_email, hospital_address, state, district, pin, about_hospital, "

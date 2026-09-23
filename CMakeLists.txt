@@ -1,6 +1,11 @@
 cmake_minimum_required(VERSION 3.14)
 project(medical_qt_app)
 
+# Default to an optimised build; an empty build type compiles without optimisation
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+    set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
+endif()
+
 set(CMAKE_CXX_STANDARD 17)
 
 # ✅ Enable Qt MOC, RCC, and UIC
@@ -8,13 +13,21 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-# ✅ Enable CUDA
-enable_language(CUDA)
-
 # ---- CUDA Toolkit ----
 if(NOT DEFINED CUDA_TOOLKIT_ROOT_DIR)
     set(CUDA_TOOLKIT_ROOT_DIR "/usr/local/cuda")
 endif()
+
+# ✅ Enable CUDA (RTX A400 = Ampere, compute capability 8.6).
+# Compile kernels with the same toolkit whose headers and libcudart are used below; the distro
+# nvcc in /usr/bin is a different (older) version.
+if(NOT DEFINED CMAKE_CUDA_COMPILER AND EXISTS "${CUDA_TOOLKIT_ROOT_DIR}/bin/nvcc")
+    set(CMAKE_CUDA_COMPILER "${CUDA_TOOLKIT_ROOT_DIR}/bin/nvcc")
+endif()
+if(NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
+    set(CMAKE_CUDA_ARCHITECTURES 86)
+endif()
+enable_language(CUDA)
 
 include_directories(${CUDA_TOOLKIT_ROOT_DIR}/include)
 link_directories(${CUDA_TOOLKIT_ROOT_DIR}/targets/x86_64-linux/lib)
@@ -73,6 +86,7 @@ file(GLOB_RECURSE SRC_FILES
     ${CMAKE_SOURCE_DIR}/decklink/*.cpp
     ${CMAKE_SOURCE_DIR}/decklink/*.h
     ${CMAKE_SOURCE_DIR}/include/DeckLinkAPIDispatch.cpp
+    ${CMAKE_SOURCE_DIR}/cuda/frame_convert.cu
     ${CMAKE_SOURCE_DIR}/ui/**/*.cpp
     ${CMAKE_SOURCE_DIR}/ui/**/*.hpp
     ${CMAKE_SOURCE_DIR}/api/**/*.cpp

@@ -1,0 +1,799 @@
+********* Start testing of TstVideoRecorder *********
+Config: Using QtTest library 5.15.3, Qt 5.15.3 (x86_64-little_endian-lp64 shared (dynamic) release build; by GCC 11.3.0), ubuntu 22.04
+# out=/tmp/claude-1000/vr_tests relax=0 nvenc=0x708600a1eba0 h264dec=0x708600a13f20 libavcodec=4.4.2-0ubuntu0.22.04.1 pid=47121
+PASS   : TstVideoRecorder::initTestCase()
+QINFO  : TstVideoRecorder::basic1080p60() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/basic.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::basic1080p60() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/basic.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::basic1080p60() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/basic.mp4" encoded 601 dropped 0
+  [basic] size=148184 opened=1 err='' codec=h264 1920x1080 fmt_dur=10.0167s last_pts_end=10.0167s avg_fps=60.0000 packets=601 keyframes=11 bitrate=0.11Mbps decoded=601 dec_err=0 read_err=EOF tb=1/120000
+  METRIC basic1080p60 fed=601 encoded=601 dropped=0 feed_fps=60.00 start_call_ms=0.40 recordingStarted_ms=383 stop_call_ms=0.002 finalise_ms=159 file_dur=10.0167s
+  [ok  ] feeder kept a realistic 60 fps pace (60.00 fps, max late 0.0 ms)
+  [ok  ] encoded == fed (601 == 601)
+  [ok  ] dropped == 0 (got 0)
+  [ok  ] file opens with libavformat: 
+  [ok  ] h264 1920x1080 (got h264 1920x1080)
+  [ok  ] packets in file == encoded (601 == 601)
+  [ok  ] last pts end 10.0167 s within 1 frame of fed stream time 10.0167 s
+  [ok  ] container duration 10.0167 s within 1 frame of fed 10.0167 s
+  [ok  ] pts timeline exact vs capture clock (mismatches=0 first_bad=-1)
+  [ok  ] all frames decode (601 decoded, 0 errors)
+  [ok  ] decoded frame content == fed frame, in order, no duplicates (0 mismatches)
+  [ok  ] avg_frame_rate 60 fps (got 60.0000)
+  [ok  ] first packet is a keyframe
+  [ok  ] keyframe every 60 frames (~1 s): 11 keyframes, 0 bad intervals
+  [ok  ] no errorOccurred / framesDropped: 
+  [ok  ] recordingStopped path == requested path
+  [ok  ] startRecording() returns on GUI thread in < 50 ms (0.40 ms)
+  [ok  ] recordingStarted within 2 s (383 ms)
+  [ok  ] stopRecording() < 50 ms (0.002 ms)
+  [ok  ] finalisation (stop -> recordingStopped delivered) < 2 s (159 ms, emitted at 157 ms)
+PASS   : TstVideoRecorder::basic1080p60()
+QINFO  : TstVideoRecorder::pixelExact(UYVY) [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/pixel_UYVY.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::pixelExact(UYVY) [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/pixel_UYVY.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::pixelExact(UYVY) [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/pixel_UYVY.mp4" encoded 30 dropped 0
+  [pixel] size=5186 opened=1 err='' codec=h264 1920x1080 fmt_dur=0.5000s last_pts_end=0.5000s avg_fps=60.0000 packets=30 keyframes=1 bitrate=0.07Mbps decoded=30 dec_err=0 read_err=EOF tb=1/120000
+  METRIC pixelExact/UYVY max_abs_err Y=0 Cb=0 Cr=0 (tolerance 1, frames checked 3, all interior pixels of 16 patches)
+  [ok  ] fed=30 encoded=30 dropped=0 decoded=30
+  [ok  ] frames 0/15/29 decoded and checked
+  [ok  ] luma within +-1 (max 0; worst: )
+  [ok  ] chroma within +-1 (Cb 0, Cr 0)
+  [ok  ] stream signals limited range BT.709 (range=1 space=1)
+PASS   : TstVideoRecorder::pixelExact(UYVY)
+QINFO  : TstVideoRecorder::pixelExact(ARGB) [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/pixel_ARGB.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::pixelExact(ARGB) [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/pixel_ARGB.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::pixelExact(ARGB) [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/pixel_ARGB.mp4" encoded 30 dropped 0
+  [pixel] size=5252 opened=1 err='' codec=h264 1920x1080 fmt_dur=0.5000s last_pts_end=0.5000s avg_fps=60.0000 packets=30 keyframes=1 bitrate=0.07Mbps decoded=30 dec_err=0 read_err=EOF tb=1/120000
+  METRIC pixelExact/ARGB max_abs_err Y=0 Cb=0 Cr=0 (tolerance 3, frames checked 3, all interior pixels of 16 patches)
+  [ok  ] fed=30 encoded=30 dropped=0 decoded=30
+  [ok  ] frames 0/15/29 decoded and checked
+  [ok  ] luma within +-3 (max 0; worst: )
+  [ok  ] chroma within +-3 (Cb 0, Cr 0)
+  [ok  ] stream signals limited range BT.709 (range=1 space=1)
+PASS   : TstVideoRecorder::pixelExact(ARGB)
+QINFO  : TstVideoRecorder::pixelExact(BGRA) [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/pixel_BGRA.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::pixelExact(BGRA) [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/pixel_BGRA.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::pixelExact(BGRA) [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/pixel_BGRA.mp4" encoded 30 dropped 0
+  [pixel] size=5252 opened=1 err='' codec=h264 1920x1080 fmt_dur=0.5000s last_pts_end=0.5000s avg_fps=60.0000 packets=30 keyframes=1 bitrate=0.07Mbps decoded=30 dec_err=0 read_err=EOF tb=1/120000
+  METRIC pixelExact/BGRA max_abs_err Y=0 Cb=0 Cr=0 (tolerance 3, frames checked 3, all interior pixels of 16 patches)
+  [ok  ] fed=30 encoded=30 dropped=0 decoded=30
+  [ok  ] frames 0/15/29 decoded and checked
+  [ok  ] luma within +-3 (max 0; worst: )
+  [ok  ] chroma within +-3 (Cb 0, Cr 0)
+  [ok  ] stream signals limited range BT.709 (range=1 space=1)
+PASS   : TstVideoRecorder::pixelExact(BGRA)
+QINFO  : TstVideoRecorder::flipSteps(UYVY_step0) [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/flip_UYVY_0.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::flipSteps(UYVY_step0) [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/flip_UYVY_0.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::flipSteps(UYVY_step0) [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/flip_UYVY_0.mp4" encoded 20 dropped 0
+  METRIC flipSteps/UYVY_step0 block bbox x=[100,399] y=[60,299] expected x=[100,399] y=[60,299] bright_px=72000/72000 centre Cb/Cr=60/200 (exp 60/200)
+  [ok  ] all frames encoded/decoded
+  [ok  ] bright block at the flipped position (+-1 px)
+  [ok  ] bright pixel count == block area (+-1%)
+  [ok  ] block chroma preserved after flip (+-3)
+PASS   : TstVideoRecorder::flipSteps(UYVY_step0)
+QINFO  : TstVideoRecorder::flipSteps(UYVY_step1) [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/flip_UYVY_1.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::flipSteps(UYVY_step1) [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/flip_UYVY_1.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::flipSteps(UYVY_step1) [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/flip_UYVY_1.mp4" encoded 20 dropped 0
+  METRIC flipSteps/UYVY_step1 block bbox x=[1520,1819] y=[60,299] expected x=[1520,1819] y=[60,299] bright_px=72000/72000 centre Cb/Cr=60/200 (exp 60/200)
+  [ok  ] all frames encoded/decoded
+  [ok  ] bright block at the flipped position (+-1 px)
+  [ok  ] bright pixel count == block area (+-1%)
+  [ok  ] block chroma preserved after flip (+-3)
+PASS   : TstVideoRecorder::flipSteps(UYVY_step1)
+QINFO  : TstVideoRecorder::flipSteps(UYVY_step2) [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/flip_UYVY_2.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::flipSteps(UYVY_step2) [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/flip_UYVY_2.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::flipSteps(UYVY_step2) [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/flip_UYVY_2.mp4" encoded 20 dropped 0
+  METRIC flipSteps/UYVY_step2 block bbox x=[1520,1819] y=[780,1019] expected x=[1520,1819] y=[780,1019] bright_px=72000/72000 centre Cb/Cr=60/200 (exp 60/200)
+  [ok  ] all frames encoded/decoded
+  [ok  ] bright block at the flipped position (+-1 px)
+  [ok  ] bright pixel count == block area (+-1%)
+  [ok  ] block chroma preserved after flip (+-3)
+PASS   : TstVideoRecorder::flipSteps(UYVY_step2)
+QINFO  : TstVideoRecorder::flipSteps(UYVY_step3) [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/flip_UYVY_3.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::flipSteps(UYVY_step3) [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/flip_UYVY_3.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::flipSteps(UYVY_step3) [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/flip_UYVY_3.mp4" encoded 20 dropped 0
+  METRIC flipSteps/UYVY_step3 block bbox x=[100,399] y=[780,1019] expected x=[100,399] y=[780,1019] bright_px=72000/72000 centre Cb/Cr=60/200 (exp 60/200)
+  [ok  ] all frames encoded/decoded
+  [ok  ] bright block at the flipped position (+-1 px)
+  [ok  ] bright pixel count == block area (+-1%)
+  [ok  ] block chroma preserved after flip (+-3)
+PASS   : TstVideoRecorder::flipSteps(UYVY_step3)
+QINFO  : TstVideoRecorder::flipSteps(BGRA_step0) [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/flip_BGRA_0.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::flipSteps(BGRA_step0) [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/flip_BGRA_0.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::flipSteps(BGRA_step0) [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/flip_BGRA_0.mp4" encoded 20 dropped 0
+  METRIC flipSteps/BGRA_step0 block bbox x=[100,399] y=[60,299] expected x=[100,399] y=[60,299] bright_px=72000/72000 centre Cb/Cr=52/159 (exp 52/159)
+  [ok  ] all frames encoded/decoded
+  [ok  ] bright block at the flipped position (+-1 px)
+  [ok  ] bright pixel count == block area (+-1%)
+  [ok  ] block chroma preserved after flip (+-3)
+PASS   : TstVideoRecorder::flipSteps(BGRA_step0)
+QINFO  : TstVideoRecorder::flipSteps(BGRA_step1) [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/flip_BGRA_1.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::flipSteps(BGRA_step1) [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/flip_BGRA_1.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::flipSteps(BGRA_step1) [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/flip_BGRA_1.mp4" encoded 20 dropped 0
+  METRIC flipSteps/BGRA_step1 block bbox x=[1520,1819] y=[60,299] expected x=[1520,1819] y=[60,299] bright_px=72000/72000 centre Cb/Cr=52/159 (exp 52/159)
+  [ok  ] all frames encoded/decoded
+  [ok  ] bright block at the flipped position (+-1 px)
+  [ok  ] bright pixel count == block area (+-1%)
+  [ok  ] block chroma preserved after flip (+-3)
+PASS   : TstVideoRecorder::flipSteps(BGRA_step1)
+QINFO  : TstVideoRecorder::flipSteps(BGRA_step2) [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/flip_BGRA_2.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::flipSteps(BGRA_step2) [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/flip_BGRA_2.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::flipSteps(BGRA_step2) [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/flip_BGRA_2.mp4" encoded 20 dropped 0
+  METRIC flipSteps/BGRA_step2 block bbox x=[1520,1819] y=[780,1019] expected x=[1520,1819] y=[780,1019] bright_px=72000/72000 centre Cb/Cr=52/159 (exp 52/159)
+  [ok  ] all frames encoded/decoded
+  [ok  ] bright block at the flipped position (+-1 px)
+  [ok  ] bright pixel count == block area (+-1%)
+  [ok  ] block chroma preserved after flip (+-3)
+PASS   : TstVideoRecorder::flipSteps(BGRA_step2)
+QINFO  : TstVideoRecorder::flipSteps(BGRA_step3) [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/flip_BGRA_3.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::flipSteps(BGRA_step3) [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/flip_BGRA_3.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::flipSteps(BGRA_step3) [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/flip_BGRA_3.mp4" encoded 20 dropped 0
+  METRIC flipSteps/BGRA_step3 block bbox x=[100,399] y=[780,1019] expected x=[100,399] y=[780,1019] bright_px=72000/72000 centre Cb/Cr=52/159 (exp 52/159)
+  [ok  ] all frames encoded/decoded
+  [ok  ] bright block at the flipped position (+-1 px)
+  [ok  ] bright pixel count == block area (+-1%)
+  [ok  ] block chroma preserved after flip (+-3)
+PASS   : TstVideoRecorder::flipSteps(BGRA_step3)
+QINFO  : TstVideoRecorder::durationAccuracy() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/dur5994.mp4" 1920 x 1080 fps 59.9401 bitrate 16157922
+QINFO  : TstVideoRecorder::durationAccuracy() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/dur5994.mp4" 1920 x 1080 @ 59.9401 fps
+QINFO  : TstVideoRecorder::durationAccuracy() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/dur5994.mp4" encoded 3597 dropped 0
+  [dur] size=870044 opened=1 err='' codec=h264 1920x1080 fmt_dur=60.0100s last_pts_end=60.0100s avg_fps=59.9401 packets=3597 keyframes=60 bitrate=0.11Mbps decoded=0 dec_err=0 read_err=EOF tb=1/120000
+  METRIC durationAccuracy fed=3597 encoded=3597 dropped=0 fed_stream_time=60.0100s file_last_pts_end=60.0100s container_dur=60.0100s diff=0.00ms wall=60.010s avg_fps=59.9401
+  [ok  ] encoded == fed (3597 == 3597)
+  [ok  ] dropped == 0 (got 0)
+  [ok  ] file opens with libavformat: 
+  [ok  ] h264 1920x1080 (got h264 1920x1080)
+  [ok  ] packets in file == encoded (3597 == 3597)
+  [ok  ] last pts end 60.0100 s within 1 frame of fed stream time 60.0100 s
+  [ok  ] container duration 60.0100 s within 1 frame of fed 60.0100 s
+  [ok  ] pts timeline exact vs capture clock (mismatches=0 first_bad=-1)
+  [ok  ] avg_frame_rate 59.94 (got 59.9401)
+  [ok  ] feeder real-time (stream 60.010 s vs wall 60.010 s)
+PASS   : TstVideoRecorder::durationAccuracy()
+QINFO  : TstVideoRecorder::streamGaps() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/gaps.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::streamGaps() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/gaps.mp4" 1920 x 1080 @ 60 fps
+QWARN  : TstVideoRecorder::streamGaps() [VideoRecorder] Frames dropped so far: 5
+QINFO  : TstVideoRecorder::streamGaps() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/gaps.mp4" encoded 300 dropped 5
+  [gaps] size=74324 opened=1 err='' codec=h264 1920x1080 fmt_dur=5.0833s last_pts_end=5.0833s avg_fps=59.0164 packets=300 keyframes=5 bitrate=0.11Mbps decoded=300 dec_err=0 read_err=EOF tb=1/120000
+  METRIC streamGaps fed=300 encoded=300 dropped_reported=5 gap_at_packet=90 framesDropped_signals=[5]
+  [ok  ] encoded == fed (300 == 300)
+  [ok  ] file opens with libavformat: 
+  [ok  ] h264 1920x1080 (got h264 1920x1080)
+  [ok  ] packets in file == encoded (300 == 300)
+  [ok  ] last pts end 5.0833 s within 1 frame of fed stream time 5.0833 s
+  [ok  ] container duration 5.0833 s within 1 frame of fed 5.0833 s
+  [ok  ] pts timeline exact vs capture clock (mismatches=0 first_bad=-1)
+  [ok  ] recordingStopped reports dropped == 5 (got 5)
+  [ok  ] exactly one 6-frame pts step in the file, others 1 frame (gaps=1 other=0)
+  [ok  ] framesDropped(5) emitted during recording
+  [ok  ] decoded content matches the timeline (0 mismatches)
+PASS   : TstVideoRecorder::streamGaps()
+QINFO  : TstVideoRecorder::poolOverflow(burst) [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/pool.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::poolOverflow(burst) [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/pool.mp4" 1920 x 1080 @ 60 fps
+QWARN  : TstVideoRecorder::poolOverflow(burst) [VideoRecorder] Frames dropped so far: 316
+QINFO  : TstVideoRecorder::poolOverflow(burst) [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/pool.mp4" encoded 313 dropped 316
+  [pool] size=78453 opened=1 err='' codec=h264 1920x1080 fmt_dur=7.8500s last_pts_end=7.8500s avg_fps=39.8726 packets=313 keyframes=6 bitrate=0.08Mbps decoded=313 dec_err=0 read_err=EOF tb=1/120000
+  METRIC poolOverflow/burst overflow phase: 201 frames in 27.9 ms (7205 fps); pushed=471 encoded=313 not_encoded=158 dropped_reported=316 timeline_missing_slots=158 framesDropped_signals=1 pushFrame_us(burst) med=0.1 p99=786.8 max=818.1
+  [ok  ] pool overflow was provoked (158 frames not encoded)
+  [FAIL] encoded + dropped == pushed (313 + 316 = 629, pushed 471)
+  [ok  ] no silent loss: dropped (316) >= frames not encoded (158)
+  [ok  ] framesDropped signal emitted while recording
+  [ok  ] file packets == encoded, decodes cleanly
+  [ok  ] no reordering / duplicates after overflow
+  [ok  ] timestamps of surviving frames follow the capture clock (0 mismatches)
+FAIL!  : TstVideoRecorder::poolOverflow(burst) 'fails.isEmpty()' returned FALSE. (encoded + dropped == pushed (313 + 316 = 629, pushed 471))
+   Loc: [/home/brainwave/QT-C-VMS/tests/unit_gpu/tst_videorecorder.cpp(892)]
+QINFO  : TstVideoRecorder::poolOverflow(gpuStall) [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/pool.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::poolOverflow(gpuStall) [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/pool.mp4" 1920 x 1080 @ 60 fps
+  [ok  ] stall kernel launched (cuda error 0)
+QWARN  : TstVideoRecorder::poolOverflow(gpuStall) [VideoRecorder] Frames dropped so far: 53
+QWARN  : TstVideoRecorder::poolOverflow(gpuStall) [VideoRecorder] Frames dropped so far: 106
+QINFO  : TstVideoRecorder::poolOverflow(gpuStall) [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/pool.mp4" encoded 308 dropped 106
+  [pool] size=77840 opened=1 err='' codec=h264 1920x1080 fmt_dur=6.0167s last_pts_end=6.0167s avg_fps=51.1911 packets=308 keyframes=6 bitrate=0.10Mbps decoded=308 dec_err=0 read_err=EOF tb=1/120000
+  METRIC poolOverflow/gpuStall overflow phase: 91 frames in 1501.8 ms (61 fps); pushed=361 encoded=308 not_encoded=53 dropped_reported=106 timeline_missing_slots=53 framesDropped_signals=2 pushFrame_us(burst) med=0.5 p99=1144.9 max=1144.9
+  [ok  ] pool overflow was provoked (53 frames not encoded)
+  [FAIL] encoded + dropped == pushed (308 + 106 = 414, pushed 361)
+  [ok  ] no silent loss: dropped (106) >= frames not encoded (53)
+  [ok  ] framesDropped signal emitted while recording
+  [ok  ] file packets == encoded, decodes cleanly
+  [ok  ] no reordering / duplicates after overflow
+  [ok  ] timestamps of surviving frames follow the capture clock (0 mismatches)
+FAIL!  : TstVideoRecorder::poolOverflow(gpuStall) 'fails.isEmpty()' returned FALSE. (encoded + dropped == pushed (308 + 106 = 414, pushed 361))
+   Loc: [/home/brainwave/QT-C-VMS/tests/unit_gpu/tst_videorecorder.cpp(892)]
+QWARN  : TstVideoRecorder::noSignal() [VideoRecorder] "No video signal from the capture card. Check the camera connection."
+  [ok  ] no frame ever: false, 'No video signal from the capture card. Check the camera connection.'
+QWARN  : TstVideoRecorder::noSignal() [VideoRecorder] "No video signal from the capture card. Check the camera connection."
+  [ok  ] last frame 600 ms ago: false, 'No video signal from the capture card. Check the camera connection.'
+  [ok  ] last frame 300 ms ago: start accepted ()
+QINFO  : TstVideoRecorder::noSignal() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/nosig_c.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::noSignal() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/nosig_c.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::noSignal() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/nosig_c.mp4" encoded 0 dropped 0
+  [ok  ] stopped cleanly
+QWARN  : TstVideoRecorder::noSignal() [VideoRecorder] "No video signal from the capture card. Check the camera connection."
+  [ok  ] only no-input-source frames: false, 'No video signal from the capture card. Check the camera connection.'
+QWARN  : TstVideoRecorder::noSignal() [VideoRecorder] "No video signal from the capture card. Check the camera connection."
+  [ok  ] hasSignal=false frames for 700 ms after a good frame: false, 'No video signal from the capture card. Check the camera connection.'
+  [ok  ] signal back: start accepted ()
+QINFO  : TstVideoRecorder::noSignal() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/nosig_e.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::noSignal() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/nosig_e.mp4" 1920 x 1080 @ 60 fps
+  [ok  ] recordingStarted
+QINFO  : TstVideoRecorder::noSignal() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/nosig_e.mp4" encoded 30 dropped 0
+  [ok  ] file playable (30 packets)
+PASS   : TstVideoRecorder::noSignal()
+QINFO  : TstVideoRecorder::startFailures() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/warm.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startFailures() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/warm.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startFailures() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/warm.mp4" encoded 60 dropped 0
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "The recording folder is missing or not writable:\n/tmp/claude-1000/vr_tests/no_such_dir"
+  [ok  ] missing folder -> synchronous false: 'The recording folder is missing or not writable: /tmp/claude-1000/vr_tests/no_such_dir'
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "The recording folder is missing or not writable:\n/tmp/claude-1000/vr_tests/ro_dir"
+  [ok  ] read-only folder (0555) -> synchronous false: 'The recording folder is missing or not writable: /tmp/claude-1000/vr_tests/ro_dir'
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "The input pixel format is not supported for recording (8-bit YUV or RGB required)."
+  [ok  ] unsupported pixel format -> synchronous false: 'The input pixel format is not supported for recording (8-bit YUV or RGB required).'
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "Unsupported input resolution 1280x721."
+  [ok  ] odd resolution 1280x721 -> synchronous false: 'Unsupported input resolution 1280x721.'
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "Could not open the recording file for writing (Permission denied):\n/tmp/claude-1000/vr_tests/ro_file.mp4"
+[errorOccurred] Could not open the recording file for writing (Permission denied):
+/tmp/claude-1000/vr_tests/ro_file.mp4
+  [ok  ] existing read-only file (0444) -> start()=1, then errorOccurred + recordingStopped(path,0,0): 'Could not open the recording file for writing (Permission denied): /tmp/claude-1000/vr_tests/ro_file.mp4'
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "Could not open the recording file for writing (Is a directory):\n/tmp/claude-1000/vr_tests/isdir.mp4"
+[errorOccurred] Could not open the recording file for writing (Is a directory):
+/tmp/claude-1000/vr_tests/isdir.mp4
+  [ok  ] path is a directory -> start()=1, then errorOccurred + recordingStopped(path,0,0): 'Could not open the recording file for writing (Is a directory): /tmp/claude-1000/vr_tests/isdir.mp4'
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "The recording folder is missing or not writable:\n/tmp/claude-1000/vr_tests/no_such_dir"
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "The recording folder is missing or not writable:\n/tmp/claude-1000/vr_tests/ro_dir"
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "The input pixel format is not supported for recording (8-bit YUV or RGB required)."
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "Unsupported input resolution 1280x721."
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "Could not open the recording file for writing (Permission denied):\n/tmp/claude-1000/vr_tests/ro_file.mp4"
+[errorOccurred] Could not open the recording file for writing (Permission denied):
+/tmp/claude-1000/vr_tests/ro_file.mp4
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "Could not open the recording file for writing (Is a directory):\n/tmp/claude-1000/vr_tests/isdir.mp4"
+[errorOccurred] Could not open the recording file for writing (Is a directory):
+/tmp/claude-1000/vr_tests/isdir.mp4
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "The recording folder is missing or not writable:\n/tmp/claude-1000/vr_tests/no_such_dir"
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "The recording folder is missing or not writable:\n/tmp/claude-1000/vr_tests/ro_dir"
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "The input pixel format is not supported for recording (8-bit YUV or RGB required)."
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "Unsupported input resolution 1280x721."
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "Could not open the recording file for writing (Permission denied):\n/tmp/claude-1000/vr_tests/ro_file.mp4"
+[errorOccurred] Could not open the recording file for writing (Permission denied):
+/tmp/claude-1000/vr_tests/ro_file.mp4
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "Could not open the recording file for writing (Is a directory):\n/tmp/claude-1000/vr_tests/isdir.mp4"
+[errorOccurred] Could not open the recording file for writing (Is a directory):
+/tmp/claude-1000/vr_tests/isdir.mp4
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "The recording folder is missing or not writable:\n/tmp/claude-1000/vr_tests/no_such_dir"
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "The recording folder is missing or not writable:\n/tmp/claude-1000/vr_tests/ro_dir"
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "The input pixel format is not supported for recording (8-bit YUV or RGB required)."
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "Unsupported input resolution 1280x721."
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "Could not open the recording file for writing (Permission denied):\n/tmp/claude-1000/vr_tests/ro_file.mp4"
+[errorOccurred] Could not open the recording file for writing (Permission denied):
+/tmp/claude-1000/vr_tests/ro_file.mp4
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "Could not open the recording file for writing (Is a directory):\n/tmp/claude-1000/vr_tests/isdir.mp4"
+[errorOccurred] Could not open the recording file for writing (Is a directory):
+/tmp/claude-1000/vr_tests/isdir.mp4
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "The recording folder is missing or not writable:\n/tmp/claude-1000/vr_tests/no_such_dir"
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "The recording folder is missing or not writable:\n/tmp/claude-1000/vr_tests/ro_dir"
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "The input pixel format is not supported for recording (8-bit YUV or RGB required)."
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "Unsupported input resolution 1280x721."
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "Could not open the recording file for writing (Permission denied):\n/tmp/claude-1000/vr_tests/ro_file.mp4"
+[errorOccurred] Could not open the recording file for writing (Permission denied):
+/tmp/claude-1000/vr_tests/ro_file.mp4
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "Could not open the recording file for writing (Is a directory):\n/tmp/claude-1000/vr_tests/isdir.mp4"
+[errorOccurred] Could not open the recording file for writing (Is a directory):
+/tmp/claude-1000/vr_tests/isdir.mp4
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "The recording folder is missing or not writable:\n/tmp/claude-1000/vr_tests/no_such_dir"
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "The recording folder is missing or not writable:\n/tmp/claude-1000/vr_tests/ro_dir"
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "The input pixel format is not supported for recording (8-bit YUV or RGB required)."
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "Unsupported input resolution 1280x721."
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "Could not open the recording file for writing (Permission denied):\n/tmp/claude-1000/vr_tests/ro_file.mp4"
+[errorOccurred] Could not open the recording file for writing (Permission denied):
+/tmp/claude-1000/vr_tests/ro_file.mp4
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "Could not open the recording file for writing (Is a directory):\n/tmp/claude-1000/vr_tests/isdir.mp4"
+[errorOccurred] Could not open the recording file for writing (Is a directory):
+/tmp/claude-1000/vr_tests/isdir.mp4
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "The recording folder is missing or not writable:\n/tmp/claude-1000/vr_tests/no_such_dir"
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "The recording folder is missing or not writable:\n/tmp/claude-1000/vr_tests/ro_dir"
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "The input pixel format is not supported for recording (8-bit YUV or RGB required)."
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "Unsupported input resolution 1280x721."
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "Could not open the recording file for writing (Permission denied):\n/tmp/claude-1000/vr_tests/ro_file.mp4"
+[errorOccurred] Could not open the recording file for writing (Permission denied):
+/tmp/claude-1000/vr_tests/ro_file.mp4
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "Could not open the recording file for writing (Is a directory):\n/tmp/claude-1000/vr_tests/isdir.mp4"
+[errorOccurred] Could not open the recording file for writing (Is a directory):
+/tmp/claude-1000/vr_tests/isdir.mp4
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "The recording folder is missing or not writable:\n/tmp/claude-1000/vr_tests/no_such_dir"
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "The recording folder is missing or not writable:\n/tmp/claude-1000/vr_tests/ro_dir"
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "The input pixel format is not supported for recording (8-bit YUV or RGB required)."
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "Unsupported input resolution 1280x721."
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "Could not open the recording file for writing (Permission denied):\n/tmp/claude-1000/vr_tests/ro_file.mp4"
+[errorOccurred] Could not open the recording file for writing (Permission denied):
+/tmp/claude-1000/vr_tests/ro_file.mp4
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "Could not open the recording file for writing (Is a directory):\n/tmp/claude-1000/vr_tests/isdir.mp4"
+[errorOccurred] Could not open the recording file for writing (Is a directory):
+/tmp/claude-1000/vr_tests/isdir.mp4
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "The recording folder is missing or not writable:\n/tmp/claude-1000/vr_tests/no_such_dir"
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "The recording folder is missing or not writable:\n/tmp/claude-1000/vr_tests/ro_dir"
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "The input pixel format is not supported for recording (8-bit YUV or RGB required)."
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "Unsupported input resolution 1280x721."
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "Could not open the recording file for writing (Permission denied):\n/tmp/claude-1000/vr_tests/ro_file.mp4"
+[errorOccurred] Could not open the recording file for writing (Permission denied):
+/tmp/claude-1000/vr_tests/ro_file.mp4
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "Could not open the recording file for writing (Is a directory):\n/tmp/claude-1000/vr_tests/isdir.mp4"
+[errorOccurred] Could not open the recording file for writing (Is a directory):
+/tmp/claude-1000/vr_tests/isdir.mp4
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "The recording folder is missing or not writable:\n/tmp/claude-1000/vr_tests/no_such_dir"
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "The recording folder is missing or not writable:\n/tmp/claude-1000/vr_tests/ro_dir"
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "The input pixel format is not supported for recording (8-bit YUV or RGB required)."
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "Unsupported input resolution 1280x721."
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "Could not open the recording file for writing (Permission denied):\n/tmp/claude-1000/vr_tests/ro_file.mp4"
+[errorOccurred] Could not open the recording file for writing (Permission denied):
+/tmp/claude-1000/vr_tests/ro_file.mp4
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "Could not open the recording file for writing (Is a directory):\n/tmp/claude-1000/vr_tests/isdir.mp4"
+[errorOccurred] Could not open the recording file for writing (Is a directory):
+/tmp/claude-1000/vr_tests/isdir.mp4
+  METRIC startFailures 10 rounds x 6 failure kinds = 60 attempts; sync ok 40, async ok 20
+  METRIC startFailures after warm-up: rss=420124KB hwm=876844KB threads=6 fds=36 gpu_pid=44MiB gpu_dev=966MiB
+  METRIC startFailures after round 1: rss=420224KB hwm=876844KB threads=6 fds=36 gpu_pid=44MiB gpu_dev=966MiB
+  METRIC startFailures after round 10: rss=420372KB hwm=876844KB threads=6 fds=36 gpu_pid=44MiB gpu_dev=966MiB
+  MSG missing folder: The recording folder is missing or not writable: /tmp/claude-1000/vr_tests/no_such_dir
+  MSG read-only folder (0555): The recording folder is missing or not writable: /tmp/claude-1000/vr_tests/ro_dir
+  MSG unsupported pixel format: The input pixel format is not supported for recording (8-bit YUV or RGB required).
+  MSG odd resolution 1280x721: Unsupported input resolution 1280x721.
+  MSG existing read-only file (0444): Could not open the recording file for writing (Permission denied): /tmp/claude-1000/vr_tests/ro_file.mp4
+  MSG path is a directory: Could not open the recording file for writing (Is a directory): /tmp/claude-1000/vr_tests/isdir.mp4
+  [ok  ] RSS growth round1->10 <= 4 MB (148 KB)
+  [ok  ] no fd leak (round1 36, warm-up 36 -> 36)
+  [ok  ] no thread leak (6 -> 6)
+  [ok  ] no per-process GPU memory growth (44 -> 44 MiB)
+QINFO  : TstVideoRecorder::startFailures() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/after_fail.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startFailures() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/after_fail.mp4" 1920 x 1080 @ 60 fps
+  [ok  ] valid start after failures succeeds: 
+QINFO  : TstVideoRecorder::startFailures() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/after_fail.mp4" encoded 61 dropped 0
+  [ok  ] recording after failures is complete (fed 61 enc 61 drop 0 packets 61)
+[AVHWDeviceContext @ 0x796c08000900] cu->cuInit(0) failed -> CUDA_ERROR_NO_DEVICE: no CUDA-capable device is detected
+[qt:W] [VideoRecorder] "Could not initialise the GPU for recording (Unknown error occurred)."
+[errorOccurred] Could not initialise the GPU for recording (Unknown error occurred).
+[AVHWDeviceContext @ 0x796c080278c0] cu->cuInit(0) failed -> CUDA_ERROR_NO_DEVICE: no CUDA-capable device is detected
+[qt:W] [VideoRecorder] "Could not initialise the GPU for recording (Unknown error occurred)."
+[errorOccurred] Could not initialise the GPU for recording (Unknown error occurred).
+[AVHWDeviceContext @ 0x796c08027900] cu->cuInit(0) failed -> CUDA_ERROR_NO_DEVICE: no CUDA-capable device is detected
+[qt:W] [VideoRecorder] "Could not initialise the GPU for recording (Unknown error occurred)."
+[errorOccurred] Could not initialise the GPU for recording (Unknown error occurred).
+[AVHWDeviceContext @ 0x796c08027640] cu->cuInit(0) failed -> CUDA_ERROR_NO_DEVICE: no CUDA-capable device is detected
+[qt:W] [VideoRecorder] "Could not initialise the GPU for recording (Unknown error occurred)."
+[errorOccurred] Could not initialise the GPU for recording (Unknown error occurred).
+[AVHWDeviceContext @ 0x796c08027680] cu->cuInit(0) failed -> CUDA_ERROR_NO_DEVICE: no CUDA-capable device is detected
+[qt:W] [VideoRecorder] "Could not initialise the GPU for recording (Unknown error occurred)."
+[errorOccurred] Could not initialise the GPU for recording (Unknown error occurred).
+[AVHWDeviceContext @ 0x796c080276c0] cu->cuInit(0) failed -> CUDA_ERROR_NO_DEVICE: no CUDA-capable device is detected
+[qt:W] [VideoRecorder] "Could not initialise the GPU for recording (Unknown error occurred)."
+[errorOccurred] Could not initialise the GPU for recording (Unknown error occurred).
+[AVHWDeviceContext @ 0x796c08027000] cu->cuInit(0) failed -> CUDA_ERROR_NO_DEVICE: no CUDA-capable device is detected
+[qt:W] [VideoRecorder] "Could not initialise the GPU for recording (Unknown error occurred)."
+[errorOccurred] Could not initialise the GPU for recording (Unknown error occurred).
+[AVHWDeviceContext @ 0x796c08027680] cu->cuInit(0) failed -> CUDA_ERROR_NO_DEVICE: no CUDA-capable device is detected
+[qt:W] [VideoRecorder] "Could not initialise the GPU for recording (Unknown error occurred)."
+[errorOccurred] Could not initialise the GPU for recording (Unknown error occurred).
+[AVHWDeviceContext @ 0x796c08027000] cu->cuInit(0) failed -> CUDA_ERROR_NO_DEVICE: no CUDA-capable device is detected
+[qt:W] [VideoRecorder] "Could not initialise the GPU for recording (Unknown error occurred)."
+[errorOccurred] Could not initialise the GPU for recording (Unknown error occurred).
+[AVHWDeviceContext @ 0x796c08026680] cu->cuInit(0) failed -> CUDA_ERROR_NO_DEVICE: no CUDA-capable device is detected
+[qt:W] [VideoRecorder] "Could not initialise the GPU for recording (Unknown error occurred)."
+[errorOccurred] Could not initialise the GPU for recording (Unknown error occurred).
+REPORT attempts=10 sync_true=10 sync_false=0 errors=10 stops=10 started_signals=0 files_left=0 is_recording=0 rss_delta_kb=176 fd_delta=0 thr_delta=0 stops_enc0=10
+MSG Could not initialise the GPU for recording (Unknown error occurred).
+  METRIC startFailures CUDA_VISIBLE_DEVICES='' child: exited(0) sync_true=10 errors=10 stops=10 started=0 files_left=0 rss_delta=176KB fd_delta=0 thr_delta=0
+  [ok  ] no-GPU child exits cleanly: exited(0)
+  [ok  ] no-GPU child: 10 starts -> 10 x (errorOccurred + recordingStopped(0,0)), no recordingStarted, no files
+  [ok  ] no-GPU message names the GPU: 'Could not initialise the GPU for recording (Unknown error occurred).'
+  [ok  ] no-GPU child: no fd/thread/RSS growth over 9 further failures
+PASS   : TstVideoRecorder::startFailures()
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_0.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_0.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_0.mp4" encoded 120 dropped 0
+  cycle 1: enc=120 drop=0 packets=120 dur=2.000 init=35ms fin=230ms rss=310588KB hwm=876844KB threads=6 fds=37 gpu_pid=44MiB gpu_dev=966MiB
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_1.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_1.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_1.mp4" encoded 120 dropped 0
+  cycle 2: enc=120 drop=0 packets=120 dur=2.000 init=94ms fin=171ms rss=432224KB hwm=876844KB threads=6 fds=37 gpu_pid=44MiB gpu_dev=966MiB
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_2.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_2.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_2.mp4" encoded 120 dropped 0
+  cycle 3: enc=120 drop=0 packets=120 dur=2.000 init=41ms fin=226ms rss=310764KB hwm=876844KB threads=6 fds=37 gpu_pid=44MiB gpu_dev=966MiB
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_3.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_3.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_3.mp4" encoded 120 dropped 0
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_4.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_4.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_4.mp4" encoded 120 dropped 0
+  cycle 5: enc=120 drop=0 packets=120 dur=2.000 init=40ms fin=225ms rss=375624KB hwm=876844KB threads=6 fds=37 gpu_pid=44MiB gpu_dev=966MiB
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_5.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_5.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_5.mp4" encoded 120 dropped 0
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_6.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_6.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_6.mp4" encoded 120 dropped 0
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_7.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_7.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_7.mp4" encoded 120 dropped 0
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_8.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_8.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_8.mp4" encoded 121 dropped 0
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_9.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_9.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_9.mp4" encoded 120 dropped 0
+  cycle 10: enc=120 drop=0 packets=120 dur=2.000 init=64ms fin=202ms rss=432372KB hwm=876844KB threads=6 fds=37 gpu_pid=44MiB gpu_dev=966MiB
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_10.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_10.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_10.mp4" encoded 120 dropped 0
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_11.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_11.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_11.mp4" encoded 120 dropped 0
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_12.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_12.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_12.mp4" encoded 120 dropped 0
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_13.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_13.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_13.mp4" encoded 120 dropped 0
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_14.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_14.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_14.mp4" encoded 121 dropped 0
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_15.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_15.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_15.mp4" encoded 120 dropped 0
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_16.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_16.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_16.mp4" encoded 120 dropped 0
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_17.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_17.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_17.mp4" encoded 120 dropped 0
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_18.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_18.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_18.mp4" encoded 120 dropped 0
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_19.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_19.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_19.mp4" encoded 121 dropped 0
+  cycle 20: enc=121 drop=0 packets=121 dur=2.017 init=87ms fin=184ms rss=421852KB hwm=876844KB threads=6 fds=37 gpu_pid=44MiB gpu_dev=966MiB
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_20.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_20.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_20.mp4" encoded 120 dropped 0
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_21.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_21.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_21.mp4" encoded 121 dropped 0
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_22.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_22.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_22.mp4" encoded 120 dropped 0
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_23.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_23.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_23.mp4" encoded 120 dropped 0
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_24.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_24.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_24.mp4" encoded 121 dropped 0
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_25.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_25.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_25.mp4" encoded 120 dropped 0
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_26.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_26.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_26.mp4" encoded 120 dropped 0
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_27.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_27.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_27.mp4" encoded 120 dropped 0
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_28.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_28.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_28.mp4" encoded 120 dropped 0
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_29.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_29.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_29.mp4" encoded 120 dropped 0
+  cycle 30: enc=120 drop=0 packets=120 dur=2.000 init=40ms fin=226ms rss=421888KB hwm=876844KB threads=6 fds=37 gpu_pid=44MiB gpu_dev=966MiB
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_30.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_30.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_30.mp4" encoded 120 dropped 0
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_31.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_31.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_31.mp4" encoded 120 dropped 0
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_32.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_32.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_32.mp4" encoded 120 dropped 0
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_33.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_33.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_33.mp4" encoded 120 dropped 0
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_34.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_34.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_34.mp4" encoded 120 dropped 0
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_35.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_35.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_35.mp4" encoded 120 dropped 0
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_36.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_36.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_36.mp4" encoded 120 dropped 0
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_37.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_37.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_37.mp4" encoded 120 dropped 0
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_38.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_38.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_38.mp4" encoded 120 dropped 0
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_39.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_39.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_39.mp4" encoded 120 dropped 0
+  cycle 40: enc=120 drop=0 packets=120 dur=2.000 init=36ms fin=230ms rss=421516KB hwm=876844KB threads=6 fds=37 gpu_pid=44MiB gpu_dev=966MiB
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_40.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_40.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_40.mp4" encoded 121 dropped 0
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_41.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_41.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_41.mp4" encoded 120 dropped 0
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_42.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_42.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_42.mp4" encoded 120 dropped 0
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_43.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_43.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_43.mp4" encoded 120 dropped 0
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_44.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_44.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_44.mp4" encoded 120 dropped 0
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_45.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_45.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_45.mp4" encoded 120 dropped 0
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_46.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_46.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_46.mp4" encoded 120 dropped 0
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_47.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_47.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_47.mp4" encoded 120 dropped 0
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_48.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_48.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_48.mp4" encoded 120 dropped 0
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_49.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_49.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_49.mp4" encoded 120 dropped 0
+  cycle 50: enc=120 drop=0 packets=120 dur=2.000 init=42ms fin=224ms rss=421492KB hwm=876844KB threads=6 fds=37 gpu_pid=44MiB gpu_dev=966MiB
+  METRIC startStopCycles 50 cycles x 2 s; cycle 5 -> 50: RSS 375624 -> 421492 KB (45868 KB), GPU/pid 44 -> 44 MiB, fds 37 -> 37, threads 6 -> 6; init ms med 49 max 95; finalise ms med 217 max 230; not playable 0, accounting errors 0, cycles with drops 0
+  [ok  ] every cycle started
+  [ok  ] all files playable (open, decode every packet without error)
+  [ok  ] file packets == reported encoded in every cycle
+  [ok  ] no dropped frames in any cycle (0 cycles with drops)
+  METRIC startStopCycles RSS before first cycle 431920 KB, after cycle 1 310588 KB (idle retention -121332 KB); envelope max(c5..10)=432372 KB max(last5)=432712 KB
+  METRIC startStopCycles spec comparison cycle 5 -> 50: RSS 45868 KB (threshold 20480 KB)
+  [ok  ] RSS envelope growth <= 20 MB (340 KB)
+  [ok  ] GPU per-process growth <= 16 MiB (0 MiB)
+  [ok  ] fds flat (37 -> 37)
+  [ok  ] threads flat (6 -> 6)
+PASS   : TstVideoRecorder::startStopCycles()
+[qt:I] [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/crash_moving.mp4" 1920 x 1080 fps 60 bitrate 16174080
+[qt:I] [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/crash_moving.mp4" 1920 x 1080 @ 60 fps
+  [crash] size=44948 opened=1 err='' codec=h264 1920x1080 fmt_dur=3.0000s last_pts_end=3.0000s avg_fps=60.0000 packets=180 keyframes=3 bitrate=0.11Mbps decoded=180 dec_err=0 read_err=EOF tb=1/120000
+  METRIC crashMidRecording/lowDetail killed 6.00 s after recordingStarted (signal(9)); file 44948 bytes (44948 at kill), playable 3.000 s, 180 frames decoded, 0 decode errors, lost 3.00 s
+  [ok  ] child was SIGKILLed
+  [ok  ] file opens after SIGKILL: 
+  [FAIL] playable duration >= 4 s (3.000 s)
+  [ok  ] every packet decodes except at most the final truncated one (0 errors, 0 not at the tail)
+  METRIC crashMidRecording/lowDetail corrupt frames from a truncated final fragment: 0
+  [ok  ] frames consecutive, none missing (0 breaks)
+FAIL!  : TstVideoRecorder::crashMidRecording(lowDetail) 'fails.isEmpty()' returned FALSE. (playable duration >= 4 s (3.000 s))
+   Loc: [/home/brainwave/QT-C-VMS/tests/unit_gpu/tst_videorecorder.cpp(892)]
+[qt:I] [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/crash_noise.mp4" 1920 x 1080 fps 60 bitrate 16174080
+[qt:I] [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/crash_noise.mp4" 1920 x 1080 @ 60 fps
+[h264 @ 0x6086abf81740] Invalid NAL unit size (27268 > 20571).
+[h264 @ 0x6086abf81740] Error splitting the input into NAL units.
+[mov,mp4,m4a,3gp,3g2,mj2 @ 0x6086abf62ec0] stream 0, offset 0x9cd736: partial file
+  [crash] size=10272013 opened=1 err='' codec=h264 1920x1080 fmt_dur=5.0000s last_pts_end=4.8500s avg_fps=60.0000 packets=291 keyframes=5 bitrate=16.94Mbps decoded=290 dec_err=1 read_err=Invalid data found when processing input (-1094995529) tb=1/120000
+  METRIC crashMidRecording/realisticNoise killed 6.00 s after recordingStarted (signal(9)); file 10272013 bytes (10272013 at kill), playable 4.850 s, 290 frames decoded, 1 decode errors, lost 1.15 s
+  [ok  ] child was SIGKILLed
+  [ok  ] file opens after SIGKILL: 
+  [ok  ] playable duration >= 4 s (4.850 s)
+  [ok  ] every packet decodes except at most the final truncated one (1 errors, 0 not at the tail)
+  METRIC crashMidRecording/realisticNoise corrupt frames from a truncated final fragment: 1
+  [ok  ] frames consecutive, none missing (0 breaks)
+PASS   : TstVideoRecorder::crashMidRecording(realisticNoise)
+[qt:I] [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/diskfull.mp4" 1920 x 1080 fps 60 bitrate 16174080
+[qt:I] [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/diskfull.mp4" 1920 x 1080 @ 60 fps
+[qt:I] [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/diskfull.mp4" encoded 122 dropped 0
+[errorOccurred] Recording stopped: writing the file failed (File too large). Check the disk.
+REPORT started=1 errors=1 t_error_ms=2173 stops=1 stopped_by_itself=1 is_recording_after=0 enc=122 drop=0 fed=131 order=started,error,stopped
+MSG Recording stopped: writing the file failed (File too large). Check the disk.
+[h264 @ 0x6086abf7e040] Invalid NAL unit size (47625 > 26068).
+[h264 @ 0x6086abf7e040] Error splitting the input into NAL units.
+[mov,mp4,m4a,3gp,3g2,mj2 @ 0x6086abf62ec0] stream 0, offset 0x2e1af5: partial file
+  [diskfull] size=3000000 opened=1 err='' codec=h264 1920x1080 fmt_dur=2.0000s last_pts_end=1.0333s avg_fps=60.0000 packets=62 keyframes=2 bitrate=23.21Mbps decoded=61 dec_err=1 read_err=Invalid data found when processing input (-1094995529) tb=1/120000
+  METRIC diskFull RLIMIT_FSIZE=3000000 B; child exited(0); errorOccurred=1 after 2.17 s: 'Recording stopped: writing the file failed (File too large). Check the disk.'; recordingStopped=1 (enc 122, drop 0), stopped by itself=1; file 3000000 B, playable 1.033 s, 61 decoded, 1 decode errors; order=started,error,stopped
+  [ok  ] recording started
+  [ok  ] errorOccurred emitted on write failure
+  [ok  ] recordingStopped emitted (by the recorder itself)
+  [ok  ] isRecording() false after the error
+  [ok  ] errorOccurred precedes recordingStopped
+  [ok  ] file opens: 
+  METRIC diskFull decode errors at pts [122000], last packet pts 122000
+  [ok  ] all frames before the truncated final packet decode cleanly (61 frames, 1 errors, 0 not in the final packet)
+  METRIC diskFull corrupt frames from the truncated final fragment: 1
+  [ok  ] file plays up to the error minus <= 1 fragment (1.033 s playable, error at 2.173 s)
+PASS   : TstVideoRecorder::diskFull()
+[qt:W] [VideoRecorder] "Not enough free disk space to record (1024 MB free, at least 2048 MB required)."
+  [child refuse exited(0)] 1024m
+INFO tmpfs_free_mib=1024
+REPORT start_ret=0 file_exists=0
+MSG Not enough free disk space to record (1024 MB free, at least 2048 MB required).
+  METRIC lowDiskStart tmpfs 1 GiB: start()=0 msg='Not enough free disk space to record (1024 MB free, at least 2048 MB required).'
+  [ok  ] start refused synchronously below 2 GB free, no file created
+[qt:I] [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/lowdisk_mnt/low.mp4" 1920 x 1080 fps 60 bitrate 16174080
+[qt:I] [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/lowdisk_mnt/low.mp4" 1920 x 1080 @ 60 fps
+[qt:I] [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/lowdisk_mnt/low.mp4" encoded 121 dropped 0
+[errorOccurred] Recording stopped: the disk is almost full (1015 MB free). The file recorded so far has been saved.
+  [child runlow exited(0)] 2056m
+INFO tmpfs_free_mib=2056
+INFO filled=1040MiB fallocate=0 free_now_mib=1015
+REPORT start_ret=1 errors=1 stops=1 self_stopped=1 t_stop_after_fill_ms=780 enc=121 drop=0 file_opened=1 file_dur=2.017 decoded=121 dec_err=0 order=started,error,stopped
+MSG Recording stopped: the disk is almost full (1015 MB free). The file recorded so far has been saved.
+  METRIC lowDiskStart tmpfs 2056 MiB, 1040 MiB filler after 1 s: start=1 errors=1 'Recording stopped: the disk is almost full (1015 MB free). The file recorded so far has been saved.' self_stopped=1 after 780 ms, enc=121 drop=0, file 2.017 s, dec_err=0
+  [ok  ] start accepted with >= 2 GB free
+  [ok  ] errorOccurred('disk is almost full') below 1 GB free
+  [ok  ] recording stopped by itself within 3 s of crossing 1 GB
+  [ok  ] saved file playable
+PASS   : TstVideoRecorder::lowDiskStart()
+QINFO  : TstVideoRecorder::formatChangeSegment(1080p_UYVY_to_720p_UYVY) [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/seg_1080p_UYVY_to_720p_UYVY.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::formatChangeSegment(1080p_UYVY_to_720p_UYVY) [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/seg_1080p_UYVY_to_720p_UYVY.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::formatChangeSegment(1080p_UYVY_to_720p_UYVY) [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/seg_1080p_UYVY_to_720p_UYVY_part2.mp4" 1280 x 720 fps 60 bitrate 7188480
+QINFO  : TstVideoRecorder::formatChangeSegment(1080p_UYVY_to_720p_UYVY) [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/seg_1080p_UYVY_to_720p_UYVY_part2.mp4" encoded 361 dropped 0
+  [seg1] size=47421 opened=1 err='' codec=h264 1920x1080 fmt_dur=3.0167s last_pts_end=3.0167s avg_fps=60.0000 packets=181 keyframes=4 bitrate=0.12Mbps decoded=181 dec_err=0 read_err=EOF tb=1/120000
+  [seg2] size=27686 opened=1 err='' codec=h264 1280x720 fmt_dur=3.0000s last_pts_end=3.0000s avg_fps=60.0000 packets=180 keyframes=3 bitrate=0.07Mbps decoded=180 dec_err=0 read_err=EOF tb=1/120000
+  METRIC formatChangeSegment/1080p_UYVY_to_720p_UYVY fed 361 (181 + 180) encoded=361 dropped=0 segmentStarted=[/tmp/claude-1000/vr_tests/seg_1080p_UYVY_to_720p_UYVY_part2.mp4] errors=[] stop path=seg_1080p_UYVY_to_720p_UYVY_part2.mp4; part1 181 pkts 1920x1080 3.017 s; part2 180 pkts 1280x720 3.000 s
+  [ok  ] no errorOccurred: 
+  [ok  ] segmentStarted(<name>_part2.mp4) emitted once
+  [ok  ] recordingStopped names the last segment
+  [ok  ] encoded == fed, 0 dropped (361/361/0)
+  [ok  ] part 1: 1920x1080, all 181 frames, exact timeline
+  [ok  ] part 2: 1280x720, all 180 frames, exact timeline (got 180 pkts 1280x720 '')
+  [ok  ] decoded content matches fed frames (0 / 0 mismatches)
+PASS   : TstVideoRecorder::formatChangeSegment(1080p_UYVY_to_720p_UYVY)
+QINFO  : TstVideoRecorder::formatChangeSegment(720p_UYVY_to_1080p_UYVY) [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/seg_720p_UYVY_to_1080p_UYVY.mp4" 1280 x 720 fps 60 bitrate 7188480
+QINFO  : TstVideoRecorder::formatChangeSegment(720p_UYVY_to_1080p_UYVY) [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/seg_720p_UYVY_to_1080p_UYVY.mp4" 1280 x 720 @ 60 fps
+QINFO  : TstVideoRecorder::formatChangeSegment(720p_UYVY_to_1080p_UYVY) [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/seg_720p_UYVY_to_1080p_UYVY_part2.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::formatChangeSegment(720p_UYVY_to_1080p_UYVY) [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/seg_720p_UYVY_to_1080p_UYVY_part2.mp4" encoded 361 dropped 0
+  [seg1] size=29085 opened=1 err='' codec=h264 1280x720 fmt_dur=3.0167s last_pts_end=3.0167s avg_fps=60.0000 packets=181 keyframes=4 bitrate=0.07Mbps decoded=181 dec_err=0 read_err=EOF tb=1/120000
+  [seg2] size=44224 opened=1 err='' codec=h264 1920x1080 fmt_dur=3.0000s last_pts_end=3.0000s avg_fps=60.0000 packets=180 keyframes=3 bitrate=0.11Mbps decoded=180 dec_err=0 read_err=EOF tb=1/120000
+  METRIC formatChangeSegment/720p_UYVY_to_1080p_UYVY fed 361 (181 + 180) encoded=361 dropped=0 segmentStarted=[/tmp/claude-1000/vr_tests/seg_720p_UYVY_to_1080p_UYVY_part2.mp4] errors=[] stop path=seg_720p_UYVY_to_1080p_UYVY_part2.mp4; part1 181 pkts 1280x720 3.017 s; part2 180 pkts 1920x1080 3.000 s
+  [ok  ] no errorOccurred: 
+  [ok  ] segmentStarted(<name>_part2.mp4) emitted once
+  [ok  ] recordingStopped names the last segment
+  [ok  ] encoded == fed, 0 dropped (361/361/0)
+  [ok  ] part 1: 1280x720, all 181 frames, exact timeline
+  [ok  ] part 2: 1920x1080, all 180 frames, exact timeline (got 180 pkts 1920x1080 '')
+  [ok  ] decoded content matches fed frames (0 / 0 mismatches)
+PASS   : TstVideoRecorder::formatChangeSegment(720p_UYVY_to_1080p_UYVY)
+QINFO  : TstVideoRecorder::formatChangeSegment(1080p_UYVY_to_720p_BGRA) [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/seg_1080p_UYVY_to_720p_BGRA.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::formatChangeSegment(1080p_UYVY_to_720p_BGRA) [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/seg_1080p_UYVY_to_720p_BGRA.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::formatChangeSegment(1080p_UYVY_to_720p_BGRA) [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/seg_1080p_UYVY_to_720p_BGRA_part2.mp4" 1280 x 720 fps 60 bitrate 7188480
+QINFO  : TstVideoRecorder::formatChangeSegment(1080p_UYVY_to_720p_BGRA) [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/seg_1080p_UYVY_to_720p_BGRA_part2.mp4" encoded 181 dropped 0
+[errorOccurred] Recording stopped: upload to the GPU failed.
+  [seg1] size=47421 opened=1 err='' codec=h264 1920x1080 fmt_dur=3.0167s last_pts_end=3.0167s avg_fps=60.0000 packets=181 keyframes=4 bitrate=0.12Mbps decoded=181 dec_err=0 read_err=EOF tb=1/120000
+  [seg2] size=838 opened=1 err='' codec=h264 1280x720 fmt_dur=-1.0000s last_pts_end=-1.0000s avg_fps=0.0000 packets=0 keyframes=0 bitrate=0.00Mbps decoded=0 dec_err=0 read_err=EOF tb=1/120000
+  METRIC formatChangeSegment/1080p_UYVY_to_720p_BGRA fed 361 (181 + 180) encoded=181 dropped=0 segmentStarted=[/tmp/claude-1000/vr_tests/seg_1080p_UYVY_to_720p_BGRA_part2.mp4] errors=[Recording stopped: upload to the GPU failed.] stop path=seg_1080p_UYVY_to_720p_BGRA_part2.mp4; part1 181 pkts 1920x1080 3.017 s; part2 0 pkts 1280x720 -1.000 s
+  [FAIL] no errorOccurred: Recording stopped: upload to the GPU failed.
+  [ok  ] segmentStarted(<name>_part2.mp4) emitted once
+  [ok  ] recordingStopped names the last segment
+  [FAIL] encoded == fed, 0 dropped (181/361/0)
+  [ok  ] part 1: 1920x1080, all 181 frames, exact timeline
+  [FAIL] part 2: 1280x720, all 180 frames, exact timeline (got 0 pkts 1280x720 '')
+  [FAIL] decoded content matches fed frames (0 / 0 mismatches)
+FAIL!  : TstVideoRecorder::formatChangeSegment(1080p_UYVY_to_720p_BGRA) 'fails.isEmpty()' returned FALSE. (no errorOccurred: Recording stopped: upload to the GPU failed. ; encoded == fed, 0 dropped (181/361/0) ; part 2: 1280x720, all 180 frames, exact timeline (got 0 pkts 1280x720 '') ; decoded content matches fed frames (0 / 0 mismatches))
+   Loc: [/home/brainwave/QT-C-VMS/tests/unit_gpu/tst_videorecorder.cpp(892)]
+QINFO  : TstVideoRecorder::restartWhileFinalising() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/restart1.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::restartWhileFinalising() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/restart1.mp4" 1920 x 1080 @ 60 fps
+QWARN  : TstVideoRecorder::restartWhileFinalising() [VideoRecorder] "A recording is still in progress or being saved."
+QINFO  : TstVideoRecorder::restartWhileFinalising() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/restart1.mp4" encoded 120 dropped 0
+  METRIC restartWhileFinalising start 0.051 ms after stop -> 0 'A recording is still in progress or being saved.'; recordingStopped after 195 ms
+  [ok  ] start during finalisation refused with 'still ... being saved': 'A recording is still in progress or being saved.'
+  [ok  ] first recording finalised
+QINFO  : TstVideoRecorder::restartWhileFinalising() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/restart2.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::restartWhileFinalising() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/restart2.mp4" 1920 x 1080 @ 60 fps
+  [ok  ] start after recordingStopped succeeds: 
+QINFO  : TstVideoRecorder::restartWhileFinalising() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/restart2.mp4" encoded 60 dropped 0
+  [ok  ] both files playable (2.000 s, 1.000 s)
+PASS   : TstVideoRecorder::restartWhileFinalising()
+QINFO  : TstVideoRecorder::pushFrameCost() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/pushcost.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::pushFrameCost() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/pushcost.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::pushFrameCost() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/pushcost.mp4" encoded 601 dropped 0
+  METRIC pushFrameCost recording 1080p UYVY (4147200 B/frame): n=601 median=0.441 ms p99=1.596 ms max=2.200 ms mean=0.636 ms; idle n=60 median=0.0002 ms max=0.0010 ms; dropped=0
+  [ok  ] enough samples (601)
+  [ok  ] median < 2 ms (0.441 ms)
+  [ok  ] p99 < 5 ms (1.596 ms)
+  [ok  ] max < 16 ms, one frame period (2.200 ms)
+  [ok  ] no drops while measuring
+PASS   : TstVideoRecorder::pushFrameCost()
+SKIP   : TstVideoRecorder::longRun() set LONG_RUN_MIN=<minutes> to run
+   Loc: [/home/brainwave/QT-C-VMS/tests/unit_gpu/tst_videorecorder.cpp(1758)]
+QINFO  : TstVideoRecorder::realisticBitrate() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/bitrate.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::realisticBitrate() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/bitrate.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::realisticBitrate() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/bitrate.mp4" encoded 600 dropped 0
+  [bitrate] size=20929193 opened=1 err='' codec=h264 1920x1080 fmt_dur=10.0000s last_pts_end=10.0000s avg_fps=60.0000 packets=600 keyframes=10 bitrate=16.74Mbps decoded=600 dec_err=0 read_err=EOF tb=1/120000
+  METRIC realisticBitrate avg bitrate 16.74 Mbps (configured target 16.17, maxrate 20.22); per-second min 14.59 max 19.02 Mbps; fed=600 encoded=600 dropped=0 max feeder lateness 0.0 ms
+  [ok  ] encoded == fed (600 == 600)
+  [ok  ] file opens with libavformat: 
+  [ok  ] h264 1920x1080 (got h264 1920x1080)
+  [ok  ] packets in file == encoded (600 == 600)
+  [ok  ] last pts end 10.0000 s within 1 frame of fed stream time 10.0000 s
+  [ok  ] container duration 10.0000 s within 1 frame of fed 10.0000 s
+  [ok  ] pts timeline exact vs capture clock (mismatches=0 first_bad=-1)
+  [ok  ] encoder keeps up with noisy 1080p60: 0 dropped (got 0)
+  [ok  ] decodes cleanly
+  [ok  ] average bitrate within 75..125% of target (16.74 Mbps)
+PASS   : TstVideoRecorder::realisticBitrate()
+[AVHWDeviceContext @ 0x7e2894000900] Primary context already active with incompatible flags.
+[qt:W] [VideoRecorder] "Could not initialise the GPU for recording (Unknown error occurred)."
+[errorOccurred] Could not initialise the GPU for recording (Unknown error occurred).
+REPORT cudaFree=0 start_ret=1 started=0 enc=-1 errors=1
+MSG Could not initialise the GPU for recording (Unknown error occurred).
+  METRIC cudaRuntimeFirst child exited(0): cudaFree(0)=0, startRecording()=1, recordingStarted=0, encoded=-1, error='Could not initialise the GPU for recording (Unknown error occurred).'
+  [ok  ] CUDA runtime initialised
+  [FAIL] recording starts although the CUDA runtime was initialised first
+FAIL!  : TstVideoRecorder::cudaRuntimeFirst() 'fails.isEmpty()' returned FALSE. (recording starts although the CUDA runtime was initialised first)
+   Loc: [/home/brainwave/QT-C-VMS/tests/unit_gpu/tst_videorecorder.cpp(892)]
+QINFO  : TstVideoRecorder::streamClockReset() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/clockreset.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::streamClockReset() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/clockreset.mp4" 1920 x 1080 @ 60 fps
+QWARN  : TstVideoRecorder::streamClockReset() [VideoRecorder] Frames dropped so far: 61
+QINFO  : TstVideoRecorder::streamClockReset() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/clockreset.mp4" encoded 181 dropped 180
+  [clockreset] size=47421 opened=1 err='' codec=h264 1920x1080 fmt_dur=3.0167s last_pts_end=3.0167s avg_fps=60.0000 packets=181 keyframes=4 bitrate=0.12Mbps decoded=0 dec_err=0 read_err=EOF tb=1/120000
+  METRIC streamClockReset fed 180 before + 181 after the clock reset; encoded=181 dropped=180 file_packets=181 file_dur=3.017 s
+  [FAIL] frames after a capture-clock reset are still recorded (encoded 181 of 361 fed)
+  [FAIL] file covers the whole recording (3.017 s of ~6 s)
+FAIL!  : TstVideoRecorder::streamClockReset() 'fails.isEmpty()' returned FALSE. (frames after a capture-clock reset are still recorded (encoded 181 of 361 fed) ; file covers the whole recording (3.017 s of ~6 s))
+   Loc: [/home/brainwave/QT-C-VMS/tests/unit_gpu/tst_videorecorder.cpp(892)]
+QINFO  : TstVideoRecorder::stopDuringInit() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/stopinit.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::stopDuringInit() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/stopinit.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::stopDuringInit() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/stopinit.mp4" encoded 0 dropped 0
+  METRIC stopDuringInit signal order: started,stopped; isRecording=0
+  [ok  ] exactly one recordingStopped
+  [ok  ] not recording afterwards
+  [ok  ] no error
+QINFO  : TstVideoRecorder::stopDuringInit() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/stopinit2.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::stopDuringInit() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/stopinit2.mp4" 1920 x 1080 @ 60 fps
+  [ok  ] next start works: 
+QINFO  : TstVideoRecorder::stopDuringInit() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/stopinit2.mp4" encoded 31 dropped 0
+  [ok  ] next recording complete
+PASS   : TstVideoRecorder::stopDuringInit()
+QINFO  : TstVideoRecorder::destroyWhileRecording() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/destroy.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::destroyWhileRecording() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/destroy.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::destroyWhileRecording() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/destroy.mp4" encoded 120 dropped 0
+  [destroy] size=30033 opened=1 err='' codec=h264 1920x1080 fmt_dur=2.0000s last_pts_end=2.0000s avg_fps=60.0000 packets=120 keyframes=2 bitrate=0.11Mbps decoded=120 dec_err=0 read_err=EOF tb=1/120000
+  METRIC destroyWhileRecording destructor took 227 ms; fed=120 file packets=120
+  [ok  ] every fed frame is in the finalised file
+  [ok  ] destructor finalises within 2 s
+PASS   : TstVideoRecorder::destroyWhileRecording()
+
+==================== SUMMARY ====================
+PASS  basic1080p60 | fed=601 encoded=601 dropped=0 feed_fps=60.00 start_call_ms=0.40 recordingStarted_ms=383 stop_call_ms=0.002 finalise_ms=159 file_dur=10.0167s
+PASS  pixelExact/UYVY | max_abs_err Y=0 Cb=0 Cr=0 (tolerance 1, frames checked 3, all interior pixels of 16 patches)
+PASS  pixelExact/ARGB | max_abs_err Y=0 Cb=0 Cr=0 (tolerance 3, frames checked 3, all interior pixels of 16 patches)
+PASS  pixelExact/BGRA | max_abs_err Y=0 Cb=0 Cr=0 (tolerance 3, frames checked 3, all interior pixels of 16 patches)
+PASS  flipSteps/UYVY_step0 | block bbox x=[100,399] y=[60,299] expected x=[100,399] y=[60,299] bright_px=72000/72000 centre Cb/Cr=60/200 (exp 60/200)
+PASS  flipSteps/UYVY_step1 | block bbox x=[1520,1819] y=[60,299] expected x=[1520,1819] y=[60,299] bright_px=72000/72000 centre Cb/Cr=60/200 (exp 60/200)
+PASS  flipSteps/UYVY_step2 | block bbox x=[1520,1819] y=[780,1019] expected x=[1520,1819] y=[780,1019] bright_px=72000/72000 centre Cb/Cr=60/200 (exp 60/200)
+PASS  flipSteps/UYVY_step3 | block bbox x=[100,399] y=[780,1019] expected x=[100,399] y=[780,1019] bright_px=72000/72000 centre Cb/Cr=60/200 (exp 60/200)
+PASS  flipSteps/BGRA_step0 | block bbox x=[100,399] y=[60,299] expected x=[100,399] y=[60,299] bright_px=72000/72000 centre Cb/Cr=52/159 (exp 52/159)
+PASS  flipSteps/BGRA_step1 | block bbox x=[1520,1819] y=[60,299] expected x=[1520,1819] y=[60,299] bright_px=72000/72000 centre Cb/Cr=52/159 (exp 52/159)
+PASS  flipSteps/BGRA_step2 | block bbox x=[1520,1819] y=[780,1019] expected x=[1520,1819] y=[780,1019] bright_px=72000/72000 centre Cb/Cr=52/159 (exp 52/159)
+PASS  flipSteps/BGRA_step3 | block bbox x=[100,399] y=[780,1019] expected x=[100,399] y=[780,1019] bright_px=72000/72000 centre Cb/Cr=52/159 (exp 52/159)
+PASS  durationAccuracy | fed=3597 encoded=3597 dropped=0 fed_stream_time=60.0100s file_last_pts_end=60.0100s container_dur=60.0100s diff=0.00ms wall=60.010s avg_fps=59.9401
+PASS  streamGaps | fed=300 encoded=300 dropped_reported=5 gap_at_packet=90 framesDropped_signals=[5]
+FAIL  poolOverflow/burst | overflow phase: 201 frames in 27.9 ms (7205 fps); pushed=471 encoded=313 not_encoded=158 dropped_reported=316 timeline_missing_slots=158 framesDropped_signals=1 pushFrame_us(burst) med=0.1 p99=786.8 max=818.1 | FAILED: encoded + dropped == pushed (313 + 316 = 629, pushed 471)
+FAIL  poolOverflow/gpuStall | overflow phase: 91 frames in 1501.8 ms (61 fps); pushed=361 encoded=308 not_encoded=53 dropped_reported=106 timeline_missing_slots=53 framesDropped_signals=2 pushFrame_us(burst) med=0.5 p99=1144.9 max=1144.9 | FAILED: encoded + dropped == pushed (308 + 106 = 414, pushed 361)
+PASS  noSignal | 
+PASS  startFailures | 10 rounds x 6 failure kinds = 60 attempts; sync ok 40, async ok 20; after warm-up: rss=420124KB hwm=876844KB threads=6 fds=36 gpu_pid=44MiB gpu_dev=966MiB; after round 1: rss=420224KB hwm=876844KB threads=6 fds=36 gpu_pid=44MiB gpu_dev=966MiB; after round 10: rss=420372KB hwm=876844KB threads=6 fds=36 gpu_pid=44MiB gpu_dev=966MiB; CUDA_VISIBLE_DEVICES='' child: exited(0) sync_true=10 errors=10 stops=10 started=0 files_left=0 rss_delta=176KB fd_delta=0 thr_delta=0
+PASS  startStopCycles | 50 cycles x 2 s; cycle 5 -> 50: RSS 375624 -> 421492 KB (45868 KB), GPU/pid 44 -> 44 MiB, fds 37 -> 37, threads 6 -> 6; init ms med 49 max 95; finalise ms med 217 max 230; not playable 0, accounting errors 0, cycles with drops 0; RSS before first cycle 431920 KB, after cycle 1 310588 KB (idle retention -121332 KB); envelope max(c5..10)=432372 KB max(last5)=432712 KB; spec comparison cycle 5 -> 50: RSS 45868 KB (threshold 20480 KB)
+FAIL  crashMidRecording/lowDetail | killed 6.00 s after recordingStarted (signal(9)); file 44948 bytes (44948 at kill), playable 3.000 s, 180 frames decoded, 0 decode errors, lost 3.00 s; corrupt frames from a truncated final fragment: 0 | FAILED: playable duration >= 4 s (3.000 s)
+PASS  crashMidRecording/realisticNoise | killed 6.00 s after recordingStarted (signal(9)); file 10272013 bytes (10272013 at kill), playable 4.850 s, 290 frames decoded, 1 decode errors, lost 1.15 s; corrupt frames from a truncated final fragment: 1
+PASS  diskFull | RLIMIT_FSIZE=3000000 B; child exited(0); errorOccurred=1 after 2.17 s: 'Recording stopped: writing the file failed (File too large). Check the disk.'; recordingStopped=1 (enc 122, drop 0), stopped by itself=1; file 3000000 B, playable 1.033 s, 61 decoded, 1 decode errors; order=started,error,stopped; decode errors at pts [122000], last packet pts 122000; corrupt frames from the truncated final fragment: 1
+PASS  lowDiskStart | tmpfs 1 GiB: start()=0 msg='Not enough free disk space to record (1024 MB free, at least 2048 MB required).'; tmpfs 2056 MiB, 1040 MiB filler after 1 s: start=1 errors=1 'Recording stopped: the disk is almost full (1015 MB free). The file recorded so far has been saved.' self_stopped=1 after 780 ms, enc=121 drop=0, file 2.017 s, dec_err=0
+PASS  formatChangeSegment/1080p_UYVY_to_720p_UYVY | fed 361 (181 + 180) encoded=361 dropped=0 segmentStarted=[/tmp/claude-1000/vr_tests/seg_1080p_UYVY_to_720p_UYVY_part2.mp4] errors=[] stop path=seg_1080p_UYVY_to_720p_UYVY_part2.mp4; part1 181 pkts 1920x1080 3.017 s; part2 180 pkts 1280x720 3.000 s
+PASS  formatChangeSegment/720p_UYVY_to_1080p_UYVY | fed 361 (181 + 180) encoded=361 dropped=0 segmentStarted=[/tmp/claude-1000/vr_tests/seg_720p_UYVY_to_1080p_UYVY_part2.mp4] errors=[] stop path=seg_720p_UYVY_to_1080p_UYVY_part2.mp4; part1 181 pkts 1280x720 3.017 s; part2 180 pkts 1920x1080 3.000 s
+FAIL  formatChangeSegment/1080p_UYVY_to_720p_BGRA | fed 361 (181 + 180) encoded=181 dropped=0 segmentStarted=[/tmp/claude-1000/vr_tests/seg_1080p_UYVY_to_720p_BGRA_part2.mp4] errors=[Recording stopped: upload to the GPU failed.] stop path=seg_1080p_UYVY_to_720p_BGRA_part2.mp4; part1 181 pkts 1920x1080 3.017 s; part2 0 pkts 1280x720 -1.000 s | FAILED: no errorOccurred: Recording stopped: upload to the GPU failed. ; encoded == fed, 0 dropped (181/361/0) ; part 2: 1280x720, all 180 frames, exact timeline (got 0 pkts 1280x720 '') ; decoded content matches fed frames (0 / 0 mismatches)
+PASS  restartWhileFinalising | start 0.051 ms after stop -> 0 'A recording is still in progress or being saved.'; recordingStopped after 195 ms
+PASS  pushFrameCost | recording 1080p UYVY (4147200 B/frame): n=601 median=0.441 ms p99=1.596 ms max=2.200 ms mean=0.636 ms; idle n=60 median=0.0002 ms max=0.0010 ms; dropped=0
+PASS  realisticBitrate | avg bitrate 16.74 Mbps (configured target 16.17, maxrate 20.22); per-second min 14.59 max 19.02 Mbps; fed=600 encoded=600 dropped=0 max feeder lateness 0.0 ms
+FAIL  cudaRuntimeFirst | child exited(0): cudaFree(0)=0, startRecording()=1, recordingStarted=0, encoded=-1, error='Could not initialise the GPU for recording (Unknown error occurred).' | FAILED: recording starts although the CUDA runtime was initialised first
+FAIL  streamClockReset | fed 180 before + 181 after the clock reset; encoded=181 dropped=180 file_packets=181 file_dur=3.017 s | FAILED: frames after a capture-clock reset are still recorded (encoded 181 of 361 fed) ; file covers the whole recording (3.017 s of ~6 s)
+PASS  stopDuringInit | signal order: started,stopped; isRecording=0
+PASS  destroyWhileRecording | destructor took 227 ms; fed=120 file packets=120
+PASS   : TstVideoRecorder::cleanupTestCase()
+Totals: 29 passed, 6 failed, 1 skipped, 0 blacklisted, 316475ms
+********* Finished testing of TstVideoRecorder *********
+
+real	5m16.602s
+user	0m41.116s
+sys	0m12.989s

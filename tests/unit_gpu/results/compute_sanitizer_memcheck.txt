@@ -1,0 +1,430 @@
+========= COMPUTE-SANITIZER
+========= Program hit CUDA_ERROR_INVALID_VALUE (error 1) due to "invalid argument" on CUDA API call to cuArrayGetPlane.
+=========     Saved host backtrace up to driver entry point at error
+=========         Host Frame:  [0x2c734] in libnvcuvid.so.1
+=========         Host Frame:  [0xadb5c] in libnvcuvid.so.1
+=========         Host Frame:  [0x15d2b4] in libnvcuvid.so.1
+=========         Host Frame:  [0xc6a39] in libnvcuvid.so.1
+=========         Host Frame:  [0xdf1a0] in libnvcuvid.so.1
+=========         Host Frame:  [0xb42df] in libnvcuvid.so.1
+=========         Host Frame:  [0xeb86] in libnvidia-encode.so.1
+=========         Host Frame:  [0x6e85] in libnvidia-encode.so.1
+=========         Host Frame:  [0x25cff] in libnvidia-encode.so.1
+=========         Host Frame:  [0xc4dff] in libavcodec.so.58
+=========         Host Frame:  [0xc6d2c] in libavcodec.so.58
+=========         Host Frame: avcodec_open2 [0x1c75d2] in libavcodec.so.58
+=========         Host Frame: VideoRecorder::openSegment(QString const&, VideoRecorder::Format const&, QString*) in VideoRecorder.cpp:632 [0x3c907] in tst_videorecorder
+=========         Host Frame: VideoRecorder::initializeRecording(QString*) in VideoRecorder.cpp:265 [0x3f1f0] in tst_videorecorder
+=========         Host Frame: VideoRecorder::workerLoop() in VideoRecorder.cpp:307 [0x3f7ce] in tst_videorecorder
+=========         Host Frame:  [0xdc252] in libstdc++.so.6
+=========         Host Frame: start_thread in pthread_create.c:442 [0x94a82] in libc.so.6
+=========         Host Frame:  [0x12688f] in libc.so.6
+========= 
+========= Program hit CUDA_ERROR_INVALID_VALUE (error 1) due to "invalid argument" on CUDA API call to cuArrayGetPlane.
+=========     Saved host backtrace up to driver entry point at error
+=========         Host Frame:  [0x2c734] in libnvcuvid.so.1
+=========         Host Frame:  [0xadb5c] in libnvcuvid.so.1
+=========         Host Frame:  [0x15d2b4] in libnvcuvid.so.1
+=========         Host Frame:  [0xc6a39] in libnvcuvid.so.1
+=========         Host Frame:  [0xdf1a0] in libnvcuvid.so.1
+=========         Host Frame:  [0xb42df] in libnvcuvid.so.1
+=========         Host Frame:  [0xeb86] in libnvidia-encode.so.1
+=========         Host Frame:  [0x6e85] in libnvidia-encode.so.1
+=========         Host Frame:  [0x25cff] in libnvidia-encode.so.1
+=========         Host Frame:  [0xc4dff] in libavcodec.so.58
+=========         Host Frame:  [0xc6d2c] in libavcodec.so.58
+=========         Host Frame: avcodec_open2 [0x1c75d2] in libavcodec.so.58
+=========         Host Frame: VideoRecorder::openSegment(QString const&, VideoRecorder::Format const&, QString*) in VideoRecorder.cpp:632 [0x3c907] in tst_videorecorder
+=========         Host Frame: VideoRecorder::initializeRecording(QString*) in VideoRecorder.cpp:265 [0x3f1f0] in tst_videorecorder
+=========         Host Frame: VideoRecorder::workerLoop() in VideoRecorder.cpp:307 [0x3f7ce] in tst_videorecorder
+=========         Host Frame:  [0xdc252] in libstdc++.so.6
+=========         Host Frame: start_thread in pthread_create.c:442 [0x94a82] in libc.so.6
+=========         Host Frame:  [0x12688f] in libc.so.6
+========= 
+========= Program hit CUDA_ERROR_INVALID_VALUE (error 1) due to "invalid argument" on CUDA API call to cuArrayGetPlane.
+=========     Saved host backtrace up to driver entry point at error
+=========         Host Frame:  [0x2c734] in libnvcuvid.so.1
+=========         Host Frame:  [0xadb5c] in libnvcuvid.so.1
+=========         Host Frame:  [0x15d2b4] in libnvcuvid.so.1
+=========         Host Frame:  [0xc6a39] in libnvcuvid.so.1
+=========         Host Frame:  [0xdf1a0] in libnvcuvid.so.1
+=========         Host Frame:  [0xb42df] in libnvcuvid.so.1
+=========         Host Frame:  [0xeb86] in libnvidia-encode.so.1
+=========         Host Frame:  [0x6e85] in libnvidia-encode.so.1
+=========         Host Frame:  [0x25cff] in libnvidia-encode.so.1
+=========         Host Frame:  [0xc4dff] in libavcodec.so.58
+=========         Host Frame:  [0xc6d2c] in libavcodec.so.58
+=========         Host Frame: avcodec_open2 [0x1c75d2] in libavcodec.so.58
+=========         Host Frame: VideoRecorder::openSegment(QString const&, VideoRecorder::Format const&, QString*) in VideoRecorder.cpp:632 [0x3c907] in tst_videorecorder
+=========         Host Frame: VideoRecorder::initializeRecording(QString*) in VideoRecorder.cpp:265 [0x3f1f0] in tst_videorecorder
+=========         Host Frame: VideoRecorder::workerLoop() in VideoRecorder.cpp:307 [0x3f7ce] in tst_videorecorder
+=========         Host Frame:  [0xdc252] in libstdc++.so.6
+=========         Host Frame: start_thread in pthread_create.c:442 [0x94a82] in libc.so.6
+=========         Host Frame:  [0x12688f] in libc.so.6
+========= 
+========= Program hit CUDA_ERROR_INVALID_VALUE (error 1) due to "invalid argument" on CUDA API call to cuArrayGetPlane.
+=========     Saved host backtrace up to driver entry point at error
+=========         Host Frame:  [0x2c734] in libnvcuvid.so.1
+=========         Host Frame:  [0xadb5c] in libnvcuvid.so.1
+=========         Host Frame:  [0x15d2b4] in libnvcuvid.so.1
+=========         Host Frame:  [0xc6a39] in libnvcuvid.so.1
+=========         Host Frame:  [0xdf1a0] in libnvcuvid.so.1
+=========         Host Frame:  [0xb42df] in libnvcuvid.so.1
+=========         Host Frame:  [0xeb86] in libnvidia-encode.so.1
+=========         Host Frame:  [0x6e85] in libnvidia-encode.so.1
+=========         Host Frame:  [0x25cff] in libnvidia-encode.so.1
+=========         Host Frame:  [0xc4dff] in libavcodec.so.58
+=========         Host Frame:  [0xc6d2c] in libavcodec.so.58
+=========         Host Frame: avcodec_open2 [0x1c75d2] in libavcodec.so.58
+=========         Host Frame: VideoRecorder::openSegment(QString const&, VideoRecorder::Format const&, QString*) in VideoRecorder.cpp:632 [0x3c907] in tst_videorecorder
+=========         Host Frame: VideoRecorder::initializeRecording(QString*) in VideoRecorder.cpp:265 [0x3f1f0] in tst_videorecorder
+=========         Host Frame: VideoRecorder::workerLoop() in VideoRecorder.cpp:307 [0x3f7ce] in tst_videorecorder
+=========         Host Frame:  [0xdc252] in libstdc++.so.6
+=========         Host Frame: start_thread in pthread_create.c:442 [0x94a82] in libc.so.6
+=========         Host Frame:  [0x12688f] in libc.so.6
+========= 
+========= Program hit CUDA_ERROR_INVALID_VALUE (error 1) due to "invalid argument" on CUDA API call to cuArrayGetPlane.
+=========     Saved host backtrace up to driver entry point at error
+=========         Host Frame:  [0x2c734] in libnvcuvid.so.1
+=========         Host Frame:  [0xadb5c] in libnvcuvid.so.1
+=========         Host Frame:  [0x15d2b4] in libnvcuvid.so.1
+=========         Host Frame:  [0xc6a39] in libnvcuvid.so.1
+=========         Host Frame:  [0xdf1a0] in libnvcuvid.so.1
+=========         Host Frame:  [0xb42df] in libnvcuvid.so.1
+=========         Host Frame:  [0xeb86] in libnvidia-encode.so.1
+=========         Host Frame:  [0x6e85] in libnvidia-encode.so.1
+=========         Host Frame:  [0x25cff] in libnvidia-encode.so.1
+=========         Host Frame:  [0xc4dff] in libavcodec.so.58
+=========         Host Frame:  [0xc6d2c] in libavcodec.so.58
+=========         Host Frame: avcodec_open2 [0x1c75d2] in libavcodec.so.58
+=========         Host Frame: VideoRecorder::openSegment(QString const&, VideoRecorder::Format const&, QString*) in VideoRecorder.cpp:632 [0x3c907] in tst_videorecorder
+=========         Host Frame: VideoRecorder::initializeRecording(QString*) in VideoRecorder.cpp:265 [0x3f1f0] in tst_videorecorder
+=========         Host Frame: VideoRecorder::workerLoop() in VideoRecorder.cpp:307 [0x3f7ce] in tst_videorecorder
+=========         Host Frame:  [0xdc252] in libstdc++.so.6
+=========         Host Frame: start_thread in pthread_create.c:442 [0x94a82] in libc.so.6
+=========         Host Frame:  [0x12688f] in libc.so.6
+========= 
+========= Program hit CUDA_ERROR_INVALID_VALUE (error 1) due to "invalid argument" on CUDA API call to cuArrayGetPlane.
+=========     Saved host backtrace up to driver entry point at error
+=========         Host Frame:  [0x2c734] in libnvcuvid.so.1
+=========         Host Frame:  [0xadb5c] in libnvcuvid.so.1
+=========         Host Frame:  [0x15d2b4] in libnvcuvid.so.1
+=========         Host Frame:  [0xc6a39] in libnvcuvid.so.1
+=========         Host Frame:  [0xdf1a0] in libnvcuvid.so.1
+=========         Host Frame:  [0xb42df] in libnvcuvid.so.1
+=========         Host Frame:  [0xeb86] in libnvidia-encode.so.1
+=========         Host Frame:  [0x6e85] in libnvidia-encode.so.1
+=========         Host Frame:  [0x25cff] in libnvidia-encode.so.1
+=========         Host Frame:  [0xc4dff] in libavcodec.so.58
+=========         Host Frame:  [0xc6d2c] in libavcodec.so.58
+=========         Host Frame: avcodec_open2 [0x1c75d2] in libavcodec.so.58
+=========         Host Frame: VideoRecorder::openSegment(QString const&, VideoRecorder::Format const&, QString*) in VideoRecorder.cpp:632 [0x3c907] in tst_videorecorder
+=========         Host Frame: VideoRecorder::initializeRecording(QString*) in VideoRecorder.cpp:265 [0x3f1f0] in tst_videorecorder
+=========         Host Frame: VideoRecorder::workerLoop() in VideoRecorder.cpp:307 [0x3f7ce] in tst_videorecorder
+=========         Host Frame:  [0xdc252] in libstdc++.so.6
+=========         Host Frame: start_thread in pthread_create.c:442 [0x94a82] in libc.so.6
+=========         Host Frame:  [0x12688f] in libc.so.6
+========= 
+========= Program hit CUDA_ERROR_INVALID_VALUE (error 1) due to "invalid argument" on CUDA API call to cuArrayGetPlane.
+=========     Saved host backtrace up to driver entry point at error
+=========         Host Frame:  [0x2c734] in libnvcuvid.so.1
+=========         Host Frame:  [0xadb5c] in libnvcuvid.so.1
+=========         Host Frame:  [0x15d2b4] in libnvcuvid.so.1
+=========         Host Frame:  [0xc6a39] in libnvcuvid.so.1
+=========         Host Frame:  [0xdf1a0] in libnvcuvid.so.1
+=========         Host Frame:  [0xb42df] in libnvcuvid.so.1
+=========         Host Frame:  [0xeb86] in libnvidia-encode.so.1
+=========         Host Frame:  [0x6e85] in libnvidia-encode.so.1
+=========         Host Frame:  [0x25cff] in libnvidia-encode.so.1
+=========         Host Frame:  [0xc4dff] in libavcodec.so.58
+=========         Host Frame:  [0xc6d2c] in libavcodec.so.58
+=========         Host Frame: avcodec_open2 [0x1c75d2] in libavcodec.so.58
+=========         Host Frame: VideoRecorder::openSegment(QString const&, VideoRecorder::Format const&, QString*) in VideoRecorder.cpp:632 [0x3c907] in tst_videorecorder
+=========         Host Frame: VideoRecorder::initializeRecording(QString*) in VideoRecorder.cpp:265 [0x3f1f0] in tst_videorecorder
+=========         Host Frame: VideoRecorder::workerLoop() in VideoRecorder.cpp:307 [0x3f7ce] in tst_videorecorder
+=========         Host Frame:  [0xdc252] in libstdc++.so.6
+=========         Host Frame: start_thread in pthread_create.c:442 [0x94a82] in libc.so.6
+=========         Host Frame:  [0x12688f] in libc.so.6
+========= 
+========= Program hit CUDA_ERROR_INVALID_VALUE (error 1) due to "invalid argument" on CUDA API call to cuArrayGetPlane.
+=========     Saved host backtrace up to driver entry point at error
+=========         Host Frame:  [0x2c734] in libnvcuvid.so.1
+=========         Host Frame:  [0xadb5c] in libnvcuvid.so.1
+=========         Host Frame:  [0x15d2b4] in libnvcuvid.so.1
+=========         Host Frame:  [0xc6a39] in libnvcuvid.so.1
+=========         Host Frame:  [0xdf1a0] in libnvcuvid.so.1
+=========         Host Frame:  [0xb42df] in libnvcuvid.so.1
+=========         Host Frame:  [0xeb86] in libnvidia-encode.so.1
+=========         Host Frame:  [0x6e85] in libnvidia-encode.so.1
+=========         Host Frame:  [0x25cff] in libnvidia-encode.so.1
+=========         Host Frame:  [0xc4dff] in libavcodec.so.58
+=========         Host Frame:  [0xc6d2c] in libavcodec.so.58
+=========         Host Frame: avcodec_open2 [0x1c75d2] in libavcodec.so.58
+=========         Host Frame: VideoRecorder::openSegment(QString const&, VideoRecorder::Format const&, QString*) in VideoRecorder.cpp:632 [0x3c907] in tst_videorecorder
+=========         Host Frame: VideoRecorder::initializeRecording(QString*) in VideoRecorder.cpp:265 [0x3f1f0] in tst_videorecorder
+=========         Host Frame: VideoRecorder::workerLoop() in VideoRecorder.cpp:307 [0x3f7ce] in tst_videorecorder
+=========         Host Frame:  [0xdc252] in libstdc++.so.6
+=========         Host Frame: start_thread in pthread_create.c:442 [0x94a82] in libc.so.6
+=========         Host Frame:  [0x12688f] in libc.so.6
+========= 
+========= Program hit CUDA_ERROR_INVALID_VALUE (error 1) due to "invalid argument" on CUDA API call to cuArrayGetPlane.
+=========     Saved host backtrace up to driver entry point at error
+=========         Host Frame:  [0x2c734] in libnvcuvid.so.1
+=========         Host Frame:  [0xadb5c] in libnvcuvid.so.1
+=========         Host Frame:  [0x15d2b4] in libnvcuvid.so.1
+=========         Host Frame:  [0xc6a39] in libnvcuvid.so.1
+=========         Host Frame:  [0xdf1a0] in libnvcuvid.so.1
+=========         Host Frame:  [0xb42df] in libnvcuvid.so.1
+=========         Host Frame:  [0xeb86] in libnvidia-encode.so.1
+=========         Host Frame:  [0x6e85] in libnvidia-encode.so.1
+=========         Host Frame:  [0x25cff] in libnvidia-encode.so.1
+=========         Host Frame:  [0xc4dff] in libavcodec.so.58
+=========         Host Frame:  [0xc6d2c] in libavcodec.so.58
+=========         Host Frame: avcodec_open2 [0x1c75d2] in libavcodec.so.58
+=========         Host Frame: VideoRecorder::openSegment(QString const&, VideoRecorder::Format const&, QString*) in VideoRecorder.cpp:632 [0x3c907] in tst_videorecorder
+=========         Host Frame: VideoRecorder::initializeRecording(QString*) in VideoRecorder.cpp:265 [0x3f1f0] in tst_videorecorder
+=========         Host Frame: VideoRecorder::workerLoop() in VideoRecorder.cpp:307 [0x3f7ce] in tst_videorecorder
+=========         Host Frame:  [0xdc252] in libstdc++.so.6
+=========         Host Frame: start_thread in pthread_create.c:442 [0x94a82] in libc.so.6
+=========         Host Frame:  [0x12688f] in libc.so.6
+========= 
+========= Program hit CUDA_ERROR_INVALID_VALUE (error 1) due to "invalid argument" on CUDA API call to cuArrayGetPlane.
+=========     Saved host backtrace up to driver entry point at error
+=========         Host Frame:  [0x2c734] in libnvcuvid.so.1
+=========         Host Frame:  [0xadb5c] in libnvcuvid.so.1
+=========         Host Frame:  [0x15d2b4] in libnvcuvid.so.1
+=========         Host Frame:  [0xc6a39] in libnvcuvid.so.1
+=========         Host Frame:  [0xdf1a0] in libnvcuvid.so.1
+=========         Host Frame:  [0xb42df] in libnvcuvid.so.1
+=========         Host Frame:  [0xeb86] in libnvidia-encode.so.1
+=========         Host Frame:  [0x6e85] in libnvidia-encode.so.1
+=========         Host Frame:  [0x25cff] in libnvidia-encode.so.1
+=========         Host Frame:  [0xc4dff] in libavcodec.so.58
+=========         Host Frame:  [0xc6d2c] in libavcodec.so.58
+=========         Host Frame: avcodec_open2 [0x1c75d2] in libavcodec.so.58
+=========         Host Frame: VideoRecorder::openSegment(QString const&, VideoRecorder::Format const&, QString*) in VideoRecorder.cpp:632 [0x3c907] in tst_videorecorder
+=========         Host Frame: VideoRecorder::initializeRecording(QString*) in VideoRecorder.cpp:265 [0x3f1f0] in tst_videorecorder
+=========         Host Frame: VideoRecorder::workerLoop() in VideoRecorder.cpp:307 [0x3f7ce] in tst_videorecorder
+=========         Host Frame:  [0xdc252] in libstdc++.so.6
+=========         Host Frame: start_thread in pthread_create.c:442 [0x94a82] in libc.so.6
+=========         Host Frame:  [0x12688f] in libc.so.6
+========= 
+========= Program hit CUDA_ERROR_INVALID_VALUE (error 1) due to "invalid argument" on CUDA API call to cuArrayGetPlane.
+=========     Saved host backtrace up to driver entry point at error
+=========         Host Frame:  [0x2c734] in libnvcuvid.so.1
+=========         Host Frame:  [0xadb5c] in libnvcuvid.so.1
+=========         Host Frame:  [0x15d448] in libnvcuvid.so.1
+=========         Host Frame:  [0x127b54] in libnvcuvid.so.1
+=========         Host Frame:  [0x127c3b] in libnvcuvid.so.1
+=========         Host Frame:  [0xdf443] in libnvcuvid.so.1
+=========         Host Frame:  [0xb42df] in libnvcuvid.so.1
+=========         Host Frame:  [0xeb86] in libnvidia-encode.so.1
+=========         Host Frame:  [0x6e85] in libnvidia-encode.so.1
+=========         Host Frame:  [0x25cff] in libnvidia-encode.so.1
+=========         Host Frame:  [0xc4dff] in libavcodec.so.58
+=========         Host Frame:  [0xc6d2c] in libavcodec.so.58
+=========         Host Frame: avcodec_open2 [0x1c75d2] in libavcodec.so.58
+=========         Host Frame: VideoRecorder::openSegment(QString const&, VideoRecorder::Format const&, QString*) in VideoRecorder.cpp:632 [0x3c907] in tst_videorecorder
+=========         Host Frame: VideoRecorder::initializeRecording(QString*) in VideoRecorder.cpp:265 [0x3f1f0] in tst_videorecorder
+=========         Host Frame: VideoRecorder::workerLoop() in VideoRecorder.cpp:307 [0x3f7ce] in tst_videorecorder
+=========         Host Frame:  [0xdc252] in libstdc++.so.6
+=========         Host Frame: start_thread in pthread_create.c:442 [0x94a82] in libc.so.6
+=========         Host Frame:  [0x12688f] in libc.so.6
+========= 
+========= Program hit CUDA_ERROR_INVALID_VALUE (error 1) due to "invalid argument" on CUDA API call to cuArrayGetPlane.
+=========     Saved host backtrace up to driver entry point at error
+=========         Host Frame:  [0x2c734] in libnvcuvid.so.1
+=========         Host Frame:  [0xadb5c] in libnvcuvid.so.1
+=========         Host Frame:  [0x15d448] in libnvcuvid.so.1
+=========         Host Frame:  [0x127b54] in libnvcuvid.so.1
+=========         Host Frame:  [0x127c3b] in libnvcuvid.so.1
+=========         Host Frame:  [0xdf443] in libnvcuvid.so.1
+=========         Host Frame:  [0xb42df] in libnvcuvid.so.1
+=========         Host Frame:  [0xeb86] in libnvidia-encode.so.1
+=========         Host Frame:  [0x6e85] in libnvidia-encode.so.1
+=========         Host Frame:  [0x25cff] in libnvidia-encode.so.1
+=========         Host Frame:  [0xc4dff] in libavcodec.so.58
+=========         Host Frame:  [0xc6d2c] in libavcodec.so.58
+=========         Host Frame: avcodec_open2 [0x1c75d2] in libavcodec.so.58
+=========         Host Frame: VideoRecorder::openSegment(QString const&, VideoRecorder::Format const&, QString*) in VideoRecorder.cpp:632 [0x3c907] in tst_videorecorder
+=========         Host Frame: VideoRecorder::initializeRecording(QString*) in VideoRecorder.cpp:265 [0x3f1f0] in tst_videorecorder
+=========         Host Frame: VideoRecorder::workerLoop() in VideoRecorder.cpp:307 [0x3f7ce] in tst_videorecorder
+=========         Host Frame:  [0xdc252] in libstdc++.so.6
+=========         Host Frame: start_thread in pthread_create.c:442 [0x94a82] in libc.so.6
+=========         Host Frame:  [0x12688f] in libc.so.6
+========= 
+========= Program hit CUDA_ERROR_INVALID_VALUE (error 1) due to "invalid argument" on CUDA API call to cuArrayGetPlane.
+=========     Saved host backtrace up to driver entry point at error
+=========         Host Frame:  [0x2c734] in libnvcuvid.so.1
+=========         Host Frame:  [0xadb5c] in libnvcuvid.so.1
+=========         Host Frame:  [0x15d448] in libnvcuvid.so.1
+=========         Host Frame:  [0x127b54] in libnvcuvid.so.1
+=========         Host Frame:  [0x127c3b] in libnvcuvid.so.1
+=========         Host Frame:  [0xdf443] in libnvcuvid.so.1
+=========         Host Frame:  [0xb42df] in libnvcuvid.so.1
+=========         Host Frame:  [0xeb86] in libnvidia-encode.so.1
+=========         Host Frame:  [0x6e85] in libnvidia-encode.so.1
+=========         Host Frame:  [0x25cff] in libnvidia-encode.so.1
+=========         Host Frame:  [0xc4dff] in libavcodec.so.58
+=========         Host Frame:  [0xc6d2c] in libavcodec.so.58
+=========         Host Frame: avcodec_open2 [0x1c75d2] in libavcodec.so.58
+=========         Host Frame: VideoRecorder::openSegment(QString const&, VideoRecorder::Format const&, QString*) in VideoRecorder.cpp:632 [0x3c907] in tst_videorecorder
+=========         Host Frame: VideoRecorder::initializeRecording(QString*) in VideoRecorder.cpp:265 [0x3f1f0] in tst_videorecorder
+=========         Host Frame: VideoRecorder::workerLoop() in VideoRecorder.cpp:307 [0x3f7ce] in tst_videorecorder
+=========         Host Frame:  [0xdc252] in libstdc++.so.6
+=========         Host Frame: start_thread in pthread_create.c:442 [0x94a82] in libc.so.6
+=========         Host Frame:  [0x12688f] in libc.so.6
+========= 
+========= Program hit CUDA_ERROR_INVALID_VALUE (error 1) due to "invalid argument" on CUDA API call to cuArrayGetPlane.
+=========     Saved host backtrace up to driver entry point at error
+=========         Host Frame:  [0x2c734] in libnvcuvid.so.1
+=========         Host Frame:  [0xadb5c] in libnvcuvid.so.1
+=========         Host Frame:  [0x15d448] in libnvcuvid.so.1
+=========         Host Frame:  [0x127b54] in libnvcuvid.so.1
+=========         Host Frame:  [0x127c3b] in libnvcuvid.so.1
+=========         Host Frame:  [0xdf443] in libnvcuvid.so.1
+=========         Host Frame:  [0xb42df] in libnvcuvid.so.1
+=========         Host Frame:  [0xeb86] in libnvidia-encode.so.1
+=========         Host Frame:  [0x6e85] in libnvidia-encode.so.1
+=========         Host Frame:  [0x25cff] in libnvidia-encode.so.1
+=========         Host Frame:  [0xc4dff] in libavcodec.so.58
+=========         Host Frame:  [0xc6d2c] in libavcodec.so.58
+=========         Host Frame: avcodec_open2 [0x1c75d2] in libavcodec.so.58
+=========         Host Frame: VideoRecorder::openSegment(QString const&, VideoRecorder::Format const&, QString*) in VideoRecorder.cpp:632 [0x3c907] in tst_videorecorder
+=========         Host Frame: VideoRecorder::initializeRecording(QString*) in VideoRecorder.cpp:265 [0x3f1f0] in tst_videorecorder
+=========         Host Frame: VideoRecorder::workerLoop() in VideoRecorder.cpp:307 [0x3f7ce] in tst_videorecorder
+=========         Host Frame:  [0xdc252] in libstdc++.so.6
+=========         Host Frame: start_thread in pthread_create.c:442 [0x94a82] in libc.so.6
+=========         Host Frame:  [0x12688f] in libc.so.6
+========= 
+========= Program hit CUDA_ERROR_INVALID_VALUE (error 1) due to "invalid argument" on CUDA API call to cuArrayGetPlane.
+=========     Saved host backtrace up to driver entry point at error
+=========         Host Frame:  [0x2c734] in libnvcuvid.so.1
+=========         Host Frame:  [0xadb5c] in libnvcuvid.so.1
+=========         Host Frame:  [0x15d448] in libnvcuvid.so.1
+=========         Host Frame:  [0x127b54] in libnvcuvid.so.1
+=========         Host Frame:  [0x127c3b] in libnvcuvid.so.1
+=========         Host Frame:  [0xdf443] in libnvcuvid.so.1
+=========         Host Frame:  [0xb42df] in libnvcuvid.so.1
+=========         Host Frame:  [0xeb86] in libnvidia-encode.so.1
+=========         Host Frame:  [0x6e85] in libnvidia-encode.so.1
+=========         Host Frame:  [0x25cff] in libnvidia-encode.so.1
+=========         Host Frame:  [0xc4dff] in libavcodec.so.58
+=========         Host Frame:  [0xc6d2c] in libavcodec.so.58
+=========         Host Frame: avcodec_open2 [0x1c75d2] in libavcodec.so.58
+=========         Host Frame: VideoRecorder::openSegment(QString const&, VideoRecorder::Format const&, QString*) in VideoRecorder.cpp:632 [0x3c907] in tst_videorecorder
+=========         Host Frame: VideoRecorder::initializeRecording(QString*) in VideoRecorder.cpp:265 [0x3f1f0] in tst_videorecorder
+=========         Host Frame: VideoRecorder::workerLoop() in VideoRecorder.cpp:307 [0x3f7ce] in tst_videorecorder
+=========         Host Frame:  [0xdc252] in libstdc++.so.6
+=========         Host Frame: start_thread in pthread_create.c:442 [0x94a82] in libc.so.6
+=========         Host Frame:  [0x12688f] in libc.so.6
+========= 
+========= Program hit CUDA_ERROR_INVALID_VALUE (error 1) due to "invalid argument" on CUDA API call to cuArrayGetPlane.
+=========     Saved host backtrace up to driver entry point at error
+=========         Host Frame:  [0x2c734] in libnvcuvid.so.1
+=========         Host Frame:  [0xadb5c] in libnvcuvid.so.1
+=========         Host Frame:  [0x15d448] in libnvcuvid.so.1
+=========         Host Frame:  [0x127b54] in libnvcuvid.so.1
+=========         Host Frame:  [0x127c3b] in libnvcuvid.so.1
+=========         Host Frame:  [0xdf443] in libnvcuvid.so.1
+=========         Host Frame:  [0xb42df] in libnvcuvid.so.1
+=========         Host Frame:  [0xeb86] in libnvidia-encode.so.1
+=========         Host Frame:  [0x6e85] in libnvidia-encode.so.1
+=========         Host Frame:  [0x25cff] in libnvidia-encode.so.1
+=========         Host Frame:  [0xc4dff] in libavcodec.so.58
+=========         Host Frame:  [0xc6d2c] in libavcodec.so.58
+=========         Host Frame: avcodec_open2 [0x1c75d2] in libavcodec.so.58
+=========         Host Frame: VideoRecorder::openSegment(QString const&, VideoRecorder::Format const&, QString*) in VideoRecorder.cpp:632 [0x3c907] in tst_videorecorder
+=========         Host Frame: VideoRecorder::initializeRecording(QString*) in VideoRecorder.cpp:265 [0x3f1f0] in tst_videorecorder
+=========         Host Frame: VideoRecorder::workerLoop() in VideoRecorder.cpp:307 [0x3f7ce] in tst_videorecorder
+=========         Host Frame:  [0xdc252] in libstdc++.so.6
+=========         Host Frame: start_thread in pthread_create.c:442 [0x94a82] in libc.so.6
+=========         Host Frame:  [0x12688f] in libc.so.6
+========= 
+========= Program hit CUDA_ERROR_INVALID_VALUE (error 1) due to "invalid argument" on CUDA API call to cuArrayGetPlane.
+=========     Saved host backtrace up to driver entry point at error
+=========         Host Frame:  [0x2c734] in libnvcuvid.so.1
+=========         Host Frame:  [0xadb5c] in libnvcuvid.so.1
+=========         Host Frame:  [0xaf2d1] in libnvcuvid.so.1
+=========         Host Frame:  [0x8a4f] in libnvidia-encode.so.1
+=========         Host Frame:  [0xaf4b] in libnvidia-encode.so.1
+=========         Host Frame:  [0xbeb4] in libnvidia-encode.so.1
+=========         Host Frame:  [0x5d8f] in libnvidia-encode.so.1
+=========         Host Frame:  [0x263ac] in libnvidia-encode.so.1
+=========         Host Frame:  [0x60598f] in libavcodec.so.58
+=========         Host Frame:  [0x606eb7] in libavcodec.so.58
+=========         Host Frame:  [0x2d2823] in libavcodec.so.58
+=========         Host Frame: avcodec_send_frame [0x2d2eb0] in libavcodec.so.58
+=========         Host Frame: VideoRecorder::sendAndWrite(AVFrame*, QString*) in VideoRecorder.cpp:512 [0x3ba88] in tst_videorecorder
+=========         Host Frame: VideoRecorder::encodeBuffer(VideoRecorder::PoolBuffer const&, QString*) in VideoRecorder.cpp:503 [0x3e115] in tst_videorecorder
+=========         Host Frame: VideoRecorder::workerLoop() in VideoRecorder.cpp:346 [0x3fad3] in tst_videorecorder
+=========         Host Frame:  [0xdc252] in libstdc++.so.6
+=========         Host Frame: start_thread in pthread_create.c:442 [0x94a82] in libc.so.6
+=========         Host Frame:  [0x12688f] in libc.so.6
+========= 
+========= Program hit CUDA_ERROR_INVALID_VALUE (error 1) due to "invalid argument" on CUDA API call to cuArrayGetPlane.
+=========     Saved host backtrace up to driver entry point at error
+=========         Host Frame:  [0x2c734] in libnvcuvid.so.1
+=========         Host Frame:  [0xadb5c] in libnvcuvid.so.1
+=========         Host Frame:  [0xaf2d1] in libnvcuvid.so.1
+=========         Host Frame:  [0x8a4f] in libnvidia-encode.so.1
+=========         Host Frame:  [0xaf4b] in libnvidia-encode.so.1
+=========         Host Frame:  [0xbeb4] in libnvidia-encode.so.1
+=========         Host Frame:  [0x5d8f] in libnvidia-encode.so.1
+=========         Host Frame:  [0x263ac] in libnvidia-encode.so.1
+=========         Host Frame:  [0x60598f] in libavcodec.so.58
+=========         Host Frame:  [0x606eb7] in libavcodec.so.58
+=========         Host Frame:  [0x2d2823] in libavcodec.so.58
+=========         Host Frame: avcodec_send_frame [0x2d2eb0] in libavcodec.so.58
+=========         Host Frame: VideoRecorder::sendAndWrite(AVFrame*, QString*) in VideoRecorder.cpp:512 [0x3ba88] in tst_videorecorder
+=========         Host Frame: VideoRecorder::encodeBuffer(VideoRecorder::PoolBuffer const&, QString*) in VideoRecorder.cpp:503 [0x3e115] in tst_videorecorder
+=========         Host Frame: VideoRecorder::workerLoop() in VideoRecorder.cpp:346 [0x3fad3] in tst_videorecorder
+=========         Host Frame:  [0xdc252] in libstdc++.so.6
+=========         Host Frame: start_thread in pthread_create.c:442 [0x94a82] in libc.so.6
+=========         Host Frame:  [0x12688f] in libc.so.6
+========= 
+========= Program hit CUDA_ERROR_INVALID_VALUE (error 1) due to "invalid argument" on CUDA API call to cuArrayGetPlane.
+=========     Saved host backtrace up to driver entry point at error
+=========         Host Frame:  [0x2c734] in libnvcuvid.so.1
+=========         Host Frame:  [0xadb5c] in libnvcuvid.so.1
+=========         Host Frame:  [0xaf2d1] in libnvcuvid.so.1
+=========         Host Frame:  [0x8a4f] in libnvidia-encode.so.1
+=========         Host Frame:  [0xaf4b] in libnvidia-encode.so.1
+=========         Host Frame:  [0xbeb4] in libnvidia-encode.so.1
+=========         Host Frame:  [0x5d8f] in libnvidia-encode.so.1
+=========         Host Frame:  [0x263ac] in libnvidia-encode.so.1
+=========         Host Frame:  [0x60598f] in libavcodec.so.58
+=========         Host Frame:  [0x606eb7] in libavcodec.so.58
+=========         Host Frame:  [0x2d2823] in libavcodec.so.58
+=========         Host Frame: avcodec_send_frame [0x2d2eb0] in libavcodec.so.58
+=========         Host Frame: VideoRecorder::sendAndWrite(AVFrame*, QString*) in VideoRecorder.cpp:512 [0x3ba88] in tst_videorecorder
+=========         Host Frame: VideoRecorder::encodeBuffer(VideoRecorder::PoolBuffer const&, QString*) in VideoRecorder.cpp:503 [0x3e115] in tst_videorecorder
+=========         Host Frame: VideoRecorder::workerLoop() in VideoRecorder.cpp:346 [0x3fad3] in tst_videorecorder
+=========         Host Frame:  [0xdc252] in libstdc++.so.6
+=========         Host Frame: start_thread in pthread_create.c:442 [0x94a82] in libc.so.6
+=========         Host Frame:  [0x12688f] in libc.so.6
+========= 
+========= Program hit CUDA_ERROR_INVALID_VALUE (error 1) due to "invalid argument" on CUDA API call to cuArrayGetPlane.
+=========     Saved host backtrace up to driver entry point at error
+=========         Host Frame:  [0x2c734] in libnvcuvid.so.1
+=========         Host Frame:  [0xadb5c] in libnvcuvid.so.1
+=========         Host Frame:  [0xaf2d1] in libnvcuvid.so.1
+=========         Host Frame:  [0x8a4f] in libnvidia-encode.so.1
+=========         Host Frame:  [0xaf4b] in libnvidia-encode.so.1
+=========         Host Frame:  [0xbeb4] in libnvidia-encode.so.1
+=========         Host Frame:  [0x5d8f] in libnvidia-encode.so.1
+=========         Host Frame:  [0x263ac] in libnvidia-encode.so.1
+=========         Host Frame:  [0x60598f] in libavcodec.so.58
+=========         Host Frame:  [0x606eb7] in libavcodec.so.58
+=========         Host Frame:  [0x2d2823] in libavcodec.so.58
+=========         Host Frame: avcodec_send_frame [0x2d2eb0] in libavcodec.so.58
+=========         Host Frame: VideoRecorder::sendAndWrite(AVFrame*, QString*) in VideoRecorder.cpp:512 [0x3ba88] in tst_videorecorder
+=========         Host Frame: VideoRecorder::encodeBuffer(VideoRecorder::PoolBuffer const&, QString*) in VideoRecorder.cpp:503 [0x3e115] in tst_videorecorder
+=========         Host Frame: VideoRecorder::workerLoop() in VideoRecorder.cpp:346 [0x3fad3] in tst_videorecorder
+=========         Host Frame:  [0xdc252] in libstdc++.so.6
+=========         Host Frame: start_thread in pthread_create.c:442 [0x94a82] in libc.so.6
+=========         Host Frame:  [0x12688f] in libc.so.6
+========= 
+========= Target application returned an error
+========= LEAK SUMMARY: 0 bytes leaked in 0 allocations
+========= ERROR SUMMARY: 20 errors

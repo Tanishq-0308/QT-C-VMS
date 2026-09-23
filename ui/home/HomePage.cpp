@@ -14,6 +14,9 @@
 #include <QVBoxLayout>
 #include <QLabel>
 #include <QPixmap>
+#include <QShortcut>
+#include <QTimer>
+#include <QPushButton>
 #include <QToolButton>
 #include <QDebug>
 #include <QFile>
@@ -28,6 +31,7 @@
 HomePage::HomePage(QWidget *parent) : ResponsiveWidget(parent) {
     stackedPages = new QStackedWidget;
     dashboardPage = new DashboardPage;
+    connect(dashboardPage, &DashboardPage::fullscreenRequested, this, &HomePage::setDashboardFullscreen);
     patientPage = new PatientPage;
     surgeryDetailsPage = new SurgeryDetailsPage;
     profilePage = new ProfilePage;
@@ -226,6 +230,14 @@ void HomePage::setupMainLayout() {
     layoutSwitcher->addWidget(normalWidget);
     layoutSwitcher->addWidget(fullScreenWrapper);
 
+    // Separate page for the dashboard's fullscreen preview (index 2). Keeping it inside this
+    // window preserves the preview's OpenGL context; a separate window would destroy it.
+    dashboardFullScreenWrapper = new QWidget;
+    dashboardFullScreenWrapper->setStyleSheet("background-color: black;");
+    auto *dashboardFsLayout = new QVBoxLayout(dashboardFullScreenWrapper);
+    dashboardFsLayout->setContentsMargins(0, 0, 0, 0);
+    layoutSwitcher->addWidget(dashboardFullScreenWrapper);
+
     QVBoxLayout *rootLayout = new QVBoxLayout(this);
     rootLayout->setContentsMargins(0, 0, 0, 0);
     rootLayout->addWidget(layoutSwitcher);
@@ -318,7 +330,67 @@ void HomePage::openSurgeryDetails(const QString &patientId) {
     stackedPages->setCurrentWidget(surgeryDetailsPage);
 }
 
+void HomePage::setDashboardFullscreen(bool on) {
+    if (!dashboardPage || !dashboardFullScreenWrapper)
+        return;
+
+    QLayout *layout = dashboardFullScreenWrapper->layout();
+    if (on) {
+        layout->addWidget(dashboardPage->detachVideoBox());
+
+        if (!dashboardExitFullscreenBtn) {
+            dashboardExitFullscreenBtn = new QPushButton("✕", dashboardFullScreenWrapper);
+            dashboardExitFullscreenBtn->setFixedSize(50, 50);
+            dashboardExitFullscreenBtn->setCursor(Qt::PointingHandCursor);
+            dashboardExitFullscreenBtn->setToolTip("Exit fullscreen (Esc)");
+            dashboardExitFullscreenBtn->setStyleSheet(
+                "QPushButton { background-color: rgba(0,0,0,0.5); border: none; border-radius: 25px;"
+                "              color: white; font-size: 24px; }"
+                "QPushButton:hover { background-color: rgba(255,0,0,0.8); }");
+            connect(dashboardExitFullscreenBtn, &QPushButton::clicked, dashboardPage, &DashboardPage::toggleFullscreen);
+            auto *esc = new QShortcut(QKeySequence(Qt::Key_Escape), dashboardFullScreenWrapper);
+            connect(esc, &QShortcut::activated, dashboardPage, &DashboardPage::toggleFullscreen);
+        }
+        dashboardFullScreenWrapper->installEventFilter(this); // keeps the button in the corner
+        dashboardExitFullscreenBtn->show();
+        dashboardExitFullscreenBtn->raise();
+        // The page gets its final size only after the switch, so place the button then too
+        QTimer::singleShot(0, this, [this]() {
+            if (dashboardExitFullscreenBtn && dashboardFullScreenWrapper) {
+                dashboardExitFullscreenBtn->move(dashboardFullScreenWrapper->width() - 70, 20);
+                dashboardExitFullscreenBtn->raise();
+            }
+        });
+
+        topBar->hide();
+        sidebar->hide();
+        layoutSwitcher->setCurrentIndex(2);
+    } else {
+        layout->removeWidget(dashboardPage->detachVideoBox());
+        dashboardPage->reattachVideoBox();
+        if (dashboardExitFullscreenBtn)
+            dashboardExitFullscreenBtn->hide();
+
+        topBar->show();
+        sidebar->show();
+        layoutSwitcher->setCurrentIndex(0);
+    }
+}
+
+// Keeps the fullscreen exit button pinned to the top-right corner
+bool HomePage::eventFilter(QObject* watched, QEvent* event) {
+    if (watched == dashboardFullScreenWrapper && event->type() == QEvent::Resize && dashboardExitFullscreenBtn) {
+        dashboardExitFullscreenBtn->move(dashboardFullScreenWrapper->width() - 70, 20);
+        dashboardExitFullscreenBtn->raise();
+    }
+    return QWidget::eventFilter(watched, event);
+}
+
 void HomePage::showRecording(const QString &patientId, int surgeryId) {
+    // The recording page takes over the screen; leave the dashboard's fullscreen first
+    if (dashboardPage && dashboardPage->isFullscreen())
+        dashboardPage->toggleFullscreen();
+
     if (!recordingPage->parent()) {
         recordingPage->setParent(fullScreenWrapper);
     }
@@ -392,19 +464,65 @@ void HomePage::customEvent(QEvent* event) {
         com_ptr<IDeckLink> decklink(discoveryEvent->deckLink());
         addDevice(decklink);
     }
+    else if (event->type() == kRemoveDeviceEvent) {
+        auto* discoveryEvent = dynamic_cast<DeckLinkDeviceDiscoveryEvent*>(event);
+        if (discoveryEvent)
+            removeDevice(discoveryEvent->deckLink());
+    }
     else if (event->type() == kVideoFrameArrivedEvent) {
+        // Sent only when the input signal is gained or lost
         auto* frameEvent = dynamic_cast<DeckLinkInputFrameArrivedEvent*>(event);
-        if (!frameEvent || !frameEvent->SignalValid())
+        if (!frameEvent)
             return;
-
-        auto* senderDevice = dynamic_cast<DeckLinkInputDevice*>(m_selectedDevice.get());
-        if (!senderDevice)
+        if (frameEvent->SignalValid())
+            qInfo() << "DeckLink: input signal present";
+        else
+            qWarning() << "DeckLink: input signal lost";
+        setInputSignalValid(frameEvent->SignalValid());
+    }
+    else if (event->type() == kVideoFormatChangedEvent) {
+        auto* formatEvent = dynamic_cast<DeckLinkInputFormatChangedEvent*>(event);
+        if (!formatEvent)
             return;
+        const QString modeText = formatEvent->Width() > 0
+            ? QString("%1x%2 @ %3").arg(formatEvent->Width()).arg(formatEvent->Height())
+                  .arg(formatEvent->Fps(), 0, 'g', 4)
+            : QString();
+        if (dashboardPage && dashboardPage->sharedGLWidget())
+            dashboardPage->sharedGLWidget()->setModeText(modeText);
+        if (recordingPage)
+            recordingPage->setModeText(modeText);
     }
 }
 
+// Shows/hides the NO SIGNAL warning on every live view
+void HomePage::setInputSignalValid(bool valid) {
+    if (dashboardPage && dashboardPage->sharedGLWidget())
+        dashboardPage->sharedGLWidget()->setSignalValid(valid);
+    if (recordingPage)
+        recordingPage->setSignalValid(valid);
+}
+
+// Initial capture mode. 1080p60 8-bit YUV is the highest mode the capture card's PCIe x1 link
+// carries reliably; format detection still follows the source if it sends something else.
+static const BMDDisplayMode kCaptureDisplayMode = bmdModeHD1080p6000;
+
 void HomePage::addDevice(com_ptr<IDeckLink>& deckLink) {
-    m_currentDeckLink = deckLink;
+    const intptr_t key = (intptr_t)deckLink.get();
+
+    // A device that is re-announced must not leave its previous capture running
+    auto existing = m_inputDevices.find(key);
+    if (existing != m_inputDevices.end()) {
+        if (existing->second) {
+            existing->second->stopCapture();
+            existing->second->setVideoFrameSink(nullptr);
+        }
+        if (existing->second == m_selectedDevice) {
+            m_selectedDevice = nullptr;
+            m_currentDeckLink = nullptr;
+        }
+        m_inputDevices.erase(existing);
+    }
 
     auto inputDevice = make_com_ptr<DeckLinkInputDevice>(this, deckLink);
     if (!inputDevice->Init())
@@ -412,7 +530,7 @@ void HomePage::addDevice(com_ptr<IDeckLink>& deckLink) {
 
     QString selectedInput = "SDI";
     {
-        QSqlQuery q("SELECT video_input FROM settings LIMIT 1");
+        QSqlQuery q("SELECT video_input FROM settings ORDER BY id LIMIT 1");
         if (q.next())
             selectedInput = q.value(0).toString();
     }
@@ -422,7 +540,7 @@ void HomePage::addDevice(com_ptr<IDeckLink>& deckLink) {
                                 : bmdVideoConnectionHDMI;
 
     com_ptr<IDeckLinkConfiguration> config;
-    deckLink->QueryInterface(IID_IDeckLinkConfiguration, reinterpret_cast<void**>(&config));
+    deckLink->QueryInterface(IID_IDeckLinkConfiguration, reinterpret_cast<void**>(config.releaseAndGetAddressOf()));
     if (config) {
         if (config->SetInt(bmdDeckLinkConfigVideoInputConnection, inputConnection) != S_OK) {
             qWarning() << "Failed to set DeckLink input connection to" << selectedInput;
@@ -431,7 +549,15 @@ void HomePage::addDevice(com_ptr<IDeckLink>& deckLink) {
         }
     }
 
-    m_inputDevices[(intptr_t)deckLink.get()] = inputDevice;
+    m_inputDevices[key] = inputDevice;
+
+    // Only one input feeds the live view. Starting every discovered device into the same
+    // preview would interleave different sources and multiply the frame rate.
+    if (m_selectedDevice) {
+        qWarning() << "Additional DeckLink device detected; not capturing from it:" << inputDevice->getDeviceName();
+        return;
+    }
+    m_currentDeckLink = deckLink;
 
     if (!m_sharedDelegate) {
         m_sharedDelegate = dashboardPage->createSharedDelegate();
@@ -444,13 +570,44 @@ void HomePage::addDevice(com_ptr<IDeckLink>& deckLink) {
 
     // After setInputSource line, add:
     bool showLabel = true;
-    QSqlQuery labelQuery("SELECT show_video_label FROM settings LIMIT 1");
+    QSqlQuery labelQuery("SELECT show_video_label FROM settings ORDER BY id LIMIT 1");
     if (labelQuery.next()) {
         showLabel = labelQuery.value(0).toInt() == 1;
     }
     dashboardPage->sharedGLWidget()->setShowLabel(showLabel);
-    inputDevice->startCapture(bmdMode4K2160p30, m_sharedDelegate.get(), true);
+
+    // Frames go to the recorder straight from the capture thread
+    inputDevice->setVideoFrameSink(recordingPage->recorder());
+    setInputSignalValid(false);
+    inputDevice->startCapture(kCaptureDisplayMode, m_sharedDelegate.get(), true);
     m_selectedDevice = inputDevice;
+}
+
+void HomePage::removeDevice(const com_ptr<IDeckLink>& deckLink) {
+    auto it = m_inputDevices.find((intptr_t)deckLink.get());
+    if (it == m_inputDevices.end())
+        return;
+
+    com_ptr<DeckLinkInputDevice> device = it->second;
+    m_inputDevices.erase(it);
+    if (device) {
+        device->stopCapture();
+        device->setVideoFrameSink(nullptr);
+    }
+
+    if (!(device == m_selectedDevice))
+        return;
+
+    qWarning() << "Selected DeckLink device removed";
+    m_selectedDevice = nullptr;
+    m_currentDeckLink = nullptr;
+
+    // Fall back to another connected device, if any
+    if (!m_inputDevices.empty()) {
+        com_ptr<IDeckLink> next = m_inputDevices.begin()->second->getDeckLinkInstance();
+        m_inputDevices.erase(m_inputDevices.begin());
+        addDevice(next);
+    }
 }
 
 void HomePage::reconfigureVideoInput() {
@@ -460,7 +617,7 @@ void HomePage::reconfigureVideoInput() {
     m_selectedDevice->stopCapture();
 
     QString selectedInput = "SDI";
-    QSqlQuery q("SELECT video_input FROM settings LIMIT 1");
+    QSqlQuery q("SELECT video_input FROM settings ORDER BY id LIMIT 1");
     if (q.next())
         selectedInput = q.value(0).toString();
     
@@ -474,17 +631,21 @@ void HomePage::reconfigureVideoInput() {
                                 : bmdVideoConnectionHDMI;
 
     com_ptr<IDeckLinkConfiguration> config;
-    m_currentDeckLink->QueryInterface(IID_IDeckLinkConfiguration, reinterpret_cast<void**>(&config));
+    m_currentDeckLink->QueryInterface(IID_IDeckLinkConfiguration, reinterpret_cast<void**>(config.releaseAndGetAddressOf()));
     if (config)
         config->SetInt(bmdDeckLinkConfigVideoInputConnection, inputConnection);
 
-    m_selectedDevice->startCapture(bmdMode4K2160p30, m_sharedDelegate.get(), true);
+    setInputSignalValid(false);
+    m_selectedDevice->startCapture(kCaptureDisplayMode, m_sharedDelegate.get(), true);
 }
 
 HomePage::~HomePage() {
+    // Stop capture before child pages (and the recorder the capture thread feeds) are destroyed
     for (auto& pair : m_inputDevices) {
-        if (pair.second)
+        if (pair.second) {
             pair.second->stopCapture();
+            pair.second->setVideoFrameSink(nullptr);
+        }
     }
     m_inputDevices.clear();
 }

@@ -1,0 +1,311 @@
+Direct leak of 672 byte(s) in 14 object(s) allocated from:
+    #0 0x7b3c04eb4a57 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154
+    #1 0x7b3bfc091dc1 in __pthread_cond_broadcast_2_0 nptl/old_pthread_cond_broadcast.c:33
+    #2 0x7b3be00c65b6  (<unknown module>)
+    #3 0x7b3be00c219f  (<unknown module>)
+    #4 0x7b3be00c476e  (<unknown module>)
+    #5 0x7b3c034c66f7  (/lib/x86_64-linux-gnu/libavcodec.so.58+0xc66f7)
+    #6 0x7b3c035c75d2 in avcodec_open2 (/lib/x86_64-linux-gnu/libavcodec.so.58+0x1c75d2)
+    #7 0x57e255772557 in VideoRecorder::openSegment(QString const&, VideoRecorder::Format const&, QString*) /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:632
+    #8 0x57e25577b7fc in VideoRecorder::initializeRecording(QString*) /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:265
+    #9 0x57e25577d586 in VideoRecorder::workerLoop() /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:307
+    #10 0x7b3bfc4dc252  (/lib/x86_64-linux-gnu/libstdc++.so.6+0xdc252)
+    #11 0x7b3bfc094a82 in start_thread nptl/pthread_create.c:442
+    #12 0x7b3bfc12688f  (/lib/x86_64-linux-gnu/libc.so.6+0x12688f)
+
+Direct leak of 336 byte(s) in 7 object(s) allocated from:
+    #0 0x7b3c04eb4a57 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154
+    #1 0x7b3bfc091dc1 in __pthread_cond_broadcast_2_0 nptl/old_pthread_cond_broadcast.c:33
+    #2 0x7b3bc6c9ba26  (<unknown module>)
+    #3 0x7b3bc6c677df  (<unknown module>)
+    #4 0x7b3bc6cb3066  (<unknown module>)
+    #5 0x7b3be0091a77  (<unknown module>)
+    #6 0x7b3be0093d96  (<unknown module>)
+    #7 0x7b3be00b0e1e  (<unknown module>)
+    #8 0x7b3c034c3682  (/lib/x86_64-linux-gnu/libavcodec.so.58+0xc3682)
+    #9 0x7b3c034c6937  (/lib/x86_64-linux-gnu/libavcodec.so.58+0xc6937)
+    #10 0x7b3c035c75d2 in avcodec_open2 (/lib/x86_64-linux-gnu/libavcodec.so.58+0x1c75d2)
+    #11 0x57e255772557 in VideoRecorder::openSegment(QString const&, VideoRecorder::Format const&, QString*) /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:632
+    #12 0x57e25577b7fc in VideoRecorder::initializeRecording(QString*) /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:265
+    #13 0x57e25577d586 in VideoRecorder::workerLoop() /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:307
+    #14 0x7b3bfc4dc252  (/lib/x86_64-linux-gnu/libstdc++.so.6+0xdc252)
+    #15 0x7b3bfc094a82 in start_thread nptl/pthread_create.c:442
+    #16 0x7b3bfc12688f  (/lib/x86_64-linux-gnu/libc.so.6+0x12688f)
+
+Direct leak of 288 byte(s) in 6 object(s) allocated from:
+    #0 0x7b3c04eb4a57 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154
+    #1 0x7b3bfc091dc1 in __pthread_cond_broadcast_2_0 nptl/old_pthread_cond_broadcast.c:33
+    #2 0x7b3bd7a9ba26  (<unknown module>)
+    #3 0x7b3bd7a677df  (<unknown module>)
+    #4 0x7b3bd7ab3066  (<unknown module>)
+    #5 0x7b3be0091a77  (<unknown module>)
+    #6 0x7b3be0093d96  (<unknown module>)
+    #7 0x7b3be00b0e1e  (<unknown module>)
+    #8 0x7b3c034c3682  (/lib/x86_64-linux-gnu/libavcodec.so.58+0xc3682)
+    #9 0x7b3c034c6937  (/lib/x86_64-linux-gnu/libavcodec.so.58+0xc6937)
+    #10 0x7b3c035c75d2 in avcodec_open2 (/lib/x86_64-linux-gnu/libavcodec.so.58+0x1c75d2)
+    #11 0x57e255772557 in VideoRecorder::openSegment(QString const&, VideoRecorder::Format const&, QString*) /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:632
+    #12 0x57e25577b7fc in VideoRecorder::initializeRecording(QString*) /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:265
+    #13 0x57e25577d586 in VideoRecorder::workerLoop() /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:307
+    #14 0x7b3bfc4dc252  (/lib/x86_64-linux-gnu/libstdc++.so.6+0xdc252)
+    #15 0x7b3bfc094a82 in start_thread nptl/pthread_create.c:442
+    #16 0x7b3bfc12688f  (/lib/x86_64-linux-gnu/libc.so.6+0x12688f)
+
+Direct leak of 192 byte(s) in 4 object(s) allocated from:
+    #0 0x7b3c04eb4a57 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154
+    #1 0x7b3bfc091dc1 in __pthread_cond_broadcast_2_0 nptl/old_pthread_cond_broadcast.c:33
+    #2 0x7b3be45605b6  (<unknown module>)
+    #3 0x7b3be455c19f  (<unknown module>)
+    #4 0x7b3be455e76e  (<unknown module>)
+    #5 0x7b3c034c66f7  (/lib/x86_64-linux-gnu/libavcodec.so.58+0xc66f7)
+    #6 0x7b3c035c75d2 in avcodec_open2 (/lib/x86_64-linux-gnu/libavcodec.so.58+0x1c75d2)
+    #7 0x57e255772557 in VideoRecorder::openSegment(QString const&, VideoRecorder::Format const&, QString*) /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:632
+    #8 0x57e25577b7fc in VideoRecorder::initializeRecording(QString*) /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:265
+    #9 0x57e25577d586 in VideoRecorder::workerLoop() /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:307
+    #10 0x7b3bfc4dc252  (/lib/x86_64-linux-gnu/libstdc++.so.6+0xdc252)
+    #11 0x7b3bfc094a82 in start_thread nptl/pthread_create.c:442
+    #12 0x7b3bfc12688f  (/lib/x86_64-linux-gnu/libc.so.6+0x12688f)
+
+Direct leak of 192 byte(s) in 4 object(s) allocated from:
+    #0 0x7b3c04eb4a57 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154
+    #1 0x7b3bfc091dc1 in __pthread_cond_broadcast_2_0 nptl/old_pthread_cond_broadcast.c:33
+    #2 0x7b3bc6c9ba26  (<unknown module>)
+    #3 0x7b3bc6c677df  (<unknown module>)
+    #4 0x7b3bc6cb3066  (<unknown module>)
+    #5 0x7b3be452ba77  (<unknown module>)
+    #6 0x7b3be452dd96  (<unknown module>)
+    #7 0x7b3be454ae1e  (<unknown module>)
+    #8 0x7b3c034c3682  (/lib/x86_64-linux-gnu/libavcodec.so.58+0xc3682)
+    #9 0x7b3c034c6937  (/lib/x86_64-linux-gnu/libavcodec.so.58+0xc6937)
+    #10 0x7b3c035c75d2 in avcodec_open2 (/lib/x86_64-linux-gnu/libavcodec.so.58+0x1c75d2)
+    #11 0x57e255772557 in VideoRecorder::openSegment(QString const&, VideoRecorder::Format const&, QString*) /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:632
+    #12 0x57e25577b7fc in VideoRecorder::initializeRecording(QString*) /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:265
+    #13 0x57e25577d586 in VideoRecorder::workerLoop() /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:307
+    #14 0x7b3bfc4dc252  (/lib/x86_64-linux-gnu/libstdc++.so.6+0xdc252)
+    #15 0x7b3bfc094a82 in start_thread nptl/pthread_create.c:442
+    #16 0x7b3bfc12688f  (/lib/x86_64-linux-gnu/libc.so.6+0x12688f)
+
+Direct leak of 192 byte(s) in 4 object(s) allocated from:
+    #0 0x7b3c04eb4a57 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154
+    #1 0x7b3bfc091dc1 in __pthread_cond_broadcast_2_0 nptl/old_pthread_cond_broadcast.c:33
+    #2 0x7b3bf013f5b6  (<unknown module>)
+    #3 0x7b3bf013b19f  (<unknown module>)
+    #4 0x7b3bf013d76e  (<unknown module>)
+    #5 0x7b3c034c66f7  (/lib/x86_64-linux-gnu/libavcodec.so.58+0xc66f7)
+    #6 0x7b3c035c75d2 in avcodec_open2 (/lib/x86_64-linux-gnu/libavcodec.so.58+0x1c75d2)
+    #7 0x57e255772557 in VideoRecorder::openSegment(QString const&, VideoRecorder::Format const&, QString*) /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:632
+    #8 0x57e25577b7fc in VideoRecorder::initializeRecording(QString*) /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:265
+    #9 0x57e25577d586 in VideoRecorder::workerLoop() /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:307
+    #10 0x7b3bfc4dc252  (/lib/x86_64-linux-gnu/libstdc++.so.6+0xdc252)
+    #11 0x7b3bfc094a82 in start_thread nptl/pthread_create.c:442
+    #12 0x7b3bfc12688f  (/lib/x86_64-linux-gnu/libc.so.6+0x12688f)
+
+Direct leak of 192 byte(s) in 4 object(s) allocated from:
+    #0 0x7b3c04eb4a57 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154
+    #1 0x7b3bfc091dc1 in __pthread_cond_broadcast_2_0 nptl/old_pthread_cond_broadcast.c:33
+    #2 0x7b3bc6c9ba26  (<unknown module>)
+    #3 0x7b3bc6c677df  (<unknown module>)
+    #4 0x7b3bc6cb3066  (<unknown module>)
+    #5 0x7b3bf010aa77  (<unknown module>)
+    #6 0x7b3bf010cd96  (<unknown module>)
+    #7 0x7b3bf0129e1e  (<unknown module>)
+    #8 0x7b3c034c3682  (/lib/x86_64-linux-gnu/libavcodec.so.58+0xc3682)
+    #9 0x7b3c034c6937  (/lib/x86_64-linux-gnu/libavcodec.so.58+0xc6937)
+    #10 0x7b3c035c75d2 in avcodec_open2 (/lib/x86_64-linux-gnu/libavcodec.so.58+0x1c75d2)
+    #11 0x57e255772557 in VideoRecorder::openSegment(QString const&, VideoRecorder::Format const&, QString*) /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:632
+    #12 0x57e25577b7fc in VideoRecorder::initializeRecording(QString*) /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:265
+    #13 0x57e25577d586 in VideoRecorder::workerLoop() /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:307
+    #14 0x7b3bfc4dc252  (/lib/x86_64-linux-gnu/libstdc++.so.6+0xdc252)
+    #15 0x7b3bfc094a82 in start_thread nptl/pthread_create.c:442
+    #16 0x7b3bfc12688f  (/lib/x86_64-linux-gnu/libc.so.6+0x12688f)
+
+Direct leak of 48 byte(s) in 1 object(s) allocated from:
+    #0 0x7b3c04eb4a57 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154
+    #1 0x7b3bfc091dc1 in __pthread_cond_broadcast_2_0 nptl/old_pthread_cond_broadcast.c:33
+    #2 0x7b3bdac9ba26  (<unknown module>)
+    #3 0x7b3bdac677df  (<unknown module>)
+    #4 0x7b3bdacb3066  (<unknown module>)
+    #5 0x7b3be09a7a77  (<unknown module>)
+    #6 0x7b3be09a9d96  (<unknown module>)
+    #7 0x7b3be09c6e1e  (<unknown module>)
+    #8 0x7b3c034c3682  (/lib/x86_64-linux-gnu/libavcodec.so.58+0xc3682)
+    #9 0x7b3c034c6937  (/lib/x86_64-linux-gnu/libavcodec.so.58+0xc6937)
+    #10 0x7b3c035c75d2 in avcodec_open2 (/lib/x86_64-linux-gnu/libavcodec.so.58+0x1c75d2)
+    #11 0x57e255772557 in VideoRecorder::openSegment(QString const&, VideoRecorder::Format const&, QString*) /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:632
+    #12 0x57e25577b7fc in VideoRecorder::initializeRecording(QString*) /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:265
+    #13 0x57e25577d586 in VideoRecorder::workerLoop() /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:307
+    #14 0x7b3bfc4dc252  (/lib/x86_64-linux-gnu/libstdc++.so.6+0xdc252)
+    #15 0x7b3bfc094a82 in start_thread nptl/pthread_create.c:442
+    #16 0x7b3bfc12688f  (/lib/x86_64-linux-gnu/libc.so.6+0x12688f)
+
+Direct leak of 48 byte(s) in 1 object(s) allocated from:
+    #0 0x7b3c04eb4a57 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154
+    #1 0x7b3bfc091dc1 in __pthread_cond_broadcast_2_0 nptl/old_pthread_cond_broadcast.c:33
+    #2 0x7b3bdc57c5b6  (<unknown module>)
+    #3 0x7b3bdc57819f  (<unknown module>)
+    #4 0x7b3bdc57a76e  (<unknown module>)
+    #5 0x7b3c034c66f7  (/lib/x86_64-linux-gnu/libavcodec.so.58+0xc66f7)
+    #6 0x7b3c035c75d2 in avcodec_open2 (/lib/x86_64-linux-gnu/libavcodec.so.58+0x1c75d2)
+    #7 0x57e255772557 in VideoRecorder::openSegment(QString const&, VideoRecorder::Format const&, QString*) /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:632
+    #8 0x57e25577b7fc in VideoRecorder::initializeRecording(QString*) /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:265
+    #9 0x57e25577d586 in VideoRecorder::workerLoop() /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:307
+    #10 0x7b3bfc4dc252  (/lib/x86_64-linux-gnu/libstdc++.so.6+0xdc252)
+    #11 0x7b3bfc094a82 in start_thread nptl/pthread_create.c:442
+    #12 0x7b3bfc12688f  (/lib/x86_64-linux-gnu/libc.so.6+0x12688f)
+
+Direct leak of 48 byte(s) in 1 object(s) allocated from:
+    #0 0x7b3c04eb4a57 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154
+    #1 0x7b3bfc091dc1 in __pthread_cond_broadcast_2_0 nptl/old_pthread_cond_broadcast.c:33
+    #2 0x7b3be09dc5b6  (<unknown module>)
+    #3 0x7b3be09d819f  (<unknown module>)
+    #4 0x7b3be09da76e  (<unknown module>)
+    #5 0x7b3c034c66f7  (/lib/x86_64-linux-gnu/libavcodec.so.58+0xc66f7)
+    #6 0x7b3c035c75d2 in avcodec_open2 (/lib/x86_64-linux-gnu/libavcodec.so.58+0x1c75d2)
+    #7 0x57e255772557 in VideoRecorder::openSegment(QString const&, VideoRecorder::Format const&, QString*) /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:632
+    #8 0x57e25577b7fc in VideoRecorder::initializeRecording(QString*) /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:265
+    #9 0x57e25577d586 in VideoRecorder::workerLoop() /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:307
+    #10 0x7b3bfc4dc252  (/lib/x86_64-linux-gnu/libstdc++.so.6+0xdc252)
+    #11 0x7b3bfc094a82 in start_thread nptl/pthread_create.c:442
+    #12 0x7b3bfc12688f  (/lib/x86_64-linux-gnu/libc.so.6+0x12688f)
+
+Direct leak of 48 byte(s) in 1 object(s) allocated from:
+    #0 0x7b3c04eb4a57 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154
+    #1 0x7b3bfc091dc1 in __pthread_cond_broadcast_2_0 nptl/old_pthread_cond_broadcast.c:33
+    #2 0x7b3bd7a9ba26  (<unknown module>)
+    #3 0x7b3bd7a677df  (<unknown module>)
+    #4 0x7b3bd7ab3066  (<unknown module>)
+    #5 0x7b3bdc547a77  (<unknown module>)
+    #6 0x7b3bdc549d96  (<unknown module>)
+    #7 0x7b3bdc566e1e  (<unknown module>)
+    #8 0x7b3c034c3682  (/lib/x86_64-linux-gnu/libavcodec.so.58+0xc3682)
+    #9 0x7b3c034c6937  (/lib/x86_64-linux-gnu/libavcodec.so.58+0xc6937)
+    #10 0x7b3c035c75d2 in avcodec_open2 (/lib/x86_64-linux-gnu/libavcodec.so.58+0x1c75d2)
+    #11 0x57e255772557 in VideoRecorder::openSegment(QString const&, VideoRecorder::Format const&, QString*) /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:632
+    #12 0x57e25577b7fc in VideoRecorder::initializeRecording(QString*) /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:265
+    #13 0x57e25577d586 in VideoRecorder::workerLoop() /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:307
+    #14 0x7b3bfc4dc252  (/lib/x86_64-linux-gnu/libstdc++.so.6+0xdc252)
+    #15 0x7b3bfc094a82 in start_thread nptl/pthread_create.c:442
+    #16 0x7b3bfc12688f  (/lib/x86_64-linux-gnu/libc.so.6+0x12688f)
+
+Direct leak of 48 byte(s) in 1 object(s) allocated from:
+    #0 0x7b3c04eb4a57 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154
+    #1 0x7b3bfc091dc1 in __pthread_cond_broadcast_2_0 nptl/old_pthread_cond_broadcast.c:33
+    #2 0x7b3bd938f5b6  (<unknown module>)
+    #3 0x7b3bd938b19f  (<unknown module>)
+    #4 0x7b3bd938d76e  (<unknown module>)
+    #5 0x7b3c034c66f7  (/lib/x86_64-linux-gnu/libavcodec.so.58+0xc66f7)
+    #6 0x7b3c035c75d2 in avcodec_open2 (/lib/x86_64-linux-gnu/libavcodec.so.58+0x1c75d2)
+    #7 0x57e255772557 in VideoRecorder::openSegment(QString const&, VideoRecorder::Format const&, QString*) /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:632
+    #8 0x57e25577b7fc in VideoRecorder::initializeRecording(QString*) /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:265
+    #9 0x57e25577d586 in VideoRecorder::workerLoop() /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:307
+    #10 0x7b3bfc4dc252  (/lib/x86_64-linux-gnu/libstdc++.so.6+0xdc252)
+    #11 0x7b3bfc094a82 in start_thread nptl/pthread_create.c:442
+    #12 0x7b3bfc12688f  (/lib/x86_64-linux-gnu/libc.so.6+0x12688f)
+
+Direct leak of 48 byte(s) in 1 object(s) allocated from:
+    #0 0x7b3c04eb4a57 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154
+    #1 0x7b3bfc091dc1 in __pthread_cond_broadcast_2_0 nptl/old_pthread_cond_broadcast.c:33
+    #2 0x7b3bcec9ba26  (<unknown module>)
+    #3 0x7b3bcec677df  (<unknown module>)
+    #4 0x7b3bcecb3066  (<unknown module>)
+    #5 0x7b3bd935aa77  (<unknown module>)
+    #6 0x7b3bd935cd96  (<unknown module>)
+    #7 0x7b3bd9379e1e  (<unknown module>)
+    #8 0x7b3c034c3682  (/lib/x86_64-linux-gnu/libavcodec.so.58+0xc3682)
+    #9 0x7b3c034c6937  (/lib/x86_64-linux-gnu/libavcodec.so.58+0xc6937)
+    #10 0x7b3c035c75d2 in avcodec_open2 (/lib/x86_64-linux-gnu/libavcodec.so.58+0x1c75d2)
+    #11 0x57e255772557 in VideoRecorder::openSegment(QString const&, VideoRecorder::Format const&, QString*) /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:632
+    #12 0x57e25577b7fc in VideoRecorder::initializeRecording(QString*) /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:265
+    #13 0x57e25577d586 in VideoRecorder::workerLoop() /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:307
+    #14 0x7b3bfc4dc252  (/lib/x86_64-linux-gnu/libstdc++.so.6+0xdc252)
+    #15 0x7b3bfc094a82 in start_thread nptl/pthread_create.c:442
+    #16 0x7b3bfc12688f  (/lib/x86_64-linux-gnu/libc.so.6+0x12688f)
+
+Direct leak of 48 byte(s) in 1 object(s) allocated from:
+    #0 0x7b3c04eb4a57 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154
+    #1 0x7b3bfc091dc1 in __pthread_cond_broadcast_2_0 nptl/old_pthread_cond_broadcast.c:33
+    #2 0x7b3bdae9ba26  (<unknown module>)
+    #3 0x7b3bdae677df  (<unknown module>)
+    #4 0x7b3bdaeb3066  (<unknown module>)
+    #5 0x7b3bdc282a77  (<unknown module>)
+    #6 0x7b3bdc284d96  (<unknown module>)
+    #7 0x7b3bdc2a1e1e  (<unknown module>)
+    #8 0x7b3c034c3682  (/lib/x86_64-linux-gnu/libavcodec.so.58+0xc3682)
+    #9 0x7b3c034c6937  (/lib/x86_64-linux-gnu/libavcodec.so.58+0xc6937)
+    #10 0x7b3c035c75d2 in avcodec_open2 (/lib/x86_64-linux-gnu/libavcodec.so.58+0x1c75d2)
+    #11 0x57e255772557 in VideoRecorder::openSegment(QString const&, VideoRecorder::Format const&, QString*) /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:632
+    #12 0x57e25577b7fc in VideoRecorder::initializeRecording(QString*) /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:265
+    #13 0x57e25577d586 in VideoRecorder::workerLoop() /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:307
+    #14 0x7b3bfc4dc252  (/lib/x86_64-linux-gnu/libstdc++.so.6+0xdc252)
+    #15 0x7b3bfc094a82 in start_thread nptl/pthread_create.c:442
+    #16 0x7b3bfc12688f  (/lib/x86_64-linux-gnu/libc.so.6+0x12688f)
+
+Direct leak of 48 byte(s) in 1 object(s) allocated from:
+    #0 0x7b3c04eb4a57 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154
+    #1 0x7b3bfc091dc1 in __pthread_cond_broadcast_2_0 nptl/old_pthread_cond_broadcast.c:33
+    #2 0x7b3be0bab5b6  (<unknown module>)
+    #3 0x7b3be0ba719f  (<unknown module>)
+    #4 0x7b3be0ba976e  (<unknown module>)
+    #5 0x7b3c034c66f7  (/lib/x86_64-linux-gnu/libavcodec.so.58+0xc66f7)
+    #6 0x7b3c035c75d2 in avcodec_open2 (/lib/x86_64-linux-gnu/libavcodec.so.58+0x1c75d2)
+    #7 0x57e255772557 in VideoRecorder::openSegment(QString const&, VideoRecorder::Format const&, QString*) /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:632
+    #8 0x57e25577b7fc in VideoRecorder::initializeRecording(QString*) /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:265
+    #9 0x57e25577d586 in VideoRecorder::workerLoop() /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:307
+    #10 0x7b3bfc4dc252  (/lib/x86_64-linux-gnu/libstdc++.so.6+0xdc252)
+    #11 0x7b3bfc094a82 in start_thread nptl/pthread_create.c:442
+    #12 0x7b3bfc12688f  (/lib/x86_64-linux-gnu/libc.so.6+0x12688f)
+
+Direct leak of 48 byte(s) in 1 object(s) allocated from:
+    #0 0x7b3c04eb4a57 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154
+    #1 0x7b3bfc091dc1 in __pthread_cond_broadcast_2_0 nptl/old_pthread_cond_broadcast.c:33
+    #2 0x7b3bdc2b75b6  (<unknown module>)
+    #3 0x7b3bdc2b319f  (<unknown module>)
+    #4 0x7b3bdc2b576e  (<unknown module>)
+    #5 0x7b3c034c66f7  (/lib/x86_64-linux-gnu/libavcodec.so.58+0xc66f7)
+    #6 0x7b3c035c75d2 in avcodec_open2 (/lib/x86_64-linux-gnu/libavcodec.so.58+0x1c75d2)
+    #7 0x57e255772557 in VideoRecorder::openSegment(QString const&, VideoRecorder::Format const&, QString*) /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:632
+    #8 0x57e25577b7fc in VideoRecorder::initializeRecording(QString*) /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:265
+    #9 0x57e25577d586 in VideoRecorder::workerLoop() /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:307
+    #10 0x7b3bfc4dc252  (/lib/x86_64-linux-gnu/libstdc++.so.6+0xdc252)
+    #11 0x7b3bfc094a82 in start_thread nptl/pthread_create.c:442
+    #12 0x7b3bfc12688f  (/lib/x86_64-linux-gnu/libc.so.6+0x12688f)
+
+Direct leak of 48 byte(s) in 1 object(s) allocated from:
+    #0 0x7b3c04eb4a57 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154
+    #1 0x7b3bfc091dc1 in __pthread_cond_broadcast_2_0 nptl/old_pthread_cond_broadcast.c:33
+    #2 0x7b3bdcc9ba26  (<unknown module>)
+    #3 0x7b3bdcc677df  (<unknown module>)
+    #4 0x7b3bdccb3066  (<unknown module>)
+    #5 0x7b3be0091a77  (<unknown module>)
+    #6 0x7b3be0093d96  (<unknown module>)
+    #7 0x7b3be00b0e1e  (<unknown module>)
+    #8 0x7b3c034c3682  (/lib/x86_64-linux-gnu/libavcodec.so.58+0xc3682)
+    #9 0x7b3c034c6937  (/lib/x86_64-linux-gnu/libavcodec.so.58+0xc6937)
+    #10 0x7b3c035c75d2 in avcodec_open2 (/lib/x86_64-linux-gnu/libavcodec.so.58+0x1c75d2)
+    #11 0x57e255772557 in VideoRecorder::openSegment(QString const&, VideoRecorder::Format const&, QString*) /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:632
+    #12 0x57e25577b7fc in VideoRecorder::initializeRecording(QString*) /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:265
+    #13 0x57e25577d586 in VideoRecorder::workerLoop() /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:307
+    #14 0x7b3bfc4dc252  (/lib/x86_64-linux-gnu/libstdc++.so.6+0xdc252)
+    #15 0x7b3bfc094a82 in start_thread nptl/pthread_create.c:442
+    #16 0x7b3bfc12688f  (/lib/x86_64-linux-gnu/libc.so.6+0x12688f)
+
+Direct leak of 48 byte(s) in 1 object(s) allocated from:
+    #0 0x7b3c04eb4a57 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154
+    #1 0x7b3bfc091dc1 in __pthread_cond_broadcast_2_0 nptl/old_pthread_cond_broadcast.c:33
+    #2 0x7b3bc6c9ba26  (<unknown module>)
+    #3 0x7b3bc6c677df  (<unknown module>)
+    #4 0x7b3bc6cb3066  (<unknown module>)
+    #5 0x7b3be0b76a77  (<unknown module>)
+    #6 0x7b3be0b78d96  (<unknown module>)
+    #7 0x7b3be0b95e1e  (<unknown module>)
+    #8 0x7b3c034c3682  (/lib/x86_64-linux-gnu/libavcodec.so.58+0xc3682)
+    #9 0x7b3c034c6937  (/lib/x86_64-linux-gnu/libavcodec.so.58+0xc6937)
+    #10 0x7b3c035c75d2 in avcodec_open2 (/lib/x86_64-linux-gnu/libavcodec.so.58+0x1c75d2)
+    #11 0x57e255772557 in VideoRecorder::openSegment(QString const&, VideoRecorder::Format const&, QString*) /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:632
+    #12 0x57e25577b7fc in VideoRecorder::initializeRecording(QString*) /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:265
+    #13 0x57e25577d586 in VideoRecorder::workerLoop() /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:307
+    #14 0x7b3bfc4dc252  (/lib/x86_64-linux-gnu/libstdc++.so.6+0xdc252)
+    #15 0x7b3bfc094a82 in start_thread nptl/pthread_create.c:442
+    #16 0x7b3bfc12688f  (/lib/x86_64-linux-gnu/libc.so.6+0x12688f)
+
+# 18 of 18 report blocks reference ['VideoRecorder']; leaked bytes in kept blocks: 2592

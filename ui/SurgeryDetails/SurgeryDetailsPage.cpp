@@ -69,6 +69,7 @@ void SurgeryDetailsPage::setupUI() {
         if (dialog->exec() == QDialog::Accepted) {
             loadPatientData(currentPatientId);
         }
+        dialog->deleteLater(); // parented to the page, which lives for the whole session
     });
 
     // Surgery List Header

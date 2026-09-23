@@ -44,7 +44,9 @@ QJsonObject StreamConfigController::updateUrl(const QString &url) {
     writeFile.write(QJsonDocument(obj).toJson(QJsonDocument::Indented));
     writeFile.close();
 
-    QProcess::startDetached("sh", {"-c", "echo 1234 | sudo -S supervisorctl restart go-server"});
+    // No password in the source. Grant this one command passwordless in /etc/sudoers.d instead:
+    //   brainwave ALL=(root) NOPASSWD: /usr/bin/supervisorctl restart go-server
+    QProcess::startDetached("sudo", {"-n", "supervisorctl", "restart", "go-server"});
 
     response["message"] = "URL updated and service restart initiated";
     return response;

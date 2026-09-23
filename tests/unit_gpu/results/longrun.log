@@ -1,0 +1,27 @@
+********* Start testing of TstVideoRecorder *********
+Config: Using QtTest library 5.15.3, Qt 5.15.3 (x86_64-little_endian-lp64 shared (dynamic) release build; by GCC 11.3.0), ubuntu 22.04
+# out=/tmp/claude-1000/vr_tests relax=0 nvenc=0x7fa568a1eba0 h264dec=0x7fa568a13f20 libavcodec=4.4.2-0ubuntu0.22.04.1 pid=47700
+PASS   : TstVideoRecorder::initTestCase()
+QINFO  : TstVideoRecorder::longRun() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/longrun.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::longRun() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/longrun.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::longRun() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/longrun.mp4" encoded 36090 dropped 0
+  [longrun] size=8722498 opened=1 err='' codec=h264 1920x1080 fmt_dur=601.5000s last_pts_end=601.5000s avg_fps=60.0000 packets=36090 keyframes=602 bitrate=0.11Mbps decoded=0 dec_err=0 read_err=EOF tb=1/120000
+  METRIC longRun 10 min: fed=36090 encoded=36090 dropped=0 file 601.500 s; RSS 292300 -> 294884 KB, GPU/pid 122 -> 122 MiB, fds 44 -> 44, threads 8 -> 8 (from t=60 s)
+  [ok  ] encoded == fed (36090 == 36090)
+  [ok  ] dropped == 0 (got 0)
+  [ok  ] file opens with libavformat: 
+  [ok  ] h264 1920x1080 (got h264 1920x1080)
+  [ok  ] packets in file == encoded (36090 == 36090)
+  [ok  ] last pts end 601.5000 s within 1 frame of fed stream time 601.5000 s
+  [ok  ] container duration 601.5000 s within 1 frame of fed 601.5000 s
+  [ok  ] pts timeline exact vs capture clock (mismatches=0 first_bad=-1)
+  [ok  ] RSS growth <= 20 MB
+  [ok  ] GPU growth <= 16 MiB
+  [ok  ] fds / threads flat
+PASS   : TstVideoRecorder::longRun()
+
+==================== SUMMARY ====================
+PASS  longRun | 10 min: fed=36090 encoded=36090 dropped=0 file 601.500 s; RSS 292300 -> 294884 KB, GPU/pid 122 -> 122 MiB, fds 44 -> 44, threads 8 -> 8 (from t=60 s)
+PASS   : TstVideoRecorder::cleanupTestCase()
+Totals: 3 passed, 0 failed, 0 skipped, 0 blacklisted, 602142ms
+********* Finished testing of TstVideoRecorder *********

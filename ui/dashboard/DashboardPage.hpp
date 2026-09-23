@@ -20,9 +20,20 @@ public:
     com_ptr<DeckLinkOpenGLDelegate> createSharedDelegate();
     DeckLinkOpenGLWidget* sharedGLWidget() const;
 
+    // Fullscreen is done inside the main window (see HomePage::setDashboardFullscreen):
+    // moving the preview to another window would destroy and recreate its OpenGL context.
+    QFrame* detachVideoBox();
+    void reattachVideoBox();
+    bool isFullscreen() const { return m_isFullscreen; }
+
+signals:
+    void fullscreenRequested(bool on);
+
+public slots:
+    void toggleFullscreen();
+
 private slots:
     void onRotate();
-    void toggleFullscreen();
 
     // Long press zoom
     void startZoomIn();
@@ -37,8 +48,6 @@ private:
     bool m_isFullscreen = false;
     QFrame* m_videoBox = nullptr;
     QVBoxLayout* m_centerLayout = nullptr;
-    QWidget* m_fullscreenWindow = nullptr;
-    QPushButton* m_exitBtn = nullptr;
 
     // Long press zoom
     QTimer* m_zoomTimer = nullptr;

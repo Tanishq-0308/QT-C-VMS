@@ -126,7 +126,8 @@ com_ptr<T>::com_ptr(com_ptr<T>&& other) :
 
 template<typename T>
 template<typename U>
-com_ptr<T>::com_ptr(REFIID iid, com_ptr<U> other)
+com_ptr<T>::com_ptr(REFIID iid, com_ptr<U> other) :
+	m_ptr(nullptr)
 {
 	if (other.m_ptr)
 	{
@@ -168,6 +169,8 @@ com_ptr<T>& com_ptr<T>::operator=(const com_ptr<T>& other)
 template<typename T>
 com_ptr<T>& com_ptr<T>::operator=(com_ptr<T>&& other)
 {
+	if (this == &other)
+		return *this;
 	release();
 	m_ptr = other.m_ptr;
 	other.m_ptr = nullptr;
@@ -220,8 +223,11 @@ com_ptr<T>::operator bool() const
 template<typename T>
 void com_ptr<T>::release()
 {
+	// Clear the pointer so nothing (e.g. releaseAndGetAddressOf() when the callee writes no
+	// output) can release the same object twice
 	if (m_ptr)
 		m_ptr->Release();
+	m_ptr = nullptr;
 }
 
 template<typename T>

@@ -1,0 +1,41 @@
+# LeakSanitizer suppressions for Qt / system noise.  App-code leaks are NOT
+# suppressed; any leak whose stack contains only these libraries is ignored.
+# NOTE: LSan matches a pattern against ANY frame of the allocation stack, so
+# Qt core libraries and libc are deliberately NOT listed (they appear under
+# every app allocation and would hide app leaks).  Only leaf system libraries
+# and Qt plugins are listed.
+leak:libfontconfig.so
+leak:libfreetype.so
+leak:libglib-2.0.so
+leak:libgobject-2.0.so
+leak:libgio-2.0.so
+leak:libgstreamer-1.0.so
+leak:libgstbase-1.0.so
+leak:libgstpbutils-1.0.so
+leak:libgstapp-1.0.so
+leak:libgstvideo-1.0.so
+leak:libgstaudio-1.0.so
+leak:libgstplayer-1.0.so
+leak:libqgsttools_p.so
+leak:libgstmediaplayer.so
+leak:libdbus-1.so
+leak:libX11.so
+leak:libxcb.so
+leak:libEGL
+leak:libGLX
+leak:libGL.so
+leak:libGLdispatch.so
+leak:libpoppler.so
+leak:libpoppler-qt5.so
+leak:libsqlite3.so
+leak:libqsqlite.so
+leak:libqoffscreen.so
+leak:libicuuc.so
+leak:libicui18n.so
+leak:ld-linux-x86-64.so
+# Qt process-global font/shaping caches filled on first text layout (seen
+# under the first AddPatientDialog QDateEdit construction; one-time, not per
+# instance).
+leak:libharfbuzz.so
+leak:QTextEngine::shapeTextWithHarfbuzzNG
+leak:QFontEngine

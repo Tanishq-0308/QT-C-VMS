@@ -21,7 +21,7 @@ def fetch_data_from_db(db_path, patient_id, surgery_id):
     cursor.execute("""
         SELECT hospital_logo_path, hospital_name, hospital_email, hospital_phone, 
                hospital_address, state, district, pin, about_hospital 
-        FROM settings LIMIT 1
+        FROM settings ORDER BY id LIMIT 1
     """)
     settings = cursor.fetchone()
 

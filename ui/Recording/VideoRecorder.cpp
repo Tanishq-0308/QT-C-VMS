@@ -1,11 +1,60 @@
 #include "VideoRecorder.hpp"
-#include <QDebug>
 
-VideoRecorder::VideoRecorder(QObject* parent)
-    : QObject(parent), m_recording(false),
-      m_formatCtx(nullptr), m_codecCtx(nullptr), m_videoStream(nullptr),
-      m_hwDeviceCtx(nullptr), m_hwFramesCtx(nullptr), m_swsCtx(nullptr),
-      m_cudaStream(0), d_yuvBuffer(nullptr), m_frameCounter(0)
+#include "cuda/frame_convert.h"
+#include "decklink/com_ptr.h"
+#include "diag/DiagProbe.h"
+
+#include <QDebug>
+#include <QFileInfo>
+#include <QStorageInfo>
+
+#include <cstring>
+#include <fcntl.h>
+#include <unistd.h>
+
+extern "C" {
+#include <libavutil/hwcontext.h>
+#include <libavutil/hwcontext_cuda.h>
+#include <libavutil/opt.h>
+}
+
+namespace {
+
+QString avError(int err)
+{
+    char buf[AV_ERROR_MAX_STRING_SIZE] = {0};
+    av_strerror(err, buf, sizeof(buf));
+    return QString::fromUtf8(buf);
+}
+
+RawPixelFormat toRawFormat(BMDPixelFormat format)
+{
+    switch (format)
+    {
+    case bmdFormat8BitYUV:  return RawPixelFormat::UYVY;
+    case bmdFormat8BitARGB: return RawPixelFormat::ARGB;
+    case bmdFormat8BitBGRA: return RawPixelFormat::BGRA;
+    default:                return RawPixelFormat::Unsupported;
+    }
+}
+
+// Scoped push/pop of the encoder's CUDA context on the calling thread
+struct CudaContextScope
+{
+    explicit CudaContextScope(CUcontext ctx) : ok(ctx && cuCtxPushCurrent(ctx) == CUDA_SUCCESS) {}
+    ~CudaContextScope() { if (ok) { CUcontext dummy; cuCtxPopCurrent(&dummy); } }
+    bool ok;
+};
+
+int64_t freeBytes(const QString& path)
+{
+    QStorageInfo storage(QFileInfo(path).absolutePath());
+    return storage.isValid() ? storage.bytesAvailable() : -1;
+}
+
+} // namespace
+
+VideoRecorder::VideoRecorder(QObject* parent) : QObject(parent)
 {
     av_log_set_level(AV_LOG_ERROR);
 }
@@ -13,709 +62,710 @@ VideoRecorder::VideoRecorder(QObject* parent)
 VideoRecorder::~VideoRecorder()
 {
     stopRecording();
+    if (m_worker.joinable())
+        m_worker.join();
 }
 
-void VideoRecorder::startRecording(const QString& outputPath)
+/// Capture side (DeckLink thread)
+
+void VideoRecorder::onVideoFrame(IDeckLinkVideoInputFrame* frame)
 {
-    if (m_recording.load()) {
-        qWarning() << "Recording already in progress";
+    if (!frame)
         return;
-    }
 
-    m_outputPath = outputPath;
-    m_frameCounter = 0;
+    RawVideoFrame raw;
+    raw.width = static_cast<int>(frame->GetWidth());
+    raw.height = static_cast<int>(frame->GetHeight());
+    raw.rowBytes = static_cast<int>(frame->GetRowBytes());
+    raw.format = toRawFormat(frame->GetPixelFormat());
+    raw.timeScale = kTimeScale;
 
-    // Clear queue
+    BMDTimeValue streamTime = 0, duration = 0;
+    if (frame->GetStreamTime(&streamTime, &duration, kTimeScale) != S_OK)
+        return;
+    raw.streamTime = streamTime;
+    raw.frameDuration = duration;
+    raw.hasSignal = (frame->GetFlags() & bmdFrameHasNoInputSource) == 0;
+
+    // Only touch the pixel data while recording; format bookkeeping is always kept current
+    if (!m_accepting.load())
     {
-        QMutexLocker locker(&m_queueMutex);
-        std::queue<QImage> empty;
-        m_frameQueue.swap(empty);
-    }
-
-    if (!initializeGPU()) {
-        emit errorOccurred("Failed to initialize GPU");
+        pushFrame(raw);
         return;
     }
 
-    if (!initializeFFmpegHardware()) {
-        emit errorOccurred("Failed to initialize hardware encoding");
-        finalizeGPU();
+    com_ptr<IDeckLinkVideoBuffer> buffer;
+    if (frame->QueryInterface(IID_IDeckLinkVideoBuffer, reinterpret_cast<void**>(buffer.releaseAndGetAddressOf())) != S_OK || !buffer)
+    {
+        m_framesDropped++;
+        return;
+    }
+    if (buffer->StartAccess(bmdBufferAccessRead) != S_OK)
+    {
+        m_framesDropped++;
         return;
     }
 
-    m_recording.store(true);
-    m_recordingThread = std::thread(&VideoRecorder::recordingThreadFunc, this);
-    
-    emit recordingStarted();
-    qDebug() << "GPU recording started:" << outputPath;
+    void* bytes = nullptr;
+    if (buffer->GetBytes(&bytes) == S_OK && bytes)
+    {
+        raw.data = static_cast<const uint8_t*>(bytes);
+        pushFrame(raw);
+    }
+    else
+    {
+        m_framesDropped++;
+    }
+    buffer->EndAccess(bmdBufferAccessRead);
+}
+
+void VideoRecorder::pushFrame(const RawVideoFrame& frame)
+{
+    Format format;
+    format.width = frame.width;
+    format.height = frame.height;
+    format.rowBytes = frame.rowBytes;
+    format.pixelFormat = frame.format;
+    format.frameDuration = frame.frameDuration;
+    format.timeScale = frame.timeScale;
+
+    if (frame.hasSignal)
+    {
+        std::lock_guard<std::mutex> lock(m_formatMutex);
+        m_lastFormat = format;
+        m_lastFrameTime = std::chrono::steady_clock::now();
+    }
+
+    if (!frame.data)
+        return;
+
+    // Registered before checking m_accepting so startRecording() can wait for stragglers
+    // before it reallocates the pool
+    struct InFlight {
+        std::atomic<int>& n;
+        explicit InFlight(std::atomic<int>& c) : n(c) { ++n; }
+        ~InFlight() { --n; }
+    } inFlight(m_pushesInFlight);
+
+    if (!m_accepting.load())
+        return;
+
+    // Frames the driver never delivered show up as gaps in the capture clock. Counted here, on
+    // the capture side, so they never overlap with frames dropped below because the pool is full.
+    const int64_t previous = m_lastCaptureTime.exchange(frame.streamTime);
+    if (previous >= 0 && frame.frameDuration > 0 && frame.streamTime > previous)
+    {
+        const int64_t missing = (frame.streamTime - previous + frame.frameDuration / 2) / frame.frameDuration - 1;
+        if (missing > 0)
+            m_framesDropped += missing;
+    }
+
+    int index = -1;
+    {
+        std::lock_guard<std::mutex> lock(m_poolMutex);
+        DIAG_REC_QUEUE(static_cast<int>(m_ready.size()));
+        if (!m_free.empty())
+        {
+            index = m_free.front();
+            m_free.pop_front();
+        }
+    }
+
+    if (index < 0)
+    {
+        // Encoder is behind: never block the capture thread. Count it; the UI is told.
+        m_framesDropped++;
+        DIAG_REC_DROP();
+        return;
+    }
+
+    // The buffer at `index` belongs to this thread until it is queued as ready
+    PoolBuffer& buf = m_pool[index];
+    const size_t bytes = static_cast<size_t>(frame.rowBytes) * frame.height;
+    if (buf.bytes.size() < bytes)
+        buf.bytes.resize(bytes);
+    std::memcpy(buf.bytes.data(), frame.data, bytes);
+    buf.format = format;
+    buf.streamTime = frame.streamTime;
+
+    {
+        std::lock_guard<std::mutex> lock(m_poolMutex);
+        m_ready.push_back(index);
+    }
+    m_poolCond.notify_one();
+}
+
+/// Start / stop (GUI thread)
+
+bool VideoRecorder::startRecording(const QString& outputPath, QString* errorMessage)
+{
+    // Only fast checks here: this runs on the GUI thread and must not stall the live view.
+    // The encoder and file are opened on the worker thread, which emits recordingStarted().
+    auto fail = [&](const QString& msg) {
+        qWarning() << "[VideoRecorder]" << msg;
+        if (errorMessage)
+            *errorMessage = msg;
+        return false;
+    };
+
+    // Must not touch any encoder state while a recording (or its finalisation) is running
+    if (m_active.load())
+        return fail(tr("A recording is still in progress or being saved."));
+
+    // The previous worker has finished (m_active is false); reap the thread
+    if (m_worker.joinable())
+        m_worker.join();
+
+    Format format;
+    std::chrono::steady_clock::time_point lastFrame;
+    {
+        std::lock_guard<std::mutex> lock(m_formatMutex);
+        format = m_lastFormat;
+        lastFrame = m_lastFrameTime;
+    }
+
+    if (format.width == 0 || std::chrono::steady_clock::now() - lastFrame > std::chrono::milliseconds(500))
+        return fail(tr("No video signal from the capture card. Check the camera connection."));
+    if (format.pixelFormat == RawPixelFormat::Unsupported)
+        return fail(tr("The input pixel format is not supported for recording (8-bit YUV or RGB required)."));
+    if ((format.width & 1) || (format.height & 1))
+        return fail(tr("Unsupported input resolution %1x%2.").arg(format.width).arg(format.height));
+
+    const QFileInfo dirInfo(QFileInfo(outputPath).absolutePath());
+    if (!dirInfo.isDir() || !dirInfo.isWritable())
+        return fail(tr("The recording folder is missing or not writable:\n%1").arg(dirInfo.absoluteFilePath()));
+
+    const int64_t free = freeBytes(outputPath);
+    if (free >= 0 && free < kMinFreeBytesStart)
+        return fail(tr("Not enough free disk space to record (%1 MB free, at least %2 MB required).")
+                        .arg(free >> 20).arg(kMinFreeBytesStart >> 20));
+
+    m_basePath = outputPath;
+    m_currentPath = outputPath;
+    m_startFormat = format;
+    m_segmentIndex = 0;
+    m_framesDropped = 0;
+    m_framesEncoded = 0;
+    m_lastReportedDrops = 0;
+    {
+        std::lock_guard<std::mutex> lock(m_poolMutex);
+        m_stopRequested = false;
+    }
+
+    m_active = true;
+    m_worker = std::thread(&VideoRecorder::workerLoop, this);
+    return true;
+}
+
+bool VideoRecorder::initializeRecording(QString* errorMessage)
+{
+    const Format& format = m_startFormat;
+
+    // CUDA device + NVENC. The conversion kernel runs in the same context (pushed around each
+    // launch). Not using the primary context: it fails if something else initialised CUDA first.
+    int ret = av_hwdevice_ctx_create(&m_hwDeviceCtx, AV_HWDEVICE_TYPE_CUDA, "0", nullptr, 0);
+    if (ret < 0)
+    {
+        *errorMessage = tr("Could not initialise the NVIDIA GPU for recording (%1). "
+                           "Check that the NVIDIA driver is working.").arg(avError(ret));
+        return false;
+    }
+    m_cudaCtx = reinterpret_cast<AVCUDADeviceContext*>(
+                    reinterpret_cast<AVHWDeviceContext*>(m_hwDeviceCtx->data)->hwctx)->cuda_ctx;
+
+    if (!openSegment(segmentPath(0), format, errorMessage))
+        return false;
+
+    // A capture-thread copy from the previous recording may still be finishing
+    while (m_pushesInFlight.load() > 0)
+        std::this_thread::yield();
+
+    // Pool: pre-size every buffer so the capture thread never allocates while recording.
+    // Bounded in memory as well as frames: 30 x 4 MB at 1080p YUV, ~8 x 33 MB at 2160p RGB.
+    const size_t bytes = static_cast<size_t>(format.rowBytes) * format.height;
+    const int frames = static_cast<int>(qBound<size_t>(kMinPoolFrames, kMaxPoolBytes / qMax<size_t>(bytes, 1), kPoolFrames));
+    std::vector<PoolBuffer> pool(frames);
+    for (auto& buffer : pool)
+        buffer.bytes.resize(bytes);
+    {
+        std::lock_guard<std::mutex> lock(m_poolMutex);
+        m_pool.swap(pool);
+        m_free.clear();
+        m_ready.clear();
+        for (int i = 0; i < frames; ++i)
+            m_free.push_back(i);
+    }
+    qInfo() << "[VideoRecorder] Frame pool:" << frames << "x" << (bytes >> 10) << "KB";
+    return true;
 }
 
 void VideoRecorder::stopRecording()
 {
-    if (!m_recording.load()) return;
-    
-    m_recording.store(false);
-    m_queueCond.notify_all();
+    if (!m_active.load())
+        return;
 
-    if (m_recordingThread.joinable()) {
-        m_recordingThread.join();
+    m_accepting = false;
+    {
+        std::lock_guard<std::mutex> lock(m_poolMutex);
+        m_stopRequested = true;
     }
-
-    emit recordingStopped();
-    qDebug() << "GPU recording stopped";
+    m_poolCond.notify_one();
 }
 
-bool VideoRecorder::initializeGPU()
+/// Worker thread
+
+void VideoRecorder::workerLoop()
 {
-    // Initialize CUDA
-    cudaError_t result = cudaSetDevice(0);
-    if (result != cudaSuccess) {
-        qWarning() << "Failed to set CUDA device:" << cudaGetErrorString(result);
-        return false;
+    QString error;
+
+    if (!initializeRecording(&error))
+    {
+        qWarning() << "[VideoRecorder]" << error;
+        closeSegment(false);
+        releaseDevice();
+        m_active = false;
+        emit errorOccurred(error);
+        emit recordingStopped(m_basePath, 0, 0);
+        return;
     }
 
-    // Create CUDA stream
-    result = cudaStreamCreate(&m_cudaStream);
-    if (result != cudaSuccess) {
-        qWarning() << "Failed to create CUDA stream";
-        return false;
+    m_lastHousekeeping = std::chrono::steady_clock::now();
+    m_lastCaptureTime = -1;
+    m_accepting = true;
+    qInfo() << "[VideoRecorder] Recording started:" << m_currentPath << m_startFormat.width << "x"
+            << m_startFormat.height << "@"
+            << (m_startFormat.frameDuration ? double(m_startFormat.timeScale) / m_startFormat.frameDuration : 0.0)
+            << "fps";
+    emit recordingStarted(m_currentPath);
+
+    for (;;)
+    {
+        int index = -1;
+        {
+            std::unique_lock<std::mutex> lock(m_poolMutex);
+            m_poolCond.wait_for(lock, std::chrono::milliseconds(200),
+                                [this] { return !m_ready.empty() || m_stopRequested; });
+            if (!m_ready.empty())
+            {
+                index = m_ready.front();
+                m_ready.pop_front();
+            }
+            else if (m_stopRequested)
+            {
+                break; // everything queued before stop has been encoded
+            }
+        }
+
+        if (index >= 0)
+        {
+            const bool ok = encodeBuffer(m_pool[index], &error);
+            {
+                std::lock_guard<std::mutex> lock(m_poolMutex);
+                m_free.push_back(index);
+            }
+            if (!ok)
+                break;
+        }
+
+        if (!housekeeping(&error))
+            break;
     }
 
-    // Allocate GPU YUV buffer
-    m_yuvBufferSize = m_width * m_height * 3 / 2; // YUV420P
-    result = cudaMalloc(&d_yuvBuffer, m_yuvBufferSize);
-    if (result != cudaSuccess) {
-        qWarning() << "Failed to allocate GPU YUV buffer";
-        return false;
+    m_accepting = false;
+    const bool failed = !error.isEmpty();
+
+    // Flush the encoder and finalise the file even after an error, so what was recorded plays
+    if (m_codecCtx && m_headerWritten)
+    {
+        QString flushError;
+        sendAndWrite(nullptr, &flushError);
+        if (!failed && !flushError.isEmpty())
+            error = flushError;
+    }
+    const QString lastPath = m_currentPath;
+    closeSegment(true);
+    releaseDevice();
+
+    // Give the frame pool (~124 MB at 1080p) back while not recording
+    while (m_pushesInFlight.load() > 0)
+        std::this_thread::yield();
+    {
+        std::lock_guard<std::mutex> lock(m_poolMutex);
+        std::vector<PoolBuffer>().swap(m_pool);
+        m_free.clear();
+        m_ready.clear();
     }
 
-    qDebug() << "GPU initialization successful";
+    const qint64 encoded = m_framesEncoded.load();
+    const qint64 dropped = m_framesDropped.load();
+    qInfo() << "[VideoRecorder] Recording finished:" << lastPath << "encoded" << encoded << "dropped" << dropped;
+
+    m_active = false;
+    if (!error.isEmpty())
+        emit errorOccurred(error);
+    emit recordingStopped(lastPath, encoded, dropped);
+}
+
+bool VideoRecorder::housekeeping(QString* errorMessage)
+{
+    // Report drops (at most once per housekeeping interval)
+    const qint64 dropped = m_framesDropped.load();
+
+    const auto now = std::chrono::steady_clock::now();
+    if (now - m_lastHousekeeping < std::chrono::seconds(1))
+        return true;
+    m_lastHousekeeping = now;
+
+    if (dropped != m_lastReportedDrops)
+    {
+        m_lastReportedDrops = dropped;
+        qWarning() << "[VideoRecorder] Frames dropped so far:" << dropped;
+        emit framesDropped(dropped);
+    }
+
+    // Push written data to the disk so a power cut loses at most about a second
+    if (m_formatCtx && m_formatCtx->pb)
+        avio_flush(m_formatCtx->pb);
+    if (m_syncFd >= 0)
+        ::fdatasync(m_syncFd);
+
+    const int64_t free = freeBytes(m_currentPath);
+    if (free >= 0 && free < kMinFreeBytesRecord)
+    {
+        *errorMessage = tr("Recording stopped: the disk is almost full (%1 MB free). "
+                           "The file recorded so far has been saved.").arg(free >> 20);
+        return false;
+    }
     return true;
 }
 
-bool VideoRecorder::initializeFFmpegHardware()
+bool VideoRecorder::encodeBuffer(const PoolBuffer& buffer, QString* errorMessage)
 {
-    // Create hardware device context
-    int ret = av_hwdevice_ctx_create(&m_hwDeviceCtx, AV_HWDEVICE_TYPE_CUDA, nullptr, nullptr, 0);
-    if (ret < 0) {
-        qWarning() << "Failed to create CUDA hardware context";
+    const Format& format = buffer.format;
+
+    // Input format changed mid-recording (e.g. camera switched mode): continue in a new file
+    if (!format.sameLayout(m_segmentFormat))
+    {
+        if (format.pixelFormat == RawPixelFormat::Unsupported || (format.width & 1) || (format.height & 1))
+        {
+            m_framesDropped++;
+            return true;
+        }
+
+        if (!sendAndWrite(nullptr, errorMessage))
+            return false;
+        closeSegment(true);
+        if (!openSegment(segmentPath(++m_segmentIndex), format, errorMessage))
+            return false;
+        emit segmentStarted(m_currentPath);
+    }
+
+    if (m_segmentBaseTime < 0)
+        m_segmentBaseTime = buffer.streamTime;
+    int64_t pts = buffer.streamTime - m_segmentBaseTime;
+    if (pts <= m_lastPts)
+    {
+        // The capture clock restarted (DeckLink streams restarted with the same format):
+        // continue the timeline right after the last frame instead of discarding frames
+        const int64_t step = format.frameDuration > 0 ? format.frameDuration : 1;
+        m_segmentBaseTime = buffer.streamTime - (m_lastPts + step);
+        pts = m_lastPts + step;
+        qWarning() << "[VideoRecorder] Capture clock restarted; timeline continued";
+    }
+
+    CudaContextScope ctxScope(m_cudaCtx);
+    if (!ctxScope.ok)
+    {
+        *errorMessage = tr("Recording stopped: lost the GPU context.");
         return false;
     }
 
-    // Allocate format context
-    avformat_alloc_output_context2(&m_formatCtx, nullptr, nullptr, m_outputPath.toUtf8().constData());
-    if (!m_formatCtx) {
-        qWarning() << "Failed to allocate output context";
+    av_frame_unref(m_hwFrame);
+    int ret = av_hwframe_get_buffer(m_hwFramesCtx, m_hwFrame, 0);
+    if (ret < 0)
+    {
+        *errorMessage = tr("Recording stopped: GPU frame allocation failed (%1).").arg(avError(ret));
         return false;
     }
 
-    // Find NVENC encoder
-    const AVCodec* codec = avcodec_find_encoder_by_name("h264_nvenc");
-    if (!codec) {
-        qWarning() << "NVENC encoder not found";
+    // Single upload of the captured frame, then convert to NV12 straight into the encoder surface
+    CUDA_MEMCPY2D copy = {};
+    copy.srcMemoryType = CU_MEMORYTYPE_HOST;
+    copy.srcHost = buffer.bytes.data();
+    copy.srcPitch = static_cast<size_t>(format.rowBytes);
+    copy.dstMemoryType = CU_MEMORYTYPE_DEVICE;
+    copy.dstDevice = m_devSrc;
+    copy.dstPitch = m_devSrcPitch;
+    copy.WidthInBytes = static_cast<size_t>(format.rowBytes);
+    copy.Height = static_cast<size_t>(format.height);
+    if (cuMemcpy2D(&copy) != CUDA_SUCCESS)
+    {
+        *errorMessage = tr("Recording stopped: upload to the GPU failed.");
         return false;
     }
 
-    // Create video stream
-    m_videoStream = avformat_new_stream(m_formatCtx, codec);
-    if (!m_videoStream) {
-        qWarning() << "Failed to create video stream";
-        return false;
-    }
-    
-    m_videoStream->time_base = AVRational{1, m_fps};
-
-    // Allocate codec context
-    m_codecCtx = avcodec_alloc_context3(codec);
-    if (!m_codecCtx) {
-        qWarning() << "Failed to allocate codec context";
+    const int flip = m_flipStep.load();
+    const int cudaErr = launchToNv12(static_cast<FrameConvertFormat>(format.pixelFormat),
+                                     reinterpret_cast<const uint8_t*>(m_devSrc), static_cast<int>(m_devSrcPitch),
+                                     m_hwFrame->data[0], m_hwFrame->linesize[0],
+                                     m_hwFrame->data[1], m_hwFrame->linesize[1],
+                                     format.width, format.height,
+                                     flip == 1 || flip == 2, flip == 2 || flip == 3, nullptr);
+    if (cudaErr != 0 || cuCtxSynchronize() != CUDA_SUCCESS)
+    {
+        *errorMessage = tr("Recording stopped: GPU colour conversion failed (CUDA error %1).").arg(cudaErr);
         return false;
     }
 
-    // Configure codec for hardware encoding
-    m_codecCtx->codec_id = codec->id;
-    m_codecCtx->bit_rate = 8000000;
-    m_codecCtx->width = m_width;
-    m_codecCtx->height = m_height;
-    m_codecCtx->time_base = AVRational{1, m_fps};
-    m_codecCtx->framerate = AVRational{m_fps, 1};
-    m_codecCtx->gop_size = m_fps;
-    m_codecCtx->max_b_frames = 0;
-    m_codecCtx->pix_fmt = AV_PIX_FMT_CUDA; // Hardware pixel format
+    m_hwFrame->pts = pts;
+    m_hwFrame->pkt_duration = format.frameDuration;
+    m_lastPts = pts;
 
-    // Create hardware frames context BEFORE opening codec
-    m_hwFramesCtx = av_hwframe_ctx_alloc(m_hwDeviceCtx);
-    if (!m_hwFramesCtx) {
-        qWarning() << "Failed to allocate hardware frames context";
+    if (!sendAndWrite(m_hwFrame, errorMessage))
+        return false;
+
+    m_framesEncoded++;
+    return true;
+}
+
+bool VideoRecorder::sendAndWrite(AVFrame* frame, QString* errorMessage)
+{
+    int ret = avcodec_send_frame(m_codecCtx, frame);
+    if (ret < 0 && ret != AVERROR_EOF)
+    {
+        *errorMessage = tr("Recording stopped: the video encoder failed (%1).").arg(avError(ret));
         return false;
     }
 
-    AVHWFramesContext* framesCtx = (AVHWFramesContext*)m_hwFramesCtx->data;
-    framesCtx->format = AV_PIX_FMT_CUDA;
-    framesCtx->sw_format = AV_PIX_FMT_YUV420P;
-    framesCtx->width = m_width;
-    framesCtx->height = m_height;
-    framesCtx->initial_pool_size = 10;
+    for (;;)
+    {
+        ret = avcodec_receive_packet(m_codecCtx, m_packet);
+        if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF)
+            return true;
+        if (ret < 0)
+        {
+            *errorMessage = tr("Recording stopped: the video encoder failed (%1).").arg(avError(ret));
+            return false;
+        }
 
-    ret = av_hwframe_ctx_init(m_hwFramesCtx);
-    if (ret < 0) {
-        qWarning() << "Failed to initialize hardware frames context";
-        return false;
-    }
-
-    // Set BOTH hardware contexts in codec
-    m_codecCtx->hw_device_ctx = av_buffer_ref(m_hwDeviceCtx);
-    m_codecCtx->hw_frames_ctx = av_buffer_ref(m_hwFramesCtx);
-
-    if (m_formatCtx->oformat->flags & AVFMT_GLOBALHEADER) {
-        m_codecCtx->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
-    }
-
-    // NVENC settings for performance
-    av_opt_set(m_codecCtx->priv_data, "preset", "fast", 0);
-    av_opt_set(m_codecCtx->priv_data, "rc", "cbr", 0);
-    av_opt_set(m_codecCtx->priv_data, "bf", "0", 0);
-
-    // Open codec AFTER setting hw_frames_ctx
-    ret = avcodec_open2(m_codecCtx, codec, nullptr);
-    if (ret < 0) {
-        qWarning() << "Failed to open NVENC codec";
-        return false;
-    }
-
-    // Copy codec parameters
-    if (avcodec_parameters_from_context(m_videoStream->codecpar, m_codecCtx) < 0) {
-        return false;
-    }
-
-    // Open output file
-    if (!(m_formatCtx->oformat->flags & AVFMT_NOFILE)) {
-        if (avio_open(&m_formatCtx->pb, m_outputPath.toUtf8().constData(), AVIO_FLAG_WRITE) < 0) {
+        m_packet->stream_index = m_stream->index;
+        av_packet_rescale_ts(m_packet, m_codecCtx->time_base, m_stream->time_base);
+        ret = av_interleaved_write_frame(m_formatCtx, m_packet);
+        av_packet_unref(m_packet);
+        if (ret < 0)
+        {
+            *errorMessage = tr("Recording stopped: writing the file failed (%1). "
+                               "Check the disk.").arg(avError(ret));
             return false;
         }
     }
+}
 
-    // Write header
-    if (avformat_write_header(m_formatCtx, nullptr) < 0) {
+/// Encoder / file setup
+
+QString VideoRecorder::segmentPath(int index) const
+{
+    if (index == 0)
+        return m_basePath;
+    QFileInfo info(m_basePath);
+    return QString("%1/%2_part%3.%4").arg(info.path(), info.completeBaseName()).arg(index + 1).arg(info.suffix());
+}
+
+bool VideoRecorder::openSegment(const QString& path, const Format& format, QString* errorMessage)
+{
+    const QByteArray pathUtf8 = path.toUtf8();
+    const int64_t duration = format.frameDuration > 0 ? format.frameDuration : kTimeScale / 60;
+    const double fps = double(kTimeScale) / duration;
+
+    const AVCodec* codec = avcodec_find_encoder_by_name("h264_nvenc");
+    if (!codec)
+    {
+        *errorMessage = tr("The NVIDIA H.264 encoder (NVENC) is not available.");
         return false;
     }
 
-    // Initialize software scaling context (for CPU color conversion)
-    m_swsCtx = sws_getContext(
-        m_width, m_height, AV_PIX_FMT_RGB32,
-        m_width, m_height, AV_PIX_FMT_YUV420P,
-        SWS_FAST_BILINEAR, nullptr, nullptr, nullptr
-    );
-
-    if (!m_swsCtx) {
+    // GPU frames the conversion kernel writes into
+    m_hwFramesCtx = av_hwframe_ctx_alloc(m_hwDeviceCtx);
+    if (!m_hwFramesCtx)
+    {
+        *errorMessage = tr("Could not allocate GPU frames.");
+        return false;
+    }
+    auto* frames = reinterpret_cast<AVHWFramesContext*>(m_hwFramesCtx->data);
+    frames->format = AV_PIX_FMT_CUDA;
+    frames->sw_format = AV_PIX_FMT_NV12;
+    frames->width = format.width;
+    frames->height = format.height;
+    frames->initial_pool_size = 8;
+    int ret = av_hwframe_ctx_init(m_hwFramesCtx);
+    if (ret < 0)
+    {
+        *errorMessage = tr("Could not initialise GPU frames (%1).").arg(avError(ret));
         return false;
     }
 
-    qDebug() << "Hardware encoding initialization successful";
+    m_codecCtx = avcodec_alloc_context3(codec);
+    if (!m_codecCtx)
+    {
+        *errorMessage = tr("Could not allocate the video encoder.");
+        return false;
+    }
+
+    // ~0.13 bits per pixel: 1080p60 -> ~16 Mbps, 1080p30 -> ~8 Mbps, 2160p30 -> ~32 Mbps
+    const int64_t bitRate = qBound<int64_t>(4000000, static_cast<int64_t>(double(format.width) * format.height * fps * 0.13),
+                                            60000000);
+
+    m_codecCtx->width = format.width;
+    m_codecCtx->height = format.height;
+    m_codecCtx->time_base = AVRational{1, static_cast<int>(kTimeScale)};
+    m_codecCtx->framerate = AVRational{static_cast<int>(kTimeScale), static_cast<int>(duration)};
+    m_codecCtx->pix_fmt = AV_PIX_FMT_CUDA;
+    m_codecCtx->hw_frames_ctx = av_buffer_ref(m_hwFramesCtx);
+    m_codecCtx->gop_size = qMax(1, qRound(fps / 2)); // keyframe (and MP4 fragment) every 0.5 s
+    m_codecCtx->max_b_frames = 0;
+    m_codecCtx->bit_rate = bitRate;
+    m_codecCtx->rc_max_rate = bitRate * 5 / 4;
+    m_codecCtx->rc_buffer_size = static_cast<int>(bitRate * 2);
+    m_codecCtx->color_range = AVCOL_RANGE_MPEG;
+    m_codecCtx->colorspace = AVCOL_SPC_BT709;
+    m_codecCtx->color_primaries = AVCOL_PRI_BT709;
+    m_codecCtx->color_trc = AVCOL_TRC_BT709;
+
+    const struct { const char* key; const char* value; } nvencOptions[] = {
+        {"preset", "p4"}, {"tune", "hq"}, {"rc", "vbr"}, {"profile", "high"}, {"spatial-aq", "1"},
+    };
+    for (const auto& opt : nvencOptions)
+    {
+        ret = av_opt_set(m_codecCtx->priv_data, opt.key, opt.value, 0);
+        if (ret < 0)
+            qWarning() << "[VideoRecorder] NVENC option" << opt.key << "=" << opt.value << "not applied:" << avError(ret);
+    }
+
+    ret = avformat_alloc_output_context2(&m_formatCtx, nullptr, "mp4", pathUtf8.constData());
+    if (ret < 0 || !m_formatCtx)
+    {
+        *errorMessage = tr("Could not create the MP4 file (%1).").arg(avError(ret));
+        return false;
+    }
+    if (m_formatCtx->oformat->flags & AVFMT_GLOBALHEADER)
+        m_codecCtx->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
+
+    ret = avcodec_open2(m_codecCtx, codec, nullptr);
+    if (ret < 0)
+    {
+        *errorMessage = tr("Could not start the NVIDIA encoder (%1).").arg(avError(ret));
+        return false;
+    }
+
+    m_stream = avformat_new_stream(m_formatCtx, nullptr);
+    if (!m_stream || avcodec_parameters_from_context(m_stream->codecpar, m_codecCtx) < 0)
+    {
+        *errorMessage = tr("Could not create the video stream.");
+        return false;
+    }
+    m_stream->time_base = m_codecCtx->time_base;
+    m_stream->avg_frame_rate = m_codecCtx->framerate;
+
+    ret = avio_open(&m_formatCtx->pb, pathUtf8.constData(), AVIO_FLAG_WRITE);
+    if (ret < 0)
+    {
+        *errorMessage = tr("Could not open the recording file for writing (%1):\n%2").arg(avError(ret), path);
+        return false;
+    }
+
+    // Fragmented MP4: every keyframe starts a self-contained fragment, so a crash or power cut
+    // leaves a playable file up to the last fragment instead of an unreadable one.
+    AVDictionary* muxOptions = nullptr;
+    av_dict_set(&muxOptions, "movflags", "frag_keyframe+empty_moov+default_base_moof", 0);
+    m_formatCtx->flush_packets = 1; // hand each finished fragment to the OS immediately
+    ret = avformat_write_header(m_formatCtx, &muxOptions);
+    av_dict_free(&muxOptions);
+    if (ret < 0)
+    {
+        *errorMessage = tr("Could not write the recording file header (%1).").arg(avError(ret));
+        return false;
+    }
+    m_headerWritten = true;
+
+    m_packet = av_packet_alloc();
+    m_hwFrame = av_frame_alloc();
+    if (!m_packet || !m_hwFrame)
+    {
+        *errorMessage = tr("Out of memory while starting the recording.");
+        return false;
+    }
+
+    // Device buffer receiving the raw captured frame
+    if (!m_devSrc || m_devSrcPitch < static_cast<size_t>(format.rowBytes) ||
+        m_devSrcBytes < m_devSrcPitch * static_cast<size_t>(format.height))
+    {
+        CudaContextScope ctxScope(m_cudaCtx);
+        if (m_devSrc)
+            cuMemFree(m_devSrc);
+        m_devSrc = 0;
+        if (!ctxScope.ok || cuMemAllocPitch(&m_devSrc, &m_devSrcPitch, static_cast<size_t>(format.rowBytes),
+                                            static_cast<size_t>(format.height), 16) != CUDA_SUCCESS)
+        {
+            m_devSrc = 0;
+            *errorMessage = tr("Could not allocate GPU memory for recording.");
+            return false;
+        }
+        m_devSrcBytes = m_devSrcPitch * format.height;
+    }
+
+    m_syncFd = ::open(pathUtf8.constData(), O_RDONLY | O_CLOEXEC);
+    m_currentPath = path;
+    m_segmentFormat = format;
+    m_segmentBaseTime = -1;
+    m_lastPts = -1;
+
+    qInfo() << "[VideoRecorder] Segment opened:" << path << format.width << "x" << format.height
+            << "fps" << fps << "bitrate" << bitRate;
     return true;
 }
 
-void VideoRecorder::recordFrame(const QImage& image)
+void VideoRecorder::closeSegment(bool writeTrailer)
 {
-    if (!m_recording.load()) return;
-    
-    QMutexLocker locker(&m_queueMutex);
-    
-    if (m_frameQueue.size() > 30) {
-        qDebug() << "Frame queue full, dropping frame";
-        return;
-    }
-    
-    // Minimal CPU preprocessing
-    QImage processedImage = image;
-    if (image.format() != QImage::Format_RGB32) {
-        processedImage = image.convertToFormat(QImage::Format_RGB32);
-    }
-    if (processedImage.size() != QSize(m_width, m_height)) {
-        processedImage = processedImage.scaled(m_width, m_height, 
-                                             Qt::IgnoreAspectRatio, 
-                                             Qt::FastTransformation);
-    }
-    
-    m_frameQueue.push(processedImage);
-    m_queueCond.notify_one();
-}
-
-void VideoRecorder::recordingThreadFunc()
-{
-    auto frameInterval = std::chrono::microseconds(1000000 / m_fps); // Frame interval
-    auto lastFrameTime = std::chrono::steady_clock::now();
-    
-    while (m_recording.load() || !m_frameQueue.empty()) {
-        QImage frame;
-        bool hasFrame = false;
-
+    if (m_formatCtx)
+    {
+        if (writeTrailer && m_headerWritten && m_formatCtx->pb)
         {
-            QMutexLocker locker(&m_queueMutex);
-            if (m_frameQueue.empty() && m_recording.load()) {
-                m_queueCond.wait(&m_queueMutex, 100);
-            }
-            
-            if (!m_frameQueue.empty()) {
-                frame = m_frameQueue.front();
-                m_frameQueue.pop();
-                hasFrame = true;
-            }
+            const int ret = av_write_trailer(m_formatCtx);
+            if (ret < 0)
+                qWarning() << "[VideoRecorder] Writing file trailer failed:" << avError(ret);
         }
-
-        if (hasFrame) {
-            // Wait for proper frame timing
-            auto now = std::chrono::steady_clock::now();
-            auto elapsed = now - lastFrameTime;
-            if (elapsed < frameInterval) {
-                std::this_thread::sleep_for(frameInterval - elapsed);
-            }
-            
-            processFrame(frame);
-            lastFrameTime = std::chrono::steady_clock::now();
-        }
-    }
-
-    flushEncoder();
-    finalizeFFmpeg();
-    finalizeGPU();
-}
-
-void VideoRecorder::processFrame(const QImage& image)
-{
-    if (!m_codecCtx || !m_hwFramesCtx) return;
-
-    // Create software frame for color conversion
-    AVFrame* swFrame = av_frame_alloc();
-    if (!swFrame) return;
-
-    swFrame->format = AV_PIX_FMT_YUV420P;
-    swFrame->width = m_width;
-    swFrame->height = m_height;
-
-    if (av_frame_get_buffer(swFrame, 32) < 0) {
-        av_frame_free(&swFrame);
-        return;
-    }
-
-    // CPU color conversion (RGB -> YUV420P)
-    uint8_t* inData[1] = { const_cast<uchar*>(image.bits()) };
-    int inLinesize[1] = { image.bytesPerLine() };
-    sws_scale(m_swsCtx, inData, inLinesize, 0, m_height, swFrame->data, swFrame->linesize);
-
-    // Create hardware frame
-    AVFrame* hwFrame = av_frame_alloc();
-    if (!hwFrame) {
-        av_frame_free(&swFrame);
-        return;
-    }
-
-    if (av_hwframe_get_buffer(m_hwFramesCtx, hwFrame, 0) < 0) {
-        av_frame_free(&swFrame);
-        av_frame_free(&hwFrame);
-        return;
-    }
-
-    hwFrame->format = AV_PIX_FMT_CUDA;
-    hwFrame->width = m_width;
-    hwFrame->height = m_height;
-    hwFrame->pts = m_frameCounter;
-
-    // Transfer data from CPU to GPU (this uploads to GPU memory)
-    if (av_hwframe_transfer_data(hwFrame, swFrame, 0) < 0) {
-        av_frame_free(&swFrame);
-        av_frame_free(&hwFrame);
-        return;
-    }
-
-    // Encode on GPU using NVENC
-    int ret = avcodec_send_frame(m_codecCtx, hwFrame);
-    if (ret >= 0) {
-        AVPacket* pkt = av_packet_alloc();
-        if (pkt) {
-            while (avcodec_receive_packet(m_codecCtx, pkt) >= 0) {
-                pkt->stream_index = m_videoStream->index;
-                av_packet_rescale_ts(pkt, m_codecCtx->time_base, m_videoStream->time_base);
-                av_interleaved_write_frame(m_formatCtx, pkt);
-                av_packet_unref(pkt);
-            }
-            av_packet_free(&pkt);
-        }
-    }
-
-    av_frame_free(&swFrame);
-    av_frame_free(&hwFrame);
-    m_frameCounter++;
-}
-
-void VideoRecorder::flushEncoder()
-{
-    if (!m_codecCtx) return;
-
-    avcodec_send_frame(m_codecCtx, nullptr);
-    
-    AVPacket* pkt = av_packet_alloc();
-    if (pkt) {
-        while (avcodec_receive_packet(m_codecCtx, pkt) >= 0) {
-            pkt->stream_index = m_videoStream->index;
-            av_packet_rescale_ts(pkt, m_codecCtx->time_base, m_videoStream->time_base);
-            av_interleaved_write_frame(m_formatCtx, pkt);
-            av_packet_unref(pkt);
-        }
-        av_packet_free(&pkt);
-    }
-
-    if (m_formatCtx) {
-        av_write_trailer(m_formatCtx);
-    }
-}
-
-void VideoRecorder::finalizeGPU()
-{
-    if (d_yuvBuffer) {
-        cudaFree(d_yuvBuffer);
-        d_yuvBuffer = nullptr;
-    }
-    
-    if (m_cudaStream) {
-        cudaStreamDestroy(m_cudaStream);
-        m_cudaStream = 0;
-    }
-}
-
-void VideoRecorder::finalizeFFmpeg()
-{
-    if (m_swsCtx) {
-        sws_freeContext(m_swsCtx);
-        m_swsCtx = nullptr;
-    }
-    
-    if (m_codecCtx) {
-        avcodec_free_context(&m_codecCtx);
-    }
-    
-    if (m_formatCtx) {
-        if (!(m_formatCtx->oformat->flags & AVFMT_NOFILE)) {
+        if (m_formatCtx->pb)
             avio_closep(&m_formatCtx->pb);
-        }
         avformat_free_context(m_formatCtx);
+        m_formatCtx = nullptr;
     }
-    
-    if (m_hwFramesCtx) {
-        av_buffer_unref(&m_hwFramesCtx);
+    m_stream = nullptr;
+    m_headerWritten = false;
+
+    if (m_syncFd >= 0)
+    {
+        ::fdatasync(m_syncFd);
+        ::close(m_syncFd);
+        m_syncFd = -1;
     }
-    
-    if (m_hwDeviceCtx) {
-        av_buffer_unref(&m_hwDeviceCtx);
-    }
+
+    avcodec_free_context(&m_codecCtx);
+    av_buffer_unref(&m_hwFramesCtx);
+    av_frame_free(&m_hwFrame);
+    av_packet_free(&m_packet);
+    m_segmentFormat = Format();
 }
 
-// void VideoRecorder::recordFrame(const QImage& image)
-// {
-//     if (!m_recording.load() || !m_codecCtx || !m_formatCtx || !m_videoStream || !m_swsCtx) {
-//         return;
-//     }
-
-//     // Convert and scale image if needed
-//     QImage converted = image.convertToFormat(QImage::Format_RGB32);
-//     if (converted.size() != QSize(m_width, m_height)) {
-//         converted = converted.scaled(m_width, m_height, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
-//     }
-
-//     // Allocate frame
-//     AVFrame* frame = av_frame_alloc();
-//     if (!frame) {
-//         qWarning() << "Failed to allocate frame";
-//         return;
-//     }
-
-//     frame->format = AV_PIX_FMT_YUV420P;
-//     frame->width = m_width;
-//     frame->height = m_height;
-
-//     if (av_frame_get_buffer(frame, 32) < 0 || av_frame_make_writable(frame) < 0) {
-//         qWarning() << "Failed to allocate frame buffers";
-//         av_frame_free(&frame);
-//         return;
-//     }
-
-//     // Convert from BGRA to YUV420P
-//     uint8_t* inData[1] = { const_cast<uchar*>(converted.bits()) };
-//     int inLinesize[1] = { converted.bytesPerLine() };
-//     sws_scale(m_swsCtx, inData, inLinesize, 0, m_height, frame->data, frame->linesize);
-
-//     // Calculate timestamp
-//     auto now = std::chrono::steady_clock::now();
-//     auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(now - m_startTime).count();
-//     frame->pts = av_rescale_q(elapsed, AVRational{1, 1000000}, m_codecCtx->time_base);
-
-//     // Encode frame
-//     int ret = avcodec_send_frame(m_codecCtx, frame);
-//     if (ret < 0) {
-//         // qWarning() << "Failed to send frame to encoder:" << av_err2str(ret);
-//         av_frame_free(&frame);
-//         return;
-//     }
-
-//     // Process packets
-//     AVPacket* pkt = av_packet_alloc();
-//     if (!pkt) {
-//         av_frame_free(&frame);
-//         return;
-//     }
-
-//     while (ret >= 0) {
-//         ret = avcodec_receive_packet(m_codecCtx, pkt);
-//         if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
-//             break;
-//         } 
-//         else if (ret < 0) {
-//             // qWarning() << "Error during encoding:" << av_err2str(ret);
-//             break;
-//         }
-
-//         // Set stream index and rescale timestamps
-//         pkt->stream_index = m_videoStream->index;
-//         av_packet_rescale_ts(pkt, m_codecCtx->time_base, m_videoStream->time_base);
-
-//         // Write packet
-//         if (av_interleaved_write_frame(m_formatCtx, pkt) < 0) {
-//             qWarning() << "Failed to write frame";
-//         }
-
-//         av_packet_unref(pkt);
-//     }
-
-//     av_packet_free(&pkt);
-//     av_frame_free(&frame);
-//     m_frameCounter++;
-// }
-
-
-// #include "VideoRecorder.hpp"
-// #include <QDebug>
-// #include <chrono>
-
-// extern "C" {
-// #include <libavutil/imgutils.h>
-// #include <libavutil/opt.h>
-// #include <libavutil/time.h>
-// }
-
-// VideoRecorder::VideoRecorder(QObject* parent)
-//     : QObject(parent), m_recording(false),
-//       m_formatCtx(nullptr), m_codecCtx(nullptr), m_videoStream(nullptr), m_swsCtx(nullptr),
-//       m_width(1920), m_height(1080), m_fps(30), m_frameCounter(0)
-// {
-//     av_log_set_level(AV_LOG_ERROR);
-// }
-
-// VideoRecorder::~VideoRecorder()
-// {
-//     stopRecording();
-// }
-
-// void VideoRecorder::startRecording(const QString& outputPath)
-// {
-//     if (m_recording.load()) {
-//         qWarning() << "Recording already in progress";
-//         return;
-//     }
-
-//     m_outputPath = outputPath;
-//     m_frameCounter = 0;
-//     m_startTime = std::chrono::steady_clock::now();
-
-//     if (!initializeFFmpeg()) {
-//         emit errorOccurred("Failed to initialize FFmpeg");
-//         finalizeFFmpeg();
-//         return;
-//     }
-
-//     m_recording.store(true);
-//     m_recordingThread = std::thread(&VideoRecorder::recordingThreadFunc, this);
-//     emit recordingStarted();
-//     qDebug() << "Recording started:" << outputPath;
-// }
-
-// void VideoRecorder::stopRecording()
-// {
-//     if (!m_recording.load()) return;
-
-//     m_recording.store(false);
-//     m_queueCond.wakeAll();
-
-//     if (m_recordingThread.joinable())
-//         m_recordingThread.join();
-
-//     // Flush encoder
-//     if (m_codecCtx) {
-//         avcodec_send_frame(m_codecCtx, nullptr);
-//         AVPacket* pkt = av_packet_alloc();
-//         while (avcodec_receive_packet(m_codecCtx, pkt) >= 0) {
-//             if (m_formatCtx && m_videoStream) {
-//                 av_packet_rescale_ts(pkt, m_codecCtx->time_base, m_videoStream->time_base);
-//                 pkt->stream_index = m_videoStream->index;
-//                 av_interleaved_write_frame(m_formatCtx, pkt);
-//             }
-//             av_packet_unref(pkt);
-//         }
-//         av_packet_free(&pkt);
-//     }
-
-//     if (m_formatCtx) {
-//         av_write_trailer(m_formatCtx);
-//     }
-
-//     finalizeFFmpeg();
-//     emit recordingStopped();
-//     qDebug() << "Recording stopped and resources released";
-// }
-
-// void VideoRecorder::recordFrame(const QImage& image)
-// {
-//     if (!m_recording.load())
-//         return;
-//     pushFrame(image);
-// }
-
-// void VideoRecorder::pushFrame(const QImage& image)
-// {
-//     QMutexLocker locker(&m_queueMutex);
-//     m_frameQueue.push(image);
-//     m_queueCond.wakeOne();
-// }
-
-// void VideoRecorder::recordingThreadFunc()
-// {
-//     while (m_recording.load() || !m_frameQueue.empty()) {
-//         QImage frame;
-//         {
-//             QMutexLocker locker(&m_queueMutex);
-//             if (m_frameQueue.empty()) {
-//                 m_queueCond.wait(&m_queueMutex, 10); // Wait max 10ms
-//                 continue;
-//             }
-//             frame = m_frameQueue.front();
-//             m_frameQueue.pop();
-//         }
-
-//         // Convert and scale
-//         QImage converted = frame.convertToFormat(QImage::Format_RGB32);
-//         if (converted.size() != QSize(m_width, m_height)) {
-//             converted = converted.scaled(m_width, m_height, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
-//         }
-
-//         AVFrame* avFrame = av_frame_alloc();
-//         if (!avFrame) continue;
-
-//         avFrame->format = AV_PIX_FMT_YUV420P;
-//         avFrame->width = m_width;
-//         avFrame->height = m_height;
-
-//         if (av_frame_get_buffer(avFrame, 32) < 0 || av_frame_make_writable(avFrame) < 0) {
-//             av_frame_free(&avFrame);
-//             continue;
-//         }
-
-//         uint8_t* inData[1] = { const_cast<uchar*>(converted.bits()) };
-//         int inLinesize[1] = { converted.bytesPerLine() };
-//         sws_scale(m_swsCtx, inData, inLinesize, 0, m_height, avFrame->data, avFrame->linesize);
-
-//         // Timestamp
-//         auto now = std::chrono::steady_clock::now();
-//         auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(now - m_startTime).count();
-//         avFrame->pts = av_rescale_q(elapsed, AVRational{1, 1000000}, m_codecCtx->time_base);
-
-//         int ret = avcodec_send_frame(m_codecCtx, avFrame);
-//         av_frame_free(&avFrame);
-//         if (ret < 0) continue;
-
-//         AVPacket* pkt = av_packet_alloc();
-//         while (ret >= 0) {
-//             ret = avcodec_receive_packet(m_codecCtx, pkt);
-//             if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) break;
-//             else if (ret < 0) break;
-
-//             pkt->stream_index = m_videoStream->index;
-//             av_packet_rescale_ts(pkt, m_codecCtx->time_base, m_videoStream->time_base);
-//             av_interleaved_write_frame(m_formatCtx, pkt);
-//             av_packet_unref(pkt);
-//         }
-//         av_packet_free(&pkt);
-
-//         m_frameCounter++;
-//     }
-// }
-
-// bool VideoRecorder::initializeFFmpeg()
-// {
-//     avformat_alloc_output_context2(&m_formatCtx, nullptr, nullptr, m_outputPath.toUtf8().constData());
-//     if (!m_formatCtx) return false;
-
-//     const AVCodec* codec = avcodec_find_encoder_by_name("libx264");
-//     if (!codec) return false;
-
-//     m_videoStream = avformat_new_stream(m_formatCtx, codec);
-//     if (!m_videoStream) return false;
-
-//     m_videoStream->id = m_formatCtx->nb_streams - 1;
-//     m_videoStream->time_base = AVRational{1, 1000000};
-
-//     m_codecCtx = avcodec_alloc_context3(codec);
-//     if (!m_codecCtx) return false;
-
-//     m_codecCtx->codec_id = codec->id;
-//     m_codecCtx->bit_rate = 8000000;
-//     m_codecCtx->width = m_width;
-//     m_codecCtx->height = m_height;
-//     m_codecCtx->time_base = m_videoStream->time_base;
-//     m_codecCtx->framerate = AVRational{m_fps, 1};
-//     m_codecCtx->gop_size = m_fps;
-//     m_codecCtx->max_b_frames = 1;
-//     m_codecCtx->pix_fmt = AV_PIX_FMT_YUV420P;
-
-//     av_opt_set(m_codecCtx->priv_data, "preset", "fast", 0);
-//     av_opt_set(m_codecCtx->priv_data, "crf", "23", 0);
-
-//     if (m_formatCtx->oformat->flags & AVFMT_GLOBALHEADER)
-//         m_codecCtx->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
-
-//     if (avcodec_open2(m_codecCtx, codec, nullptr) < 0) return false;
-//     if (avcodec_parameters_from_context(m_videoStream->codecpar, m_codecCtx) < 0) return false;
-
-//     if (!(m_formatCtx->oformat->flags & AVFMT_NOFILE)) {
-//         if (avio_open(&m_formatCtx->pb, m_outputPath.toUtf8().constData(), AVIO_FLAG_WRITE) < 0) return false;
-//     }
-
-//     if (avformat_write_header(m_formatCtx, nullptr) < 0) return false;
-
-//     m_swsCtx = sws_getContext(m_width, m_height, AV_PIX_FMT_BGRA,
-//                               m_width, m_height, AV_PIX_FMT_YUV420P,
-//                               SWS_BILINEAR, nullptr, nullptr, nullptr);
-//     if (!m_swsCtx) return false;
-
-//     return true;
-// }
-
-// void VideoRecorder::finalizeFFmpeg()
-// {
-//     if (m_codecCtx) {
-//         avcodec_free_context(&m_codecCtx);
-//         m_codecCtx = nullptr;
-//     }
-
-//     if (m_formatCtx) {
-//         if (!(m_formatCtx->oformat->flags & AVFMT_NOFILE))
-//             avio_closep(&m_formatCtx->pb);
-//         avformat_free_context(m_formatCtx);
-//         m_formatCtx = nullptr;
-//     }
-
-//     if (m_swsCtx) {
-//         sws_freeContext(m_swsCtx);
-//         m_swsCtx = nullptr;
-//     }
-
-//     m_videoStream = nullptr;
-// }
+void VideoRecorder::releaseDevice()
+{
+    if (m_devSrc)
+    {
+        CudaContextScope ctxScope(m_cudaCtx);
+        cuMemFree(m_devSrc);
+        m_devSrc = 0;
+        m_devSrcPitch = 0;
+        m_devSrcBytes = 0;
+    }
+    m_cudaCtx = nullptr;
+    av_buffer_unref(&m_hwDeviceCtx);
+}

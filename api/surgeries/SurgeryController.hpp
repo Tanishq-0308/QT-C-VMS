@@ -10,9 +10,9 @@ class SurgeryController : public QObject {
 public:
     explicit SurgeryController(DatabaseManager* db, QObject *parent = nullptr);
 
-    bool addSurgery(int patientId, const QJsonObject &data, QJsonObject &response);
+    bool addSurgery(const QString &patientId, const QJsonObject &data, QJsonObject &response);
     bool editSurgery(int id, const QJsonObject &data, QJsonObject &response);
-    QJsonArray getSurgeriesByPatientId(int patientId);
+    QJsonArray getSurgeriesByPatientId(const QString &patientId);   // patients.patient_id, e.g. "P1001"
     QJsonObject getSurgeryById(int id);
 
 private:

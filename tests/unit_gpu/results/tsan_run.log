@@ -1,0 +1,214 @@
+********* Start testing of TstVideoRecorder *********
+Config: Using QtTest library 5.15.3, Qt 5.15.3 (x86_64-little_endian-lp64 shared (dynamic) release build; by GCC 11.3.0), ubuntu 22.04
+# out=/tmp/claude-1000/vr_tests relax=1 nvenc=0x7ffff421eba0 h264dec=0x7ffff4213f20 libavcodec=4.4.2-0ubuntu0.22.04.1 pid=46134
+PASS   : TstVideoRecorder::initTestCase()
+==================
+WARNING: ThreadSanitizer: unlock of an unlocked mutex (or by a wrong thread) (pid=46134)
+    #0 pthread_cond_wait ../../../../src/libsanitizer/tsan/tsan_interceptors_posix.cpp:1223 (libtsan.so.2+0x683b1)
+    #1 <null> <null> (libnvcuvid.so.1+0x9b3a9)
+    #2 VideoRecorder::initializeRecording(QString*) /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:265 (tst_videorecorder+0x55962)
+    #3 VideoRecorder::workerLoop() /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:307 (tst_videorecorder+0x55fb7)
+    #4 void std::__invoke_impl<void, void (VideoRecorder::*)(), VideoRecorder*>(std::__invoke_memfun_deref, void (VideoRecorder::*&&)(), VideoRecorder*&&) /usr/include/c++/12/bits/invoke.h:74 (tst_videorecorder+0x57282)
+    #5 std::__invoke_result<void (VideoRecorder::*)(), VideoRecorder*>::type std::__invoke<void (VideoRecorder::*)(), VideoRecorder*>(void (VideoRecorder::*&&)(), VideoRecorder*&&) /usr/include/c++/12/bits/invoke.h:96 (tst_videorecorder+0x57282)
+    #6 void std::thread::_Invoker<std::tuple<void (VideoRecorder::*)(), VideoRecorder*> >::_M_invoke<0ul, 1ul>(std::_Index_tuple<0ul, 1ul>) /usr/include/c++/12/bits/std_thread.h:279 (tst_videorecorder+0x57282)
+    #7 std::thread::_Invoker<std::tuple<void (VideoRecorder::*)(), VideoRecorder*> >::operator()() /usr/include/c++/12/bits/std_thread.h:286 (tst_videorecorder+0x57282)
+    #8 std::thread::_State_impl<std::thread::_Invoker<std::tuple<void (VideoRecorder::*)(), VideoRecorder*> > >::_M_run() /usr/include/c++/12/bits/std_thread.h:231 (tst_videorecorder+0x57282)
+    #9 <null> <null> (libstdc++.so.6+0xdc252)
+
+  Location is heap block of size 176 at 0x7b2c00025780 allocated by thread T3:
+    #0 malloc ../../../../src/libsanitizer/tsan/tsan_interceptors_posix.cpp:647 (libtsan.so.2+0x3fa9a)
+    #1 <null> <null> (libnvcuvid.so.1+0x9b28f)
+    #2 VideoRecorder::initializeRecording(QString*) /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:265 (tst_videorecorder+0x55962)
+    #3 VideoRecorder::workerLoop() /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:307 (tst_videorecorder+0x55fb7)
+    #4 void std::__invoke_impl<void, void (VideoRecorder::*)(), VideoRecorder*>(std::__invoke_memfun_deref, void (VideoRecorder::*&&)(), VideoRecorder*&&) /usr/include/c++/12/bits/invoke.h:74 (tst_videorecorder+0x57282)
+    #5 std::__invoke_result<void (VideoRecorder::*)(), VideoRecorder*>::type std::__invoke<void (VideoRecorder::*)(), VideoRecorder*>(void (VideoRecorder::*&&)(), VideoRecorder*&&) /usr/include/c++/12/bits/invoke.h:96 (tst_videorecorder+0x57282)
+    #6 void std::thread::_Invoker<std::tuple<void (VideoRecorder::*)(), VideoRecorder*> >::_M_invoke<0ul, 1ul>(std::_Index_tuple<0ul, 1ul>) /usr/include/c++/12/bits/std_thread.h:279 (tst_videorecorder+0x57282)
+    #7 std::thread::_Invoker<std::tuple<void (VideoRecorder::*)(), VideoRecorder*> >::operator()() /usr/include/c++/12/bits/std_thread.h:286 (tst_videorecorder+0x57282)
+    #8 std::thread::_State_impl<std::thread::_Invoker<std::tuple<void (VideoRecorder::*)(), VideoRecorder*> > >::_M_run() /usr/include/c++/12/bits/std_thread.h:231 (tst_videorecorder+0x57282)
+    #9 <null> <null> (libstdc++.so.6+0xdc252)
+
+  Mutex M202 (0x7b2c000257b8) created at:
+    #0 pthread_cond_wait ../../../../src/libsanitizer/tsan/tsan_interceptors_posix.cpp:1223 (libtsan.so.2+0x683b1)
+    #1 <null> <null> (libnvcuvid.so.1+0x9b3a9)
+    #2 VideoRecorder::initializeRecording(QString*) /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:265 (tst_videorecorder+0x55962)
+    #3 VideoRecorder::workerLoop() /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:307 (tst_videorecorder+0x55fb7)
+    #4 void std::__invoke_impl<void, void (VideoRecorder::*)(), VideoRecorder*>(std::__invoke_memfun_deref, void (VideoRecorder::*&&)(), VideoRecorder*&&) /usr/include/c++/12/bits/invoke.h:74 (tst_videorecorder+0x57282)
+    #5 std::__invoke_result<void (VideoRecorder::*)(), VideoRecorder*>::type std::__invoke<void (VideoRecorder::*)(), VideoRecorder*>(void (VideoRecorder::*&&)(), VideoRecorder*&&) /usr/include/c++/12/bits/invoke.h:96 (tst_videorecorder+0x57282)
+    #6 void std::thread::_Invoker<std::tuple<void (VideoRecorder::*)(), VideoRecorder*> >::_M_invoke<0ul, 1ul>(std::_Index_tuple<0ul, 1ul>) /usr/include/c++/12/bits/std_thread.h:279 (tst_videorecorder+0x57282)
+    #7 std::thread::_Invoker<std::tuple<void (VideoRecorder::*)(), VideoRecorder*> >::operator()() /usr/include/c++/12/bits/std_thread.h:286 (tst_videorecorder+0x57282)
+    #8 std::thread::_State_impl<std::thread::_Invoker<std::tuple<void (VideoRecorder::*)(), VideoRecorder*> > >::_M_run() /usr/include/c++/12/bits/std_thread.h:231 (tst_videorecorder+0x57282)
+    #9 <null> <null> (libstdc++.so.6+0xdc252)
+
+  Thread T3 (tid=46138, running) created by main thread at:
+    #0 pthread_create ../../../../src/libsanitizer/tsan/tsan_interceptors_posix.cpp:1001 (libtsan.so.2+0x63a59)
+    #1 std::thread::_M_start_thread(std::unique_ptr<std::thread::_State, std::default_delete<std::thread::_State> >, void (*)()) <null> (libstdc++.so.6+0xdc328)
+    #2 beginExact /home/brainwave/QT-C-VMS/tests/unit_gpu/tst_videorecorder.cpp:422 (tst_videorecorder+0xd73a)
+    #3 TstVideoRecorder::basic1080p60() <null> (tst_videorecorder+0x2ff00)
+    #4 TstVideoRecorder::qt_static_metacall(QObject*, QMetaObject::Call, int, void**) /home/brainwave/QT-C-VMS/build-tests-gpu-tsan/tst_videorecorder_autogen/include/tst_videorecorder.moc:165 (tst_videorecorder+0x14163)
+    #5 QMetaMethod::invoke(QObject*, Qt::ConnectionType, QGenericReturnArgument, QGenericArgument, QGenericArgument, QGenericArgument, QGenericArgument, QGenericArgument, QGenericArgument, QGenericArgument, QGenericArgument, QGenericArgument, QGenericArgument) const <null> (libQt5Core.so.5+0x2c525a)
+    #6 __libc_start_call_main ../sysdeps/nptl/libc_start_call_main.h:58 (libc.so.6+0x29d8f)
+
+SUMMARY: ThreadSanitizer: unlock of an unlocked mutex (or by a wrong thread) (/lib/x86_64-linux-gnu/libnvcuvid.so.1+0x9b3a9) 
+==================
+QINFO  : TstVideoRecorder::basic1080p60() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/basic.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::basic1080p60() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/basic.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::basic1080p60() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/basic.mp4" encoded 301 dropped 0
+  [basic] size=76136 opened=1 err='' codec=h264 1920x1080 fmt_dur=5.0167s last_pts_end=5.0167s avg_fps=60.0000 packets=301 keyframes=6 bitrate=0.12Mbps decoded=301 dec_err=0 read_err=EOF tb=1/120000
+  METRIC basic1080p60 fed=301 encoded=301 dropped=0 feed_fps=60.00 start_call_ms=1.87 recordingStarted_ms=1000 stop_call_ms=0.016 finalise_ms=256 file_dur=5.0167s
+  [ok  ] (relaxed) feeder kept a realistic 60 fps pace (60.00 fps, max late 0.0 ms)
+  [ok  ] encoded == fed (301 == 301)
+  [ok  ] dropped == 0 (got 0)
+  [ok  ] file opens with libavformat: 
+  [ok  ] h264 1920x1080 (got h264 1920x1080)
+  [ok  ] packets in file == encoded (301 == 301)
+  [ok  ] last pts end 5.0167 s within 1 frame of fed stream time 5.0167 s
+  [ok  ] container duration 5.0167 s within 1 frame of fed 5.0167 s
+  [ok  ] pts timeline exact vs capture clock (mismatches=0 first_bad=-1)
+  [ok  ] all frames decode (301 decoded, 0 errors)
+  [ok  ] decoded frame content == fed frame, in order, no duplicates (0 mismatches)
+  [ok  ] avg_frame_rate 60 fps (got 60.0000)
+  [ok  ] first packet is a keyframe
+  [ok  ] keyframe every 60 frames (~1 s): 6 keyframes, 0 bad intervals
+  [ok  ] no errorOccurred / framesDropped: 
+  [ok  ] recordingStopped path == requested path
+  [ok  ] (relaxed) startRecording() returns on GUI thread in < 50 ms (1.87 ms)
+  [ok  ] (relaxed) recordingStarted within 2 s (1000 ms)
+  [ok  ] (relaxed) stopRecording() < 50 ms (0.016 ms)
+  [ok  ] (relaxed) finalisation (stop -> recordingStopped delivered) < 2 s (256 ms, emitted at 254 ms)
+PASS   : TstVideoRecorder::basic1080p60()
+==================
+WARNING: ThreadSanitizer: unlock of an unlocked mutex (or by a wrong thread) (pid=46134)
+    #0 pthread_cond_wait ../../../../src/libsanitizer/tsan/tsan_interceptors_posix.cpp:1223 (libtsan.so.2+0x683b1)
+    #1 <null> <null> (libnvcuvid.so.1+0x9b3a9)
+    #2 VideoRecorder::initializeRecording(QString*) /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:265 (tst_videorecorder+0x55962)
+    #3 VideoRecorder::workerLoop() /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:307 (tst_videorecorder+0x55fb7)
+    #4 void std::__invoke_impl<void, void (VideoRecorder::*)(), VideoRecorder*>(std::__invoke_memfun_deref, void (VideoRecorder::*&&)(), VideoRecorder*&&) /usr/include/c++/12/bits/invoke.h:74 (tst_videorecorder+0x57282)
+    #5 std::__invoke_result<void (VideoRecorder::*)(), VideoRecorder*>::type std::__invoke<void (VideoRecorder::*)(), VideoRecorder*>(void (VideoRecorder::*&&)(), VideoRecorder*&&) /usr/include/c++/12/bits/invoke.h:96 (tst_videorecorder+0x57282)
+    #6 void std::thread::_Invoker<std::tuple<void (VideoRecorder::*)(), VideoRecorder*> >::_M_invoke<0ul, 1ul>(std::_Index_tuple<0ul, 1ul>) /usr/include/c++/12/bits/std_thread.h:279 (tst_videorecorder+0x57282)
+    #7 std::thread::_Invoker<std::tuple<void (VideoRecorder::*)(), VideoRecorder*> >::operator()() /usr/include/c++/12/bits/std_thread.h:286 (tst_videorecorder+0x57282)
+    #8 std::thread::_State_impl<std::thread::_Invoker<std::tuple<void (VideoRecorder::*)(), VideoRecorder*> > >::_M_run() /usr/include/c++/12/bits/std_thread.h:231 (tst_videorecorder+0x57282)
+    #9 <null> <null> (libstdc++.so.6+0xdc252)
+
+  Location is heap block of size 176 at 0x7b2c00025780 allocated by thread T8:
+    #0 malloc ../../../../src/libsanitizer/tsan/tsan_interceptors_posix.cpp:647 (libtsan.so.2+0x3fa9a)
+    #1 <null> <null> (libnvcuvid.so.1+0x9b28f)
+    #2 VideoRecorder::initializeRecording(QString*) /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:265 (tst_videorecorder+0x55962)
+    #3 VideoRecorder::workerLoop() /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:307 (tst_videorecorder+0x55fb7)
+    #4 void std::__invoke_impl<void, void (VideoRecorder::*)(), VideoRecorder*>(std::__invoke_memfun_deref, void (VideoRecorder::*&&)(), VideoRecorder*&&) /usr/include/c++/12/bits/invoke.h:74 (tst_videorecorder+0x57282)
+    #5 std::__invoke_result<void (VideoRecorder::*)(), VideoRecorder*>::type std::__invoke<void (VideoRecorder::*)(), VideoRecorder*>(void (VideoRecorder::*&&)(), VideoRecorder*&&) /usr/include/c++/12/bits/invoke.h:96 (tst_videorecorder+0x57282)
+    #6 void std::thread::_Invoker<std::tuple<void (VideoRecorder::*)(), VideoRecorder*> >::_M_invoke<0ul, 1ul>(std::_Index_tuple<0ul, 1ul>) /usr/include/c++/12/bits/std_thread.h:279 (tst_videorecorder+0x57282)
+    #7 std::thread::_Invoker<std::tuple<void (VideoRecorder::*)(), VideoRecorder*> >::operator()() /usr/include/c++/12/bits/std_thread.h:286 (tst_videorecorder+0x57282)
+    #8 std::thread::_State_impl<std::thread::_Invoker<std::tuple<void (VideoRecorder::*)(), VideoRecorder*> > >::_M_run() /usr/include/c++/12/bits/std_thread.h:231 (tst_videorecorder+0x57282)
+    #9 <null> <null> (libstdc++.so.6+0xdc252)
+
+  Mutex M437 (0x7b2c000257b8) created at:
+    #0 pthread_cond_wait ../../../../src/libsanitizer/tsan/tsan_interceptors_posix.cpp:1223 (libtsan.so.2+0x683b1)
+    #1 <null> <null> (libnvcuvid.so.1+0x9b3a9)
+    #2 VideoRecorder::initializeRecording(QString*) /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:265 (tst_videorecorder+0x55962)
+    #3 VideoRecorder::workerLoop() /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:307 (tst_videorecorder+0x55fb7)
+    #4 void std::__invoke_impl<void, void (VideoRecorder::*)(), VideoRecorder*>(std::__invoke_memfun_deref, void (VideoRecorder::*&&)(), VideoRecorder*&&) /usr/include/c++/12/bits/invoke.h:74 (tst_videorecorder+0x57282)
+    #5 std::__invoke_result<void (VideoRecorder::*)(), VideoRecorder*>::type std::__invoke<void (VideoRecorder::*)(), VideoRecorder*>(void (VideoRecorder::*&&)(), VideoRecorder*&&) /usr/include/c++/12/bits/invoke.h:96 (tst_videorecorder+0x57282)
+    #6 void std::thread::_Invoker<std::tuple<void (VideoRecorder::*)(), VideoRecorder*> >::_M_invoke<0ul, 1ul>(std::_Index_tuple<0ul, 1ul>) /usr/include/c++/12/bits/std_thread.h:279 (tst_videorecorder+0x57282)
+    #7 std::thread::_Invoker<std::tuple<void (VideoRecorder::*)(), VideoRecorder*> >::operator()() /usr/include/c++/12/bits/std_thread.h:286 (tst_videorecorder+0x57282)
+    #8 std::thread::_State_impl<std::thread::_Invoker<std::tuple<void (VideoRecorder::*)(), VideoRecorder*> > >::_M_run() /usr/include/c++/12/bits/std_thread.h:231 (tst_videorecorder+0x57282)
+    #9 <null> <null> (libstdc++.so.6+0xdc252)
+
+  Thread T8 (tid=46147, running) created by main thread at:
+    #0 pthread_create ../../../../src/libsanitizer/tsan/tsan_interceptors_posix.cpp:1001 (libtsan.so.2+0x63a59)
+    #1 std::thread::_M_start_thread(std::unique_ptr<std::thread::_State, std::default_delete<std::thread::_State> >, void (*)()) <null> (libstdc++.so.6+0xdc328)
+    #2 beginExact /home/brainwave/QT-C-VMS/tests/unit_gpu/tst_videorecorder.cpp:422 (tst_videorecorder+0xd73a)
+    #3 TstVideoRecorder::poolOverflow() <null> (tst_videorecorder+0x37f87)
+    #4 TstVideoRecorder::qt_static_metacall(QObject*, QMetaObject::Call, int, void**) /home/brainwave/QT-C-VMS/build-tests-gpu-tsan/tst_videorecorder_autogen/include/tst_videorecorder.moc:173 (tst_videorecorder+0x143ca)
+    #5 QMetaMethod::invoke(QObject*, Qt::ConnectionType, QGenericReturnArgument, QGenericArgument, QGenericArgument, QGenericArgument, QGenericArgument, QGenericArgument, QGenericArgument, QGenericArgument, QGenericArgument, QGenericArgument, QGenericArgument) const <null> (libQt5Core.so.5+0x2c525a)
+    #6 __libc_start_call_main ../sysdeps/nptl/libc_start_call_main.h:58 (libc.so.6+0x29d8f)
+
+SUMMARY: ThreadSanitizer: unlock of an unlocked mutex (or by a wrong thread) (/lib/x86_64-linux-gnu/libnvcuvid.so.1+0x9b3a9) 
+==================
+QINFO  : TstVideoRecorder::poolOverflow(burst) [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/pool.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::poolOverflow(burst) [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/pool.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::poolOverflow(burst) [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/pool.mp4" encoded 471 dropped 0
+  [pool] size=115335 opened=1 err='' codec=h264 1920x1080 fmt_dur=7.8500s last_pts_end=7.8500s avg_fps=60.0000 packets=471 keyframes=8 bitrate=0.11Mbps decoded=471 dec_err=0 read_err=EOF tb=1/120000
+  METRIC poolOverflow/burst overflow phase: 200 frames in 1768.7 ms (113 fps); pushed=471 encoded=471 not_encoded=0 dropped_reported=0 timeline_missing_slots=0 framesDropped_signals=0 pushFrame_us(burst) med=6768.3 p99=10702.8 max=10866.9
+  [FAIL] pool overflow was provoked (0 frames not encoded)
+  [ok  ] encoded + dropped == pushed (471 + 0 = 471, pushed 471)
+  [ok  ] no silent loss: dropped (0) >= frames not encoded (0)
+  [FAIL] framesDropped signal emitted while recording
+  [ok  ] file packets == encoded, decodes cleanly
+  [ok  ] no reordering / duplicates after overflow
+  [ok  ] timestamps of surviving frames follow the capture clock (0 mismatches)
+FAIL!  : TstVideoRecorder::poolOverflow(burst) 'fails.isEmpty()' returned FALSE. (pool overflow was provoked (0 frames not encoded) ; framesDropped signal emitted while recording)
+   Loc: [/home/brainwave/QT-C-VMS/tests/unit_gpu/tst_videorecorder.cpp(892)]
+==================
+WARNING: ThreadSanitizer: unlock of an unlocked mutex (or by a wrong thread) (pid=46134)
+    #0 pthread_cond_wait ../../../../src/libsanitizer/tsan/tsan_interceptors_posix.cpp:1223 (libtsan.so.2+0x683b1)
+    #1 <null> <null> (libnvcuvid.so.1+0x9b3a9)
+    #2 VideoRecorder::initializeRecording(QString*) /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:265 (tst_videorecorder+0x55962)
+    #3 VideoRecorder::workerLoop() /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:307 (tst_videorecorder+0x55fb7)
+    #4 void std::__invoke_impl<void, void (VideoRecorder::*)(), VideoRecorder*>(std::__invoke_memfun_deref, void (VideoRecorder::*&&)(), VideoRecorder*&&) /usr/include/c++/12/bits/invoke.h:74 (tst_videorecorder+0x57282)
+    #5 std::__invoke_result<void (VideoRecorder::*)(), VideoRecorder*>::type std::__invoke<void (VideoRecorder::*)(), VideoRecorder*>(void (VideoRecorder::*&&)(), VideoRecorder*&&) /usr/include/c++/12/bits/invoke.h:96 (tst_videorecorder+0x57282)
+    #6 void std::thread::_Invoker<std::tuple<void (VideoRecorder::*)(), VideoRecorder*> >::_M_invoke<0ul, 1ul>(std::_Index_tuple<0ul, 1ul>) /usr/include/c++/12/bits/std_thread.h:279 (tst_videorecorder+0x57282)
+    #7 std::thread::_Invoker<std::tuple<void (VideoRecorder::*)(), VideoRecorder*> >::operator()() /usr/include/c++/12/bits/std_thread.h:286 (tst_videorecorder+0x57282)
+    #8 std::thread::_State_impl<std::thread::_Invoker<std::tuple<void (VideoRecorder::*)(), VideoRecorder*> > >::_M_run() /usr/include/c++/12/bits/std_thread.h:231 (tst_videorecorder+0x57282)
+    #9 <null> <null> (libstdc++.so.6+0xdc252)
+
+  Location is heap block of size 176 at 0x7b2c00025780 allocated by thread T10:
+    #0 malloc ../../../../src/libsanitizer/tsan/tsan_interceptors_posix.cpp:647 (libtsan.so.2+0x3fa9a)
+    #1 <null> <null> (libnvcuvid.so.1+0x9b28f)
+    #2 VideoRecorder::initializeRecording(QString*) /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:265 (tst_videorecorder+0x55962)
+    #3 VideoRecorder::workerLoop() /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:307 (tst_videorecorder+0x55fb7)
+    #4 void std::__invoke_impl<void, void (VideoRecorder::*)(), VideoRecorder*>(std::__invoke_memfun_deref, void (VideoRecorder::*&&)(), VideoRecorder*&&) /usr/include/c++/12/bits/invoke.h:74 (tst_videorecorder+0x57282)
+    #5 std::__invoke_result<void (VideoRecorder::*)(), VideoRecorder*>::type std::__invoke<void (VideoRecorder::*)(), VideoRecorder*>(void (VideoRecorder::*&&)(), VideoRecorder*&&) /usr/include/c++/12/bits/invoke.h:96 (tst_videorecorder+0x57282)
+    #6 void std::thread::_Invoker<std::tuple<void (VideoRecorder::*)(), VideoRecorder*> >::_M_invoke<0ul, 1ul>(std::_Index_tuple<0ul, 1ul>) /usr/include/c++/12/bits/std_thread.h:279 (tst_videorecorder+0x57282)
+    #7 std::thread::_Invoker<std::tuple<void (VideoRecorder::*)(), VideoRecorder*> >::operator()() /usr/include/c++/12/bits/std_thread.h:286 (tst_videorecorder+0x57282)
+    #8 std::thread::_State_impl<std::thread::_Invoker<std::tuple<void (VideoRecorder::*)(), VideoRecorder*> > >::_M_run() /usr/include/c++/12/bits/std_thread.h:231 (tst_videorecorder+0x57282)
+    #9 <null> <null> (libstdc++.so.6+0xdc252)
+
+  Mutex M542 (0x7b2c000257b8) created at:
+    #0 pthread_cond_wait ../../../../src/libsanitizer/tsan/tsan_interceptors_posix.cpp:1223 (libtsan.so.2+0x683b1)
+    #1 <null> <null> (libnvcuvid.so.1+0x9b3a9)
+    #2 VideoRecorder::initializeRecording(QString*) /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:265 (tst_videorecorder+0x55962)
+    #3 VideoRecorder::workerLoop() /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:307 (tst_videorecorder+0x55fb7)
+    #4 void std::__invoke_impl<void, void (VideoRecorder::*)(), VideoRecorder*>(std::__invoke_memfun_deref, void (VideoRecorder::*&&)(), VideoRecorder*&&) /usr/include/c++/12/bits/invoke.h:74 (tst_videorecorder+0x57282)
+    #5 std::__invoke_result<void (VideoRecorder::*)(), VideoRecorder*>::type std::__invoke<void (VideoRecorder::*)(), VideoRecorder*>(void (VideoRecorder::*&&)(), VideoRecorder*&&) /usr/include/c++/12/bits/invoke.h:96 (tst_videorecorder+0x57282)
+    #6 void std::thread::_Invoker<std::tuple<void (VideoRecorder::*)(), VideoRecorder*> >::_M_invoke<0ul, 1ul>(std::_Index_tuple<0ul, 1ul>) /usr/include/c++/12/bits/std_thread.h:279 (tst_videorecorder+0x57282)
+    #7 std::thread::_Invoker<std::tuple<void (VideoRecorder::*)(), VideoRecorder*> >::operator()() /usr/include/c++/12/bits/std_thread.h:286 (tst_videorecorder+0x57282)
+    #8 std::thread::_State_impl<std::thread::_Invoker<std::tuple<void (VideoRecorder::*)(), VideoRecorder*> > >::_M_run() /usr/include/c++/12/bits/std_thread.h:231 (tst_videorecorder+0x57282)
+    #9 <null> <null> (libstdc++.so.6+0xdc252)
+
+  Thread T10 (tid=46151, running) created by main thread at:
+    #0 pthread_create ../../../../src/libsanitizer/tsan/tsan_interceptors_posix.cpp:1001 (libtsan.so.2+0x63a59)
+    #1 std::thread::_M_start_thread(std::unique_ptr<std::thread::_State, std::default_delete<std::thread::_State> >, void (*)()) <null> (libstdc++.so.6+0xdc328)
+    #2 beginExact /home/brainwave/QT-C-VMS/tests/unit_gpu/tst_videorecorder.cpp:422 (tst_videorecorder+0xd73a)
+    #3 TstVideoRecorder::poolOverflow() <null> (tst_videorecorder+0x37f87)
+    #4 TstVideoRecorder::qt_static_metacall(QObject*, QMetaObject::Call, int, void**) /home/brainwave/QT-C-VMS/build-tests-gpu-tsan/tst_videorecorder_autogen/include/tst_videorecorder.moc:173 (tst_videorecorder+0x143ca)
+    #5 QMetaMethod::invoke(QObject*, Qt::ConnectionType, QGenericReturnArgument, QGenericArgument, QGenericArgument, QGenericArgument, QGenericArgument, QGenericArgument, QGenericArgument, QGenericArgument, QGenericArgument, QGenericArgument, QGenericArgument) const <null> (libQt5Core.so.5+0x2c525a)
+    #6 __libc_start_call_main ../sysdeps/nptl/libc_start_call_main.h:58 (libc.so.6+0x29d8f)
+
+SUMMARY: ThreadSanitizer: unlock of an unlocked mutex (or by a wrong thread) (/lib/x86_64-linux-gnu/libnvcuvid.so.1+0x9b3a9) 
+==================
+QINFO  : TstVideoRecorder::poolOverflow(gpuStall) [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/pool.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::poolOverflow(gpuStall) [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/pool.mp4" 1920 x 1080 @ 60 fps
+  [ok  ] stall kernel launched (cuda error 0)
+QWARN  : TstVideoRecorder::poolOverflow(gpuStall) [VideoRecorder] Frames dropped so far: 54
+QWARN  : TstVideoRecorder::poolOverflow(gpuStall) [VideoRecorder] Frames dropped so far: 108
+QINFO  : TstVideoRecorder::poolOverflow(gpuStall) [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/pool.mp4" encoded 307 dropped 108
+  [pool] size=77787 opened=1 err='' codec=h264 1920x1080 fmt_dur=6.0167s last_pts_end=6.0167s avg_fps=51.0249 packets=307 keyframes=6 bitrate=0.10Mbps decoded=307 dec_err=0 read_err=EOF tb=1/120000
+  METRIC poolOverflow/gpuStall overflow phase: 90 frames in 1503.3 ms (60 fps); pushed=361 encoded=307 not_encoded=54 dropped_reported=108 timeline_missing_slots=54 framesDropped_signals=2 pushFrame_us(burst) med=4.6 p99=9615.7 max=9615.7
+  [ok  ] pool overflow was provoked (54 frames not encoded)
+  [FAIL] encoded + dropped == pushed (307 + 108 = 415, pushed 361)
+  [ok  ] no silent loss: dropped (108) >= frames not encoded (54)
+  [ok  ] framesDropped signal emitted while recording
+  [ok  ] file packets == encoded, decodes cleanly
+  [ok  ] no reordering / duplicates after overflow
+  [ok  ] timestamps of surviving frames follow the capture clock (0 mismatches)
+FAIL!  : TstVideoRecorder::poolOverflow(gpuStall) 'fails.isEmpty()' returned FALSE. (encoded + dropped == pushed (307 + 108 = 415, pushed 361))
+   Loc: [/home/brainwave/QT-C-VMS/tests/unit_gpu/tst_videorecorder.cpp(892)]
+
+==================== SUMMARY ====================
+PASS  basic1080p60 | fed=301 encoded=301 dropped=0 feed_fps=60.00 start_call_ms=1.87 recordingStarted_ms=1000 stop_call_ms=0.016 finalise_ms=256 file_dur=5.0167s
+FAIL  poolOverflow/burst | overflow phase: 200 frames in 1768.7 ms (113 fps); pushed=471 encoded=471 not_encoded=0 dropped_reported=0 timeline_missing_slots=0 framesDropped_signals=0 pushFrame_us(burst) med=6768.3 p99=10702.8 max=10866.9 | FAILED: pool overflow was provoked (0 frames not encoded) ; framesDropped signal emitted while recording
+FAIL  poolOverflow/gpuStall | overflow phase: 90 frames in 1503.3 ms (60 fps); pushed=361 encoded=307 not_encoded=54 dropped_reported=108 timeline_missing_slots=54 framesDropped_signals=2 pushFrame_us(burst) med=4.6 p99=9615.7 max=9615.7 | FAILED: encoded + dropped == pushed (307 + 108 = 415, pushed 361)
+PASS   : TstVideoRecorder::cleanupTestCase()
+Totals: 3 passed, 2 failed, 0 skipped, 0 blacklisted, 22610ms
+********* Finished testing of TstVideoRecorder *********
+ThreadSanitizer: reported 3 warnings

@@ -1,0 +1,524 @@
+********* Start testing of TstVideoRecorder *********
+Config: Using QtTest library 5.15.3, Qt 5.15.3 (x86_64-little_endian-lp64 shared (dynamic) release build; by GCC 11.3.0), ubuntu 22.04
+# out=/tmp/claude-1000/vr_tests relax=1 nvenc=0x7b3c0421eba0 h264dec=0x7b3c04213f20 libavcodec=4.4.2-0ubuntu0.22.04.1 pid=45352
+PASS   : TstVideoRecorder::initTestCase()
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_0.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_0.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_0.mp4" encoded 121 dropped 0
+  cycle 1: enc=121 drop=0 packets=121 dur=2.017 init=491ms fin=155ms rss=344952KB hwm=344960KB threads=6 fds=37 gpu_pid=44MiB gpu_dev=-1MiB
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_1.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_1.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_1.mp4" encoded 120 dropped 0
+  cycle 2: enc=120 drop=0 packets=120 dur=2.000 init=123ms fin=148ms rss=536184KB hwm=536188KB threads=6 fds=37 gpu_pid=44MiB gpu_dev=-1MiB
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_2.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_2.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_2.mp4" encoded 120 dropped 0
+  cycle 3: enc=120 drop=0 packets=120 dur=2.000 init=145ms fin=129ms rss=556368KB hwm=694204KB threads=6 fds=37 gpu_pid=44MiB gpu_dev=-1MiB
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_3.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_3.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_3.mp4" encoded 120 dropped 0
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/cycle_4.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/cycle_4.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startStopCycles() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/cycle_4.mp4" encoded 121 dropped 0
+  cycle 5: enc=121 drop=0 packets=121 dur=2.017 init=139ms fin=133ms rss=575472KB hwm=734028KB threads=6 fds=37 gpu_pid=44MiB gpu_dev=-1MiB
+  METRIC startStopCycles 5 cycles x 2 s; cycle 5 -> 5: RSS 575472 -> 575472 KB (0 KB), GPU/pid 44 -> 44 MiB, fds 37 -> 37, threads 6 -> 6; init ms med 139 max 491; finalise ms med 135 max 155; not playable 0, accounting errors 0, cycles with drops 0
+  [ok  ] every cycle started
+  [ok  ] all files playable (open, decode every packet without error)
+  [ok  ] file packets == reported encoded in every cycle
+  [ok  ] (relaxed) no dropped frames in any cycle (0 cycles with drops)
+  METRIC startStopCycles RSS before first cycle 53100 KB, after cycle 1 344952 KB (idle retention 291852 KB); envelope max(c5..10)=575472 KB max(last5)=578948 KB
+  METRIC startStopCycles spec comparison cycle 5 -> 5: RSS 0 KB (threshold 20480 KB)
+  [ok  ] RSS envelope growth <= 20 MB (3476 KB)
+  [ok  ] GPU per-process growth <= 16 MiB (0 MiB)
+  [ok  ] fds flat (37 -> 37)
+  [ok  ] threads flat (6 -> 6)
+PASS   : TstVideoRecorder::startStopCycles()
+QINFO  : TstVideoRecorder::startFailures() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/warm.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startFailures() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/warm.mp4" 1920 x 1080 @ 60 fps
+QINFO  : TstVideoRecorder::startFailures() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/warm.mp4" encoded 60 dropped 0
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "The recording folder is missing or not writable:\n/tmp/claude-1000/vr_tests/no_such_dir"
+  [ok  ] missing folder -> synchronous false: 'The recording folder is missing or not writable: /tmp/claude-1000/vr_tests/no_such_dir'
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "The recording folder is missing or not writable:\n/tmp/claude-1000/vr_tests/ro_dir"
+  [ok  ] read-only folder (0555) -> synchronous false: 'The recording folder is missing or not writable: /tmp/claude-1000/vr_tests/ro_dir'
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "The input pixel format is not supported for recording (8-bit YUV or RGB required)."
+  [ok  ] unsupported pixel format -> synchronous false: 'The input pixel format is not supported for recording (8-bit YUV or RGB required).'
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "Unsupported input resolution 1280x721."
+  [ok  ] odd resolution 1280x721 -> synchronous false: 'Unsupported input resolution 1280x721.'
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "Could not open the recording file for writing (Permission denied):\n/tmp/claude-1000/vr_tests/ro_file.mp4"
+[errorOccurred] Could not open the recording file for writing (Permission denied):
+/tmp/claude-1000/vr_tests/ro_file.mp4
+  [ok  ] existing read-only file (0444) -> start()=1, then errorOccurred + recordingStopped(path,0,0): 'Could not open the recording file for writing (Permission denied): /tmp/claude-1000/vr_tests/ro_file.mp4'
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "Could not open the recording file for writing (Is a directory):\n/tmp/claude-1000/vr_tests/isdir.mp4"
+[errorOccurred] Could not open the recording file for writing (Is a directory):
+/tmp/claude-1000/vr_tests/isdir.mp4
+  [ok  ] path is a directory -> start()=1, then errorOccurred + recordingStopped(path,0,0): 'Could not open the recording file for writing (Is a directory): /tmp/claude-1000/vr_tests/isdir.mp4'
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "The recording folder is missing or not writable:\n/tmp/claude-1000/vr_tests/no_such_dir"
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "The recording folder is missing or not writable:\n/tmp/claude-1000/vr_tests/ro_dir"
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "The input pixel format is not supported for recording (8-bit YUV or RGB required)."
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "Unsupported input resolution 1280x721."
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "Could not open the recording file for writing (Permission denied):\n/tmp/claude-1000/vr_tests/ro_file.mp4"
+[errorOccurred] Could not open the recording file for writing (Permission denied):
+/tmp/claude-1000/vr_tests/ro_file.mp4
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "Could not open the recording file for writing (Is a directory):\n/tmp/claude-1000/vr_tests/isdir.mp4"
+[errorOccurred] Could not open the recording file for writing (Is a directory):
+/tmp/claude-1000/vr_tests/isdir.mp4
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "The recording folder is missing or not writable:\n/tmp/claude-1000/vr_tests/no_such_dir"
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "The recording folder is missing or not writable:\n/tmp/claude-1000/vr_tests/ro_dir"
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "The input pixel format is not supported for recording (8-bit YUV or RGB required)."
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "Unsupported input resolution 1280x721."
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "Could not open the recording file for writing (Permission denied):\n/tmp/claude-1000/vr_tests/ro_file.mp4"
+[errorOccurred] Could not open the recording file for writing (Permission denied):
+/tmp/claude-1000/vr_tests/ro_file.mp4
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "Could not open the recording file for writing (Is a directory):\n/tmp/claude-1000/vr_tests/isdir.mp4"
+[errorOccurred] Could not open the recording file for writing (Is a directory):
+/tmp/claude-1000/vr_tests/isdir.mp4
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "The recording folder is missing or not writable:\n/tmp/claude-1000/vr_tests/no_such_dir"
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "The recording folder is missing or not writable:\n/tmp/claude-1000/vr_tests/ro_dir"
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "The input pixel format is not supported for recording (8-bit YUV or RGB required)."
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "Unsupported input resolution 1280x721."
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "Could not open the recording file for writing (Permission denied):\n/tmp/claude-1000/vr_tests/ro_file.mp4"
+[errorOccurred] Could not open the recording file for writing (Permission denied):
+/tmp/claude-1000/vr_tests/ro_file.mp4
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "Could not open the recording file for writing (Is a directory):\n/tmp/claude-1000/vr_tests/isdir.mp4"
+[errorOccurred] Could not open the recording file for writing (Is a directory):
+/tmp/claude-1000/vr_tests/isdir.mp4
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "The recording folder is missing or not writable:\n/tmp/claude-1000/vr_tests/no_such_dir"
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "The recording folder is missing or not writable:\n/tmp/claude-1000/vr_tests/ro_dir"
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "The input pixel format is not supported for recording (8-bit YUV or RGB required)."
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "Unsupported input resolution 1280x721."
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "Could not open the recording file for writing (Permission denied):\n/tmp/claude-1000/vr_tests/ro_file.mp4"
+[errorOccurred] Could not open the recording file for writing (Permission denied):
+/tmp/claude-1000/vr_tests/ro_file.mp4
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "Could not open the recording file for writing (Is a directory):\n/tmp/claude-1000/vr_tests/isdir.mp4"
+[errorOccurred] Could not open the recording file for writing (Is a directory):
+/tmp/claude-1000/vr_tests/isdir.mp4
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "The recording folder is missing or not writable:\n/tmp/claude-1000/vr_tests/no_such_dir"
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "The recording folder is missing or not writable:\n/tmp/claude-1000/vr_tests/ro_dir"
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "The input pixel format is not supported for recording (8-bit YUV or RGB required)."
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "Unsupported input resolution 1280x721."
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "Could not open the recording file for writing (Permission denied):\n/tmp/claude-1000/vr_tests/ro_file.mp4"
+[errorOccurred] Could not open the recording file for writing (Permission denied):
+/tmp/claude-1000/vr_tests/ro_file.mp4
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "Could not open the recording file for writing (Is a directory):\n/tmp/claude-1000/vr_tests/isdir.mp4"
+[errorOccurred] Could not open the recording file for writing (Is a directory):
+/tmp/claude-1000/vr_tests/isdir.mp4
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "The recording folder is missing or not writable:\n/tmp/claude-1000/vr_tests/no_such_dir"
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "The recording folder is missing or not writable:\n/tmp/claude-1000/vr_tests/ro_dir"
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "The input pixel format is not supported for recording (8-bit YUV or RGB required)."
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "Unsupported input resolution 1280x721."
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "Could not open the recording file for writing (Permission denied):\n/tmp/claude-1000/vr_tests/ro_file.mp4"
+[errorOccurred] Could not open the recording file for writing (Permission denied):
+/tmp/claude-1000/vr_tests/ro_file.mp4
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "Could not open the recording file for writing (Is a directory):\n/tmp/claude-1000/vr_tests/isdir.mp4"
+[errorOccurred] Could not open the recording file for writing (Is a directory):
+/tmp/claude-1000/vr_tests/isdir.mp4
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "The recording folder is missing or not writable:\n/tmp/claude-1000/vr_tests/no_such_dir"
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "The recording folder is missing or not writable:\n/tmp/claude-1000/vr_tests/ro_dir"
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "The input pixel format is not supported for recording (8-bit YUV or RGB required)."
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "Unsupported input resolution 1280x721."
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "Could not open the recording file for writing (Permission denied):\n/tmp/claude-1000/vr_tests/ro_file.mp4"
+[errorOccurred] Could not open the recording file for writing (Permission denied):
+/tmp/claude-1000/vr_tests/ro_file.mp4
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "Could not open the recording file for writing (Is a directory):\n/tmp/claude-1000/vr_tests/isdir.mp4"
+[errorOccurred] Could not open the recording file for writing (Is a directory):
+/tmp/claude-1000/vr_tests/isdir.mp4
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "The recording folder is missing or not writable:\n/tmp/claude-1000/vr_tests/no_such_dir"
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "The recording folder is missing or not writable:\n/tmp/claude-1000/vr_tests/ro_dir"
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "The input pixel format is not supported for recording (8-bit YUV or RGB required)."
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "Unsupported input resolution 1280x721."
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "Could not open the recording file for writing (Permission denied):\n/tmp/claude-1000/vr_tests/ro_file.mp4"
+[errorOccurred] Could not open the recording file for writing (Permission denied):
+/tmp/claude-1000/vr_tests/ro_file.mp4
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "Could not open the recording file for writing (Is a directory):\n/tmp/claude-1000/vr_tests/isdir.mp4"
+[errorOccurred] Could not open the recording file for writing (Is a directory):
+/tmp/claude-1000/vr_tests/isdir.mp4
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "The recording folder is missing or not writable:\n/tmp/claude-1000/vr_tests/no_such_dir"
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "The recording folder is missing or not writable:\n/tmp/claude-1000/vr_tests/ro_dir"
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "The input pixel format is not supported for recording (8-bit YUV or RGB required)."
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "Unsupported input resolution 1280x721."
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "Could not open the recording file for writing (Permission denied):\n/tmp/claude-1000/vr_tests/ro_file.mp4"
+[errorOccurred] Could not open the recording file for writing (Permission denied):
+/tmp/claude-1000/vr_tests/ro_file.mp4
+QWARN  : TstVideoRecorder::startFailures() [VideoRecorder] "Could not open the recording file for writing (Is a directory):\n/tmp/claude-1000/vr_tests/isdir.mp4"
+[errorOccurred] Could not open the recording file for writing (Is a directory):
+/tmp/claude-1000/vr_tests/isdir.mp4
+  METRIC startFailures 10 rounds x 6 failure kinds = 60 attempts; sync ok 40, async ok 20
+  METRIC startFailures after warm-up: rss=568876KB hwm=734028KB threads=6 fds=36 gpu_pid=44MiB gpu_dev=964MiB
+  METRIC startFailures after round 1: rss=590784KB hwm=734028KB threads=6 fds=36 gpu_pid=44MiB gpu_dev=964MiB
+  METRIC startFailures after round 10: rss=586212KB hwm=734028KB threads=6 fds=36 gpu_pid=44MiB gpu_dev=964MiB
+  MSG missing folder: The recording folder is missing or not writable: /tmp/claude-1000/vr_tests/no_such_dir
+  MSG read-only folder (0555): The recording folder is missing or not writable: /tmp/claude-1000/vr_tests/ro_dir
+  MSG unsupported pixel format: The input pixel format is not supported for recording (8-bit YUV or RGB required).
+  MSG odd resolution 1280x721: Unsupported input resolution 1280x721.
+  MSG existing read-only file (0444): Could not open the recording file for writing (Permission denied): /tmp/claude-1000/vr_tests/ro_file.mp4
+  MSG path is a directory: Could not open the recording file for writing (Is a directory): /tmp/claude-1000/vr_tests/isdir.mp4
+  [ok  ] RSS growth round1->10 <= 4 MB (-4572 KB)
+  [ok  ] no fd leak (round1 36, warm-up 36 -> 36)
+  [ok  ] no thread leak (6 -> 6)
+  [ok  ] no per-process GPU memory growth (44 -> 44 MiB)
+QINFO  : TstVideoRecorder::startFailures() [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/after_fail.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::startFailures() [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/after_fail.mp4" 1920 x 1080 @ 60 fps
+  [ok  ] valid start after failures succeeds: 
+QINFO  : TstVideoRecorder::startFailures() [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/after_fail.mp4" encoded 61 dropped 0
+  [ok  ] recording after failures is complete (fed 61 enc 61 drop 0 packets 61)
+[AVHWDeviceContext @ 0x509000000040] cu->cuInit(0) failed -> CUDA_ERROR_NO_DEVICE: no CUDA-capable device is detected
+[qt:W] [VideoRecorder] "Could not initialise the GPU for recording (Unknown error occurred)."
+[errorOccurred] Could not initialise the GPU for recording (Unknown error occurred).
+[AVHWDeviceContext @ 0x509000000380] cu->cuInit(0) failed -> CUDA_ERROR_NO_DEVICE: no CUDA-capable device is detected
+[qt:W] [VideoRecorder] "Could not initialise the GPU for recording (Unknown error occurred)."
+[errorOccurred] Could not initialise the GPU for recording (Unknown error occurred).
+[AVHWDeviceContext @ 0x509000000700] cu->cuInit(0) failed -> CUDA_ERROR_NO_DEVICE: no CUDA-capable device is detected
+[qt:W] [VideoRecorder] "Could not initialise the GPU for recording (Unknown error occurred)."
+[errorOccurred] Could not initialise the GPU for recording (Unknown error occurred).
+[AVHWDeviceContext @ 0x509000000a40] cu->cuInit(0) failed -> CUDA_ERROR_NO_DEVICE: no CUDA-capable device is detected
+[qt:W] [VideoRecorder] "Could not initialise the GPU for recording (Unknown error occurred)."
+[errorOccurred] Could not initialise the GPU for recording (Unknown error occurred).
+[AVHWDeviceContext @ 0x509000000dc0] cu->cuInit(0) failed -> CUDA_ERROR_NO_DEVICE: no CUDA-capable device is detected
+[qt:W] [VideoRecorder] "Could not initialise the GPU for recording (Unknown error occurred)."
+[errorOccurred] Could not initialise the GPU for recording (Unknown error occurred).
+[AVHWDeviceContext @ 0x509000001100] cu->cuInit(0) failed -> CUDA_ERROR_NO_DEVICE: no CUDA-capable device is detected
+[qt:W] [VideoRecorder] "Could not initialise the GPU for recording (Unknown error occurred)."
+[errorOccurred] Could not initialise the GPU for recording (Unknown error occurred).
+[AVHWDeviceContext @ 0x509000001480] cu->cuInit(0) failed -> CUDA_ERROR_NO_DEVICE: no CUDA-capable device is detected
+[qt:W] [VideoRecorder] "Could not initialise the GPU for recording (Unknown error occurred)."
+[errorOccurred] Could not initialise the GPU for recording (Unknown error occurred).
+[AVHWDeviceContext @ 0x5090000017c0] cu->cuInit(0) failed -> CUDA_ERROR_NO_DEVICE: no CUDA-capable device is detected
+[qt:W] [VideoRecorder] "Could not initialise the GPU for recording (Unknown error occurred)."
+[errorOccurred] Could not initialise the GPU for recording (Unknown error occurred).
+[AVHWDeviceContext @ 0x509000001b40] cu->cuInit(0) failed -> CUDA_ERROR_NO_DEVICE: no CUDA-capable device is detected
+[qt:W] [VideoRecorder] "Could not initialise the GPU for recording (Unknown error occurred)."
+[errorOccurred] Could not initialise the GPU for recording (Unknown error occurred).
+[AVHWDeviceContext @ 0x509000001e80] cu->cuInit(0) failed -> CUDA_ERROR_NO_DEVICE: no CUDA-capable device is detected
+[qt:W] [VideoRecorder] "Could not initialise the GPU for recording (Unknown error occurred)."
+[errorOccurred] Could not initialise the GPU for recording (Unknown error occurred).
+REPORT attempts=10 sync_true=10 sync_false=0 errors=10 stops=10 started_signals=0 files_left=0 is_recording=0 rss_delta_kb=9872 fd_delta=0 thr_delta=0 stops_enc0=10
+MSG Could not initialise the GPU for recording (Unknown error occurred).
+  METRIC startFailures CUDA_VISIBLE_DEVICES='' child: exited(0) sync_true=10 errors=10 stops=10 started=0 files_left=0 rss_delta=9872KB fd_delta=0 thr_delta=0
+  [ok  ] no-GPU child exits cleanly: exited(0)
+  [ok  ] no-GPU child: 10 starts -> 10 x (errorOccurred + recordingStopped(0,0)), no recordingStarted, no files
+  [ok  ] no-GPU message names the GPU: 'Could not initialise the GPU for recording (Unknown error occurred).'
+  [FAIL] no-GPU child: no fd/thread/RSS growth over 9 further failures
+FAIL!  : TstVideoRecorder::startFailures() 'fails.isEmpty()' returned FALSE. (no-GPU child: no fd/thread/RSS growth over 9 further failures)
+   Loc: [/home/brainwave/QT-C-VMS/tests/unit_gpu/tst_videorecorder.cpp(890)]
+
+==================== SUMMARY ====================
+PASS  startStopCycles | 5 cycles x 2 s; cycle 5 -> 5: RSS 575472 -> 575472 KB (0 KB), GPU/pid 44 -> 44 MiB, fds 37 -> 37, threads 6 -> 6; init ms med 139 max 491; finalise ms med 135 max 155; not playable 0, accounting errors 0, cycles with drops 0; RSS before first cycle 53100 KB, after cycle 1 344952 KB (idle retention 291852 KB); envelope max(c5..10)=575472 KB max(last5)=578948 KB; spec comparison cycle 5 -> 5: RSS 0 KB (threshold 20480 KB)
+FAIL  startFailures | 10 rounds x 6 failure kinds = 60 attempts; sync ok 40, async ok 20; after warm-up: rss=568876KB hwm=734028KB threads=6 fds=36 gpu_pid=44MiB gpu_dev=964MiB; after round 1: rss=590784KB hwm=734028KB threads=6 fds=36 gpu_pid=44MiB gpu_dev=964MiB; after round 10: rss=586212KB hwm=734028KB threads=6 fds=36 gpu_pid=44MiB gpu_dev=964MiB; CUDA_VISIBLE_DEVICES='' child: exited(0) sync_true=10 errors=10 stops=10 started=0 files_left=0 rss_delta=9872KB fd_delta=0 thr_delta=0 | FAILED: no-GPU child: no fd/thread/RSS growth over 9 further failures
+PASS   : TstVideoRecorder::cleanupTestCase()
+Totals: 3 passed, 1 failed, 0 skipped, 0 blacklisted, 26432ms
+********* Finished testing of TstVideoRecorder *********
+
+=================================================================
+==45352==ERROR: LeakSanitizer: detected memory leaks
+
+Direct leak of 672 byte(s) in 14 object(s) allocated from:
+    #0 0x7b3c04eb4a57 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154
+    #1 0x7b3bfc091dc1 in __pthread_cond_broadcast_2_0 nptl/old_pthread_cond_broadcast.c:33
+    #2 0x7b3be00c65b6  (<unknown module>)
+    #3 0x7b3be00c219f  (<unknown module>)
+    #4 0x7b3be00c476e  (<unknown module>)
+    #5 0x7b3c034c66f7  (/lib/x86_64-linux-gnu/libavcodec.so.58+0xc66f7)
+    #6 0x7b3c035c75d2 in avcodec_open2 (/lib/x86_64-linux-gnu/libavcodec.so.58+0x1c75d2)
+    #7 0x57e255772557 in VideoRecorder::openSegment(QString const&, VideoRecorder::Format const&, QString*) /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:632
+    #8 0x57e25577b7fc in VideoRecorder::initializeRecording(QString*) /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:265
+    #9 0x57e25577d586 in VideoRecorder::workerLoop() /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:307
+    #10 0x7b3bfc4dc252  (/lib/x86_64-linux-gnu/libstdc++.so.6+0xdc252)
+    #11 0x7b3bfc094a82 in start_thread nptl/pthread_create.c:442
+    #12 0x7b3bfc12688f  (/lib/x86_64-linux-gnu/libc.so.6+0x12688f)
+
+Direct leak of 336 byte(s) in 7 object(s) allocated from:
+    #0 0x7b3c04eb4a57 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154
+    #1 0x7b3bfc091dc1 in __pthread_cond_broadcast_2_0 nptl/old_pthread_cond_broadcast.c:33
+    #2 0x7b3bc6c9ba26  (<unknown module>)
+    #3 0x7b3bc6c677df  (<unknown module>)
+    #4 0x7b3bc6cb3066  (<unknown module>)
+    #5 0x7b3be0091a77  (<unknown module>)
+    #6 0x7b3be0093d96  (<unknown module>)
+    #7 0x7b3be00b0e1e  (<unknown module>)
+    #8 0x7b3c034c3682  (/lib/x86_64-linux-gnu/libavcodec.so.58+0xc3682)
+    #9 0x7b3c034c6937  (/lib/x86_64-linux-gnu/libavcodec.so.58+0xc6937)
+    #10 0x7b3c035c75d2 in avcodec_open2 (/lib/x86_64-linux-gnu/libavcodec.so.58+0x1c75d2)
+    #11 0x57e255772557 in VideoRecorder::openSegment(QString const&, VideoRecorder::Format const&, QString*) /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:632
+    #12 0x57e25577b7fc in VideoRecorder::initializeRecording(QString*) /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:265
+    #13 0x57e25577d586 in VideoRecorder::workerLoop() /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:307
+    #14 0x7b3bfc4dc252  (/lib/x86_64-linux-gnu/libstdc++.so.6+0xdc252)
+    #15 0x7b3bfc094a82 in start_thread nptl/pthread_create.c:442
+    #16 0x7b3bfc12688f  (/lib/x86_64-linux-gnu/libc.so.6+0x12688f)
+
+Direct leak of 288 byte(s) in 6 object(s) allocated from:
+    #0 0x7b3c04eb4a57 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154
+    #1 0x7b3bfc091dc1 in __pthread_cond_broadcast_2_0 nptl/old_pthread_cond_broadcast.c:33
+    #2 0x7b3bd7a9ba26  (<unknown module>)
+    #3 0x7b3bd7a677df  (<unknown module>)
+    #4 0x7b3bd7ab3066  (<unknown module>)
+    #5 0x7b3be0091a77  (<unknown module>)
+    #6 0x7b3be0093d96  (<unknown module>)
+    #7 0x7b3be00b0e1e  (<unknown module>)
+    #8 0x7b3c034c3682  (/lib/x86_64-linux-gnu/libavcodec.so.58+0xc3682)
+    #9 0x7b3c034c6937  (/lib/x86_64-linux-gnu/libavcodec.so.58+0xc6937)
+    #10 0x7b3c035c75d2 in avcodec_open2 (/lib/x86_64-linux-gnu/libavcodec.so.58+0x1c75d2)
+    #11 0x57e255772557 in VideoRecorder::openSegment(QString const&, VideoRecorder::Format const&, QString*) /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:632
+    #12 0x57e25577b7fc in VideoRecorder::initializeRecording(QString*) /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:265
+    #13 0x57e25577d586 in VideoRecorder::workerLoop() /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:307
+    #14 0x7b3bfc4dc252  (/lib/x86_64-linux-gnu/libstdc++.so.6+0xdc252)
+    #15 0x7b3bfc094a82 in start_thread nptl/pthread_create.c:442
+    #16 0x7b3bfc12688f  (/lib/x86_64-linux-gnu/libc.so.6+0x12688f)
+
+Direct leak of 192 byte(s) in 4 object(s) allocated from:
+    #0 0x7b3c04eb4a57 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154
+    #1 0x7b3bfc091dc1 in __pthread_cond_broadcast_2_0 nptl/old_pthread_cond_broadcast.c:33
+    #2 0x7b3be45605b6  (<unknown module>)
+    #3 0x7b3be455c19f  (<unknown module>)
+    #4 0x7b3be455e76e  (<unknown module>)
+    #5 0x7b3c034c66f7  (/lib/x86_64-linux-gnu/libavcodec.so.58+0xc66f7)
+    #6 0x7b3c035c75d2 in avcodec_open2 (/lib/x86_64-linux-gnu/libavcodec.so.58+0x1c75d2)
+    #7 0x57e255772557 in VideoRecorder::openSegment(QString const&, VideoRecorder::Format const&, QString*) /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:632
+    #8 0x57e25577b7fc in VideoRecorder::initializeRecording(QString*) /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:265
+    #9 0x57e25577d586 in VideoRecorder::workerLoop() /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:307
+    #10 0x7b3bfc4dc252  (/lib/x86_64-linux-gnu/libstdc++.so.6+0xdc252)
+    #11 0x7b3bfc094a82 in start_thread nptl/pthread_create.c:442
+    #12 0x7b3bfc12688f  (/lib/x86_64-linux-gnu/libc.so.6+0x12688f)
+
+Direct leak of 192 byte(s) in 4 object(s) allocated from:
+    #0 0x7b3c04eb4a57 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154
+    #1 0x7b3bfc091dc1 in __pthread_cond_broadcast_2_0 nptl/old_pthread_cond_broadcast.c:33
+    #2 0x7b3bc6c9ba26  (<unknown module>)
+    #3 0x7b3bc6c677df  (<unknown module>)
+    #4 0x7b3bc6cb3066  (<unknown module>)
+    #5 0x7b3be452ba77  (<unknown module>)
+    #6 0x7b3be452dd96  (<unknown module>)
+    #7 0x7b3be454ae1e  (<unknown module>)
+    #8 0x7b3c034c3682  (/lib/x86_64-linux-gnu/libavcodec.so.58+0xc3682)
+    #9 0x7b3c034c6937  (/lib/x86_64-linux-gnu/libavcodec.so.58+0xc6937)
+    #10 0x7b3c035c75d2 in avcodec_open2 (/lib/x86_64-linux-gnu/libavcodec.so.58+0x1c75d2)
+    #11 0x57e255772557 in VideoRecorder::openSegment(QString const&, VideoRecorder::Format const&, QString*) /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:632
+    #12 0x57e25577b7fc in VideoRecorder::initializeRecording(QString*) /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:265
+    #13 0x57e25577d586 in VideoRecorder::workerLoop() /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:307
+    #14 0x7b3bfc4dc252  (/lib/x86_64-linux-gnu/libstdc++.so.6+0xdc252)
+    #15 0x7b3bfc094a82 in start_thread nptl/pthread_create.c:442
+    #16 0x7b3bfc12688f  (/lib/x86_64-linux-gnu/libc.so.6+0x12688f)
+
+Direct leak of 192 byte(s) in 4 object(s) allocated from:
+    #0 0x7b3c04eb4a57 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154
+    #1 0x7b3bfc091dc1 in __pthread_cond_broadcast_2_0 nptl/old_pthread_cond_broadcast.c:33
+    #2 0x7b3bf013f5b6  (<unknown module>)
+    #3 0x7b3bf013b19f  (<unknown module>)
+    #4 0x7b3bf013d76e  (<unknown module>)
+    #5 0x7b3c034c66f7  (/lib/x86_64-linux-gnu/libavcodec.so.58+0xc66f7)
+    #6 0x7b3c035c75d2 in avcodec_open2 (/lib/x86_64-linux-gnu/libavcodec.so.58+0x1c75d2)
+    #7 0x57e255772557 in VideoRecorder::openSegment(QString const&, VideoRecorder::Format const&, QString*) /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:632
+    #8 0x57e25577b7fc in VideoRecorder::initializeRecording(QString*) /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:265
+    #9 0x57e25577d586 in VideoRecorder::workerLoop() /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:307
+    #10 0x7b3bfc4dc252  (/lib/x86_64-linux-gnu/libstdc++.so.6+0xdc252)
+    #11 0x7b3bfc094a82 in start_thread nptl/pthread_create.c:442
+    #12 0x7b3bfc12688f  (/lib/x86_64-linux-gnu/libc.so.6+0x12688f)
+
+Direct leak of 192 byte(s) in 4 object(s) allocated from:
+    #0 0x7b3c04eb4a57 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154
+    #1 0x7b3bfc091dc1 in __pthread_cond_broadcast_2_0 nptl/old_pthread_cond_broadcast.c:33
+    #2 0x7b3bc6c9ba26  (<unknown module>)
+    #3 0x7b3bc6c677df  (<unknown module>)
+    #4 0x7b3bc6cb3066  (<unknown module>)
+    #5 0x7b3bf010aa77  (<unknown module>)
+    #6 0x7b3bf010cd96  (<unknown module>)
+    #7 0x7b3bf0129e1e  (<unknown module>)
+    #8 0x7b3c034c3682  (/lib/x86_64-linux-gnu/libavcodec.so.58+0xc3682)
+    #9 0x7b3c034c6937  (/lib/x86_64-linux-gnu/libavcodec.so.58+0xc6937)
+    #10 0x7b3c035c75d2 in avcodec_open2 (/lib/x86_64-linux-gnu/libavcodec.so.58+0x1c75d2)
+    #11 0x57e255772557 in VideoRecorder::openSegment(QString const&, VideoRecorder::Format const&, QString*) /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:632
+    #12 0x57e25577b7fc in VideoRecorder::initializeRecording(QString*) /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:265
+    #13 0x57e25577d586 in VideoRecorder::workerLoop() /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:307
+    #14 0x7b3bfc4dc252  (/lib/x86_64-linux-gnu/libstdc++.so.6+0xdc252)
+    #15 0x7b3bfc094a82 in start_thread nptl/pthread_create.c:442
+    #16 0x7b3bfc12688f  (/lib/x86_64-linux-gnu/libc.so.6+0x12688f)
+
+Direct leak of 48 byte(s) in 1 object(s) allocated from:
+    #0 0x7b3c04eb4a57 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154
+    #1 0x7b3bfc091dc1 in __pthread_cond_broadcast_2_0 nptl/old_pthread_cond_broadcast.c:33
+    #2 0x7b3bdac9ba26  (<unknown module>)
+    #3 0x7b3bdac677df  (<unknown module>)
+    #4 0x7b3bdacb3066  (<unknown module>)
+    #5 0x7b3be09a7a77  (<unknown module>)
+    #6 0x7b3be09a9d96  (<unknown module>)
+    #7 0x7b3be09c6e1e  (<unknown module>)
+    #8 0x7b3c034c3682  (/lib/x86_64-linux-gnu/libavcodec.so.58+0xc3682)
+    #9 0x7b3c034c6937  (/lib/x86_64-linux-gnu/libavcodec.so.58+0xc6937)
+    #10 0x7b3c035c75d2 in avcodec_open2 (/lib/x86_64-linux-gnu/libavcodec.so.58+0x1c75d2)
+    #11 0x57e255772557 in VideoRecorder::openSegment(QString const&, VideoRecorder::Format const&, QString*) /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:632
+    #12 0x57e25577b7fc in VideoRecorder::initializeRecording(QString*) /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:265
+    #13 0x57e25577d586 in VideoRecorder::workerLoop() /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:307
+    #14 0x7b3bfc4dc252  (/lib/x86_64-linux-gnu/libstdc++.so.6+0xdc252)
+    #15 0x7b3bfc094a82 in start_thread nptl/pthread_create.c:442
+    #16 0x7b3bfc12688f  (/lib/x86_64-linux-gnu/libc.so.6+0x12688f)
+
+Direct leak of 48 byte(s) in 1 object(s) allocated from:
+    #0 0x7b3c04eb4a57 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154
+    #1 0x7b3bfc091dc1 in __pthread_cond_broadcast_2_0 nptl/old_pthread_cond_broadcast.c:33
+    #2 0x7b3bdc57c5b6  (<unknown module>)
+    #3 0x7b3bdc57819f  (<unknown module>)
+    #4 0x7b3bdc57a76e  (<unknown module>)
+    #5 0x7b3c034c66f7  (/lib/x86_64-linux-gnu/libavcodec.so.58+0xc66f7)
+    #6 0x7b3c035c75d2 in avcodec_open2 (/lib/x86_64-linux-gnu/libavcodec.so.58+0x1c75d2)
+    #7 0x57e255772557 in VideoRecorder::openSegment(QString const&, VideoRecorder::Format const&, QString*) /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:632
+    #8 0x57e25577b7fc in VideoRecorder::initializeRecording(QString*) /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:265
+    #9 0x57e25577d586 in VideoRecorder::workerLoop() /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:307
+    #10 0x7b3bfc4dc252  (/lib/x86_64-linux-gnu/libstdc++.so.6+0xdc252)
+    #11 0x7b3bfc094a82 in start_thread nptl/pthread_create.c:442
+    #12 0x7b3bfc12688f  (/lib/x86_64-linux-gnu/libc.so.6+0x12688f)
+
+Direct leak of 48 byte(s) in 1 object(s) allocated from:
+    #0 0x7b3c04eb4a57 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154
+    #1 0x7b3bfc091dc1 in __pthread_cond_broadcast_2_0 nptl/old_pthread_cond_broadcast.c:33
+    #2 0x7b3be09dc5b6  (<unknown module>)
+    #3 0x7b3be09d819f  (<unknown module>)
+    #4 0x7b3be09da76e  (<unknown module>)
+    #5 0x7b3c034c66f7  (/lib/x86_64-linux-gnu/libavcodec.so.58+0xc66f7)
+    #6 0x7b3c035c75d2 in avcodec_open2 (/lib/x86_64-linux-gnu/libavcodec.so.58+0x1c75d2)
+    #7 0x57e255772557 in VideoRecorder::openSegment(QString const&, VideoRecorder::Format const&, QString*) /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:632
+    #8 0x57e25577b7fc in VideoRecorder::initializeRecording(QString*) /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:265
+    #9 0x57e25577d586 in VideoRecorder::workerLoop() /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:307
+    #10 0x7b3bfc4dc252  (/lib/x86_64-linux-gnu/libstdc++.so.6+0xdc252)
+    #11 0x7b3bfc094a82 in start_thread nptl/pthread_create.c:442
+    #12 0x7b3bfc12688f  (/lib/x86_64-linux-gnu/libc.so.6+0x12688f)
+
+Direct leak of 48 byte(s) in 1 object(s) allocated from:
+    #0 0x7b3c04eb4a57 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154
+    #1 0x7b3bfc091dc1 in __pthread_cond_broadcast_2_0 nptl/old_pthread_cond_broadcast.c:33
+    #2 0x7b3bd7a9ba26  (<unknown module>)
+    #3 0x7b3bd7a677df  (<unknown module>)
+    #4 0x7b3bd7ab3066  (<unknown module>)
+    #5 0x7b3bdc547a77  (<unknown module>)
+    #6 0x7b3bdc549d96  (<unknown module>)
+    #7 0x7b3bdc566e1e  (<unknown module>)
+    #8 0x7b3c034c3682  (/lib/x86_64-linux-gnu/libavcodec.so.58+0xc3682)
+    #9 0x7b3c034c6937  (/lib/x86_64-linux-gnu/libavcodec.so.58+0xc6937)
+    #10 0x7b3c035c75d2 in avcodec_open2 (/lib/x86_64-linux-gnu/libavcodec.so.58+0x1c75d2)
+    #11 0x57e255772557 in VideoRecorder::openSegment(QString const&, VideoRecorder::Format const&, QString*) /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:632
+    #12 0x57e25577b7fc in VideoRecorder::initializeRecording(QString*) /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:265
+    #13 0x57e25577d586 in VideoRecorder::workerLoop() /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:307
+    #14 0x7b3bfc4dc252  (/lib/x86_64-linux-gnu/libstdc++.so.6+0xdc252)
+    #15 0x7b3bfc094a82 in start_thread nptl/pthread_create.c:442
+    #16 0x7b3bfc12688f  (/lib/x86_64-linux-gnu/libc.so.6+0x12688f)
+
+Direct leak of 48 byte(s) in 1 object(s) allocated from:
+    #0 0x7b3c04eb4a57 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154
+    #1 0x7b3bfc091dc1 in __pthread_cond_broadcast_2_0 nptl/old_pthread_cond_broadcast.c:33
+    #2 0x7b3bd938f5b6  (<unknown module>)
+    #3 0x7b3bd938b19f  (<unknown module>)
+    #4 0x7b3bd938d76e  (<unknown module>)
+    #5 0x7b3c034c66f7  (/lib/x86_64-linux-gnu/libavcodec.so.58+0xc66f7)
+    #6 0x7b3c035c75d2 in avcodec_open2 (/lib/x86_64-linux-gnu/libavcodec.so.58+0x1c75d2)
+    #7 0x57e255772557 in VideoRecorder::openSegment(QString const&, VideoRecorder::Format const&, QString*) /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:632
+    #8 0x57e25577b7fc in VideoRecorder::initializeRecording(QString*) /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:265
+    #9 0x57e25577d586 in VideoRecorder::workerLoop() /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:307
+    #10 0x7b3bfc4dc252  (/lib/x86_64-linux-gnu/libstdc++.so.6+0xdc252)
+    #11 0x7b3bfc094a82 in start_thread nptl/pthread_create.c:442
+    #12 0x7b3bfc12688f  (/lib/x86_64-linux-gnu/libc.so.6+0x12688f)
+
+Direct leak of 48 byte(s) in 1 object(s) allocated from:
+    #0 0x7b3c04eb4a57 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154
+    #1 0x7b3bfc091dc1 in __pthread_cond_broadcast_2_0 nptl/old_pthread_cond_broadcast.c:33
+    #2 0x7b3bcec9ba26  (<unknown module>)
+    #3 0x7b3bcec677df  (<unknown module>)
+    #4 0x7b3bcecb3066  (<unknown module>)
+    #5 0x7b3bd935aa77  (<unknown module>)
+    #6 0x7b3bd935cd96  (<unknown module>)
+    #7 0x7b3bd9379e1e  (<unknown module>)
+    #8 0x7b3c034c3682  (/lib/x86_64-linux-gnu/libavcodec.so.58+0xc3682)
+    #9 0x7b3c034c6937  (/lib/x86_64-linux-gnu/libavcodec.so.58+0xc6937)
+    #10 0x7b3c035c75d2 in avcodec_open2 (/lib/x86_64-linux-gnu/libavcodec.so.58+0x1c75d2)
+    #11 0x57e255772557 in VideoRecorder::openSegment(QString const&, VideoRecorder::Format const&, QString*) /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:632
+    #12 0x57e25577b7fc in VideoRecorder::initializeRecording(QString*) /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:265
+    #13 0x57e25577d586 in VideoRecorder::workerLoop() /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:307
+    #14 0x7b3bfc4dc252  (/lib/x86_64-linux-gnu/libstdc++.so.6+0xdc252)
+    #15 0x7b3bfc094a82 in start_thread nptl/pthread_create.c:442
+    #16 0x7b3bfc12688f  (/lib/x86_64-linux-gnu/libc.so.6+0x12688f)
+
+Direct leak of 48 byte(s) in 1 object(s) allocated from:
+    #0 0x7b3c04eb4a57 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154
+    #1 0x7b3bfc091dc1 in __pthread_cond_broadcast_2_0 nptl/old_pthread_cond_broadcast.c:33
+    #2 0x7b3bdae9ba26  (<unknown module>)
+    #3 0x7b3bdae677df  (<unknown module>)
+    #4 0x7b3bdaeb3066  (<unknown module>)
+    #5 0x7b3bdc282a77  (<unknown module>)
+    #6 0x7b3bdc284d96  (<unknown module>)
+    #7 0x7b3bdc2a1e1e  (<unknown module>)
+    #8 0x7b3c034c3682  (/lib/x86_64-linux-gnu/libavcodec.so.58+0xc3682)
+    #9 0x7b3c034c6937  (/lib/x86_64-linux-gnu/libavcodec.so.58+0xc6937)
+    #10 0x7b3c035c75d2 in avcodec_open2 (/lib/x86_64-linux-gnu/libavcodec.so.58+0x1c75d2)
+    #11 0x57e255772557 in VideoRecorder::openSegment(QString const&, VideoRecorder::Format const&, QString*) /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:632
+    #12 0x57e25577b7fc in VideoRecorder::initializeRecording(QString*) /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:265
+    #13 0x57e25577d586 in VideoRecorder::workerLoop() /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:307
+    #14 0x7b3bfc4dc252  (/lib/x86_64-linux-gnu/libstdc++.so.6+0xdc252)
+    #15 0x7b3bfc094a82 in start_thread nptl/pthread_create.c:442
+    #16 0x7b3bfc12688f  (/lib/x86_64-linux-gnu/libc.so.6+0x12688f)
+
+Direct leak of 48 byte(s) in 1 object(s) allocated from:
+    #0 0x7b3c04eb4a57 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154
+    #1 0x7b3bfc091dc1 in __pthread_cond_broadcast_2_0 nptl/old_pthread_cond_broadcast.c:33
+    #2 0x7b3be0bab5b6  (<unknown module>)
+    #3 0x7b3be0ba719f  (<unknown module>)
+    #4 0x7b3be0ba976e  (<unknown module>)
+    #5 0x7b3c034c66f7  (/lib/x86_64-linux-gnu/libavcodec.so.58+0xc66f7)
+    #6 0x7b3c035c75d2 in avcodec_open2 (/lib/x86_64-linux-gnu/libavcodec.so.58+0x1c75d2)
+    #7 0x57e255772557 in VideoRecorder::openSegment(QString const&, VideoRecorder::Format const&, QString*) /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:632
+    #8 0x57e25577b7fc in VideoRecorder::initializeRecording(QString*) /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:265
+    #9 0x57e25577d586 in VideoRecorder::workerLoop() /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:307
+    #10 0x7b3bfc4dc252  (/lib/x86_64-linux-gnu/libstdc++.so.6+0xdc252)
+    #11 0x7b3bfc094a82 in start_thread nptl/pthread_create.c:442
+    #12 0x7b3bfc12688f  (/lib/x86_64-linux-gnu/libc.so.6+0x12688f)
+
+Direct leak of 48 byte(s) in 1 object(s) allocated from:
+    #0 0x7b3c04eb4a57 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154
+    #1 0x7b3bfc091dc1 in __pthread_cond_broadcast_2_0 nptl/old_pthread_cond_broadcast.c:33
+    #2 0x7b3bdc2b75b6  (<unknown module>)
+    #3 0x7b3bdc2b319f  (<unknown module>)
+    #4 0x7b3bdc2b576e  (<unknown module>)
+    #5 0x7b3c034c66f7  (/lib/x86_64-linux-gnu/libavcodec.so.58+0xc66f7)
+    #6 0x7b3c035c75d2 in avcodec_open2 (/lib/x86_64-linux-gnu/libavcodec.so.58+0x1c75d2)
+    #7 0x57e255772557 in VideoRecorder::openSegment(QString const&, VideoRecorder::Format const&, QString*) /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:632
+    #8 0x57e25577b7fc in VideoRecorder::initializeRecording(QString*) /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:265
+    #9 0x57e25577d586 in VideoRecorder::workerLoop() /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:307
+    #10 0x7b3bfc4dc252  (/lib/x86_64-linux-gnu/libstdc++.so.6+0xdc252)
+    #11 0x7b3bfc094a82 in start_thread nptl/pthread_create.c:442
+    #12 0x7b3bfc12688f  (/lib/x86_64-linux-gnu/libc.so.6+0x12688f)
+
+Direct leak of 48 byte(s) in 1 object(s) allocated from:
+    #0 0x7b3c04eb4a57 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154
+    #1 0x7b3bfc091dc1 in __pthread_cond_broadcast_2_0 nptl/old_pthread_cond_broadcast.c:33
+    #2 0x7b3bdcc9ba26  (<unknown module>)
+    #3 0x7b3bdcc677df  (<unknown module>)
+    #4 0x7b3bdccb3066  (<unknown module>)
+    #5 0x7b3be0091a77  (<unknown module>)
+    #6 0x7b3be0093d96  (<unknown module>)
+    #7 0x7b3be00b0e1e  (<unknown module>)
+    #8 0x7b3c034c3682  (/lib/x86_64-linux-gnu/libavcodec.so.58+0xc3682)
+    #9 0x7b3c034c6937  (/lib/x86_64-linux-gnu/libavcodec.so.58+0xc6937)
+    #10 0x7b3c035c75d2 in avcodec_open2 (/lib/x86_64-linux-gnu/libavcodec.so.58+0x1c75d2)
+    #11 0x57e255772557 in VideoRecorder::openSegment(QString const&, VideoRecorder::Format const&, QString*) /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:632
+    #12 0x57e25577b7fc in VideoRecorder::initializeRecording(QString*) /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:265
+    #13 0x57e25577d586 in VideoRecorder::workerLoop() /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:307
+    #14 0x7b3bfc4dc252  (/lib/x86_64-linux-gnu/libstdc++.so.6+0xdc252)
+    #15 0x7b3bfc094a82 in start_thread nptl/pthread_create.c:442
+    #16 0x7b3bfc12688f  (/lib/x86_64-linux-gnu/libc.so.6+0x12688f)
+
+Direct leak of 48 byte(s) in 1 object(s) allocated from:
+    #0 0x7b3c04eb4a57 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154
+    #1 0x7b3bfc091dc1 in __pthread_cond_broadcast_2_0 nptl/old_pthread_cond_broadcast.c:33
+    #2 0x7b3bc6c9ba26  (<unknown module>)
+    #3 0x7b3bc6c677df  (<unknown module>)
+    #4 0x7b3bc6cb3066  (<unknown module>)
+    #5 0x7b3be0b76a77  (<unknown module>)
+    #6 0x7b3be0b78d96  (<unknown module>)
+    #7 0x7b3be0b95e1e  (<unknown module>)
+    #8 0x7b3c034c3682  (/lib/x86_64-linux-gnu/libavcodec.so.58+0xc3682)
+    #9 0x7b3c034c6937  (/lib/x86_64-linux-gnu/libavcodec.so.58+0xc6937)
+    #10 0x7b3c035c75d2 in avcodec_open2 (/lib/x86_64-linux-gnu/libavcodec.so.58+0x1c75d2)
+    #11 0x57e255772557 in VideoRecorder::openSegment(QString const&, VideoRecorder::Format const&, QString*) /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:632
+    #12 0x57e25577b7fc in VideoRecorder::initializeRecording(QString*) /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:265
+    #13 0x57e25577d586 in VideoRecorder::workerLoop() /home/brainwave/QT-C-VMS/ui/Recording/VideoRecorder.cpp:307
+    #14 0x7b3bfc4dc252  (/lib/x86_64-linux-gnu/libstdc++.so.6+0xdc252)
+    #15 0x7b3bfc094a82 in start_thread nptl/pthread_create.c:442
+    #16 0x7b3bfc12688f  (/lib/x86_64-linux-gnu/libc.so.6+0x12688f)
+
+SUMMARY: AddressSanitizer: 2592 byte(s) leaked in 54 allocation(s).

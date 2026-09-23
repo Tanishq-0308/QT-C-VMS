@@ -1,0 +1,43 @@
+********* Start testing of TstVideoRecorder *********
+Config: Using QtTest library 5.15.3, Qt 5.15.3 (x86_64-little_endian-lp64 shared (dynamic) release build; by GCC 11.3.0), ubuntu 22.04
+# out=/tmp/claude-1000/vr_tests relax=0 nvenc=0x74aeb681eba0 h264dec=0x74aeb6813f20 libavcodec=4.4.2-0ubuntu0.22.04.1 pid=46109
+PASS   : TstVideoRecorder::initTestCase()
+QINFO  : TstVideoRecorder::poolOverflow(burst) [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/pool.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::poolOverflow(burst) [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/pool.mp4" 1920 x 1080 @ 60 fps
+QWARN  : TstVideoRecorder::poolOverflow(burst) [VideoRecorder] Frames dropped so far: 318
+QINFO  : TstVideoRecorder::poolOverflow(burst) [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/pool.mp4" encoded 312 dropped 318
+  [pool] size=78525 opened=1 err='' codec=h264 1920x1080 fmt_dur=7.8500s last_pts_end=7.8500s avg_fps=39.7452 packets=312 keyframes=6 bitrate=0.08Mbps decoded=312 dec_err=0 read_err=EOF tb=1/120000
+  METRIC poolOverflow/burst overflow phase: 201 frames in 29.9 ms (6726 fps); pushed=471 encoded=312 not_encoded=159 dropped_reported=318 timeline_missing_slots=159 framesDropped_signals=1 pushFrame_us(burst) med=0.1 p99=798.5 max=1593.1
+  [ok  ] pool overflow was provoked (159 frames not encoded)
+  [FAIL] encoded + dropped == pushed (312 + 318 = 630, pushed 471)
+  [ok  ] no silent loss: dropped (318) >= frames not encoded (159)
+  [ok  ] framesDropped signal emitted while recording
+  [ok  ] file packets == encoded, decodes cleanly
+  [ok  ] no reordering / duplicates after overflow
+  [ok  ] timestamps of surviving frames follow the capture clock (0 mismatches)
+FAIL!  : TstVideoRecorder::poolOverflow(burst) 'fails.isEmpty()' returned FALSE. (encoded + dropped == pushed (312 + 318 = 630, pushed 471))
+   Loc: [/home/brainwave/QT-C-VMS/tests/unit_gpu/tst_videorecorder.cpp(892)]
+QINFO  : TstVideoRecorder::poolOverflow(gpuStall) [VideoRecorder] Segment opened: "/tmp/claude-1000/vr_tests/pool.mp4" 1920 x 1080 fps 60 bitrate 16174080
+QINFO  : TstVideoRecorder::poolOverflow(gpuStall) [VideoRecorder] Recording started: "/tmp/claude-1000/vr_tests/pool.mp4" 1920 x 1080 @ 60 fps
+  [ok  ] stall kernel launched (cuda error 0)
+QWARN  : TstVideoRecorder::poolOverflow(gpuStall) [VideoRecorder] Frames dropped so far: 53
+QWARN  : TstVideoRecorder::poolOverflow(gpuStall) [VideoRecorder] Frames dropped so far: 106
+QINFO  : TstVideoRecorder::poolOverflow(gpuStall) [VideoRecorder] Recording finished: "/tmp/claude-1000/vr_tests/pool.mp4" encoded 308 dropped 106
+  [pool] size=77840 opened=1 err='' codec=h264 1920x1080 fmt_dur=6.0167s last_pts_end=6.0167s avg_fps=51.1911 packets=308 keyframes=6 bitrate=0.10Mbps decoded=308 dec_err=0 read_err=EOF tb=1/120000
+  METRIC poolOverflow/gpuStall overflow phase: 91 frames in 1501.6 ms (61 fps); pushed=361 encoded=308 not_encoded=53 dropped_reported=106 timeline_missing_slots=53 framesDropped_signals=2 pushFrame_us(burst) med=0.5 p99=1131.4 max=1131.4
+  [ok  ] pool overflow was provoked (53 frames not encoded)
+  [FAIL] encoded + dropped == pushed (308 + 106 = 414, pushed 361)
+  [ok  ] no silent loss: dropped (106) >= frames not encoded (53)
+  [ok  ] framesDropped signal emitted while recording
+  [ok  ] file packets == encoded, decodes cleanly
+  [ok  ] no reordering / duplicates after overflow
+  [ok  ] timestamps of surviving frames follow the capture clock (0 mismatches)
+FAIL!  : TstVideoRecorder::poolOverflow(gpuStall) 'fails.isEmpty()' returned FALSE. (encoded + dropped == pushed (308 + 106 = 414, pushed 361))
+   Loc: [/home/brainwave/QT-C-VMS/tests/unit_gpu/tst_videorecorder.cpp(892)]
+
+==================== SUMMARY ====================
+FAIL  poolOverflow/burst | overflow phase: 201 frames in 29.9 ms (6726 fps); pushed=471 encoded=312 not_encoded=159 dropped_reported=318 timeline_missing_slots=159 framesDropped_signals=1 pushFrame_us(burst) med=0.1 p99=798.5 max=1593.1 | FAILED: encoded + dropped == pushed (312 + 318 = 630, pushed 471)
+FAIL  poolOverflow/gpuStall | overflow phase: 91 frames in 1501.6 ms (61 fps); pushed=361 encoded=308 not_encoded=53 dropped_reported=106 timeline_missing_slots=53 framesDropped_signals=2 pushFrame_us(burst) med=0.5 p99=1131.4 max=1131.4 | FAILED: encoded + dropped == pushed (308 + 106 = 414, pushed 361)
+PASS   : TstVideoRecorder::cleanupTestCase()
+Totals: 2 passed, 2 failed, 0 skipped, 0 blacklisted, 12180ms
+********* Finished testing of TstVideoRecorder *********

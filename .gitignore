@@ -42,3 +42,11 @@ __pycache__/
 
 # Reports generated
 reports/__pycache__/
+
+# Extra build variants (diag, sanitizers, tests)
+/build-*/
+
+# Live soak run output
+
+# Local diagnostic run output
+tests/soak/results/
