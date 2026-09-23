@@ -72,6 +72,9 @@ public:
 	// The sink must outlive the capture: stop the capture before destroying it.
 	void						setVideoFrameSink(IVideoFrameSink* sink) { m_frameSink = sink; }
 
+	// Usable bandwidth of the card's PCIe link in MB/s (0 if unknown)
+	double						pcieLinkCapacityMBps();
+
 	com_ptr<IDeckLink>					getDeckLinkInstance() const { return m_deckLink; }
 	com_ptr<IDeckLinkInput>				getDeckLinkInput() const { return m_deckLinkInput; }
 	com_ptr<IDeckLinkConfiguration>		getDeckLinkConfiguration() const { return m_deckLinkConfig; }
@@ -94,6 +97,7 @@ private:
 	com_ptr<IDeckLinkInput>				m_deckLinkInput;
 	com_ptr<IDeckLinkConfiguration>		m_deckLinkConfig;
 	com_ptr<IDeckLinkHDMIInputEDID>		m_deckLinkHDMIInputEDID;
+	com_ptr<IDeckLinkStatus>			m_deckLinkStatus;
 
 	bool								m_supportsFormatDetection;
 	bool								m_currentlyCapturing;
@@ -111,13 +115,20 @@ private:
 class DeckLinkInputFormatChangedEvent : public QEvent
 {
 public:
-	DeckLinkInputFormatChangedEvent(BMDDisplayMode displayMode);
+	DeckLinkInputFormatChangedEvent(BMDDisplayMode displayMode, long width = 0, long height = 0, double fps = 0.0);
 	virtual ~DeckLinkInputFormatChangedEvent() {}
 
 	BMDDisplayMode DisplayMode() const { return m_displayMode; }
+	// Real detected format, for the on-screen label
+	long Width() const { return m_width; }
+	long Height() const { return m_height; }
+	double Fps() const { return m_fps; }
 
 private:
 	BMDDisplayMode m_displayMode;
+	long m_width;
+	long m_height;
+	double m_fps;
 };
 
 class DeckLinkInputFrameArrivedEvent : public QEvent

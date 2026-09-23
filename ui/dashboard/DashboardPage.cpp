@@ -210,77 +210,25 @@ void DashboardPage::stopZoom()
 
 void DashboardPage::toggleFullscreen()
 {
-    if (!m_isFullscreen)
-    {
-        // ─── ENTER FULLSCREEN ───
-        m_isFullscreen = true;
+    m_isFullscreen = !m_isFullscreen;
+    emit fullscreenRequested(m_isFullscreen);
+}
 
-        // Remove videoBox from normal layout
-        m_centerLayout->removeWidget(m_videoBox);
+QFrame* DashboardPage::detachVideoBox()
+{
+    m_centerLayout->removeWidget(m_videoBox);
+    // dashboard.qss gives #VideoWidget a 20px side margin for the normal layout; fullscreen
+    // must use the whole screen, so the margin is dropped while detached.
+    m_videoBox->setStyleSheet("#VideoWidget { margin: 0; border: none; }");
+    return m_videoBox;
+}
 
-        // Create fullscreen window
-        m_fullscreenWindow = new QWidget(nullptr, Qt::Window | Qt::FramelessWindowHint);
-        m_fullscreenWindow->setStyleSheet("background-color: black;");
-        
-        // Get screen size and set window geometry before showing
-        QScreen* screen = QGuiApplication::primaryScreen();
-        QRect screenGeometry = screen->geometry();
-        m_fullscreenWindow->setGeometry(screenGeometry);
-
-        auto *fsLayout = new QVBoxLayout(m_fullscreenWindow);
-        fsLayout->setContentsMargins(0, 0, 0, 0);
-        fsLayout->addWidget(m_videoBox);
-
-        // Exit button overlay - position before showing
-        m_exitBtn = new QPushButton("✕", m_fullscreenWindow);
-        m_exitBtn->setFixedSize(50, 50);
-        m_exitBtn->setCursor(Qt::PointingHandCursor);
-        m_exitBtn->setStyleSheet(
-            "QPushButton {"
-            "   background-color: rgba(0, 0, 0, 0.5);"
-            "   border: none;"
-            "   border-radius: 25px;"
-            "   color: white;"
-            "   font-size: 24px;"
-            "}"
-            "QPushButton:hover {"
-            "   background-color: rgba(255, 0, 0, 0.8);"
-            "}"
-        );
-        m_exitBtn->move(screenGeometry.width() - 70, 20);
-        connect(m_exitBtn, &QPushButton::clicked, this, &DashboardPage::toggleFullscreen);
-
-        // Escape key to exit
-        QShortcut* esc = new QShortcut(QKeySequence(Qt::Key_Escape), m_fullscreenWindow);
-        connect(esc, &QShortcut::activated, this, &DashboardPage::toggleFullscreen);
-
-        // Show fullscreen directly
-        m_fullscreenWindow->showFullScreen();
-        m_exitBtn->raise();
-    }
-    else
-    {
-        // ─── EXIT FULLSCREEN ───
-        m_isFullscreen = false;
-
-        // Remove from fullscreen layout first
-        if (m_fullscreenWindow && m_fullscreenWindow->layout()) {
-            m_fullscreenWindow->layout()->removeWidget(m_videoBox);
-        }
-
-        // Return videoBox to normal layout at index 1
-        m_videoBox->setParent(this);
-        m_centerLayout->insertWidget(1, m_videoBox, 1);
-
-        // Cleanup fullscreen window
-        if (m_fullscreenWindow)
-        {
-            m_fullscreenWindow->hide();
-            m_fullscreenWindow->deleteLater();
-            m_fullscreenWindow = nullptr;
-        }
-        m_exitBtn = nullptr;
-    }
+void DashboardPage::reattachVideoBox()
+{
+    m_videoBox->setStyleSheet(QString()); // back to the stylesheet's normal margins
+    m_videoBox->setParent(this);
+    m_centerLayout->insertWidget(1, m_videoBox, 1); // back below the title row
+    m_videoBox->show();
 }
 
 void DashboardPage::setSharedDelegate(const com_ptr<DeckLinkOpenGLDelegate> &delegate)

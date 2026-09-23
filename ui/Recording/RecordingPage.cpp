@@ -478,3 +478,15 @@ void RecordingPage::setSharedDelegate(const com_ptr<DeckLinkOpenGLDelegate>& del
 {
     m_previewView->setSharedDelegate(delegate);
 }
+
+void RecordingPage::setSignalValid(bool valid)
+{
+    if (m_previewView)
+        m_previewView->setSignalValid(valid);
+}
+
+void RecordingPage::setModeText(const QString& modeText)
+{
+    if (m_previewView)
+        m_previewView->setModeText(modeText);
+}

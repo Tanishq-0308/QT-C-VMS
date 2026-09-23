@@ -36,6 +36,10 @@ public:
     // Recorder fed directly by the capture device (see HomePage::addDevice)
     VideoRecorder* recorder() const { return m_videoRecorder; }
 
+    // Live input state for the preview overlay
+    void setSignalValid(bool valid);
+    void setModeText(const QString& modeText);
+
         // DeckLinkOpenGLWidget* sharedGLWidget() const;
 
 signals:

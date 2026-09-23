@@ -11,6 +11,7 @@
 static IDeckLinkInput* g_input = nullptr;
 static std::atomic<int> g_frames{0}, g_noSignal{0};
 static std::atomic<long> g_lumaSum{0}, g_lumaN{0};
+static std::atomic<long long> g_latSumUs{0}, g_latMaxUs{0}, g_latN{0};
 
 static void printMode(const char* what, IDeckLinkDisplayMode* m) {
     const char* name = nullptr; m->GetName(&name);
@@ -42,6 +43,16 @@ struct Cb : public IDeckLinkInputCallback {
     HRESULT VideoInputFrameArrived(IDeckLinkVideoInputFrame* fr, IDeckLinkAudioInputPacket*) override {
         if (!fr) return S_OK;
         g_frames++;
+        {   // How late does the frame reach software? (card capture time vs card clock now)
+            const BMDTimeScale us = 1000000;
+            BMDTimeValue capT = 0, capD = 0, now = 0, inFrame = 0, tpf = 0;
+            if (fr->GetHardwareReferenceTimestamp(us, &capT, &capD) == S_OK &&
+                g_input->GetHardwareReferenceClock(us, &now, &inFrame, &tpf) == S_OK) {
+                long long lat = (long long)(now - capT);
+                g_latSumUs += lat; g_latN++;
+                long long m = g_latMaxUs.load(); while (lat > m && !g_latMaxUs.compare_exchange_weak(m, lat)) {}
+            }
+        }
         static BMDPixelFormat seen = 0; if (fr->GetPixelFormat() != seen) { seen = fr->GetPixelFormat(); printf("  frame pixel format now 0x%x, %ldx%ld rowBytes=%ld\n", seen, fr->GetWidth(), fr->GetHeight(), fr->GetRowBytes()); }
         if (fr->GetFlags() & bmdFrameHasNoInputSource) { g_noSignal++; return S_OK; }
         IDeckLinkVideoBuffer* buf = nullptr;
@@ -82,7 +93,28 @@ int main(int argc, char** argv) {
     int64_t conn = 0;
     if (cfg && cfg->GetInt(bmdDeckLinkConfigVideoInputConnection, &conn) == S_OK)
         printf("Selected input connection: %s\n", conn == bmdVideoConnectionHDMI ? "HDMI" : conn == bmdVideoConnectionSDI ? "SDI" : "other");
-    if (cfg && conn != bmdVideoConnectionHDMI) printf("Setting input to HDMI (temporary, process-local): %s\n", cfg->SetInt(bmdDeckLinkConfigVideoInputConnection, bmdVideoConnectionHDMI) == S_OK ? "OK" : "FAILED");
+    // CONN=sdi probes the SDI input; default is HDMI (setting is process-local)
+    const char* cn = getenv("CONN");
+    const int64_t want = (cn && !strcmp(cn, "sdi")) ? bmdVideoConnectionSDI : bmdVideoConnectionHDMI;
+    if (cfg && conn != want)
+        printf("Setting input to %s (temporary, process-local): %s\n", want == bmdVideoConnectionSDI ? "SDI" : "HDMI",
+               cfg->SetInt(bmdDeckLinkConfigVideoInputConnection, want) == S_OK ? "OK" : "FAILED");
+
+    // EDID=sdr: advertise SDR only on the HDMI input (some converters mis-handle an HDR EDID).
+    // Held while this process runs; the card restores its default EDID when released.
+    IDeckLinkHDMIInputEDID* edid = nullptr;
+    if (const char* e = getenv("EDID")) {
+        if (dl->QueryInterface(IID_IDeckLinkHDMIInputEDID, (void**)&edid) == S_OK && edid) {
+            int64_t range = !strcmp(e, "sdr") ? bmdDynamicRangeSDR
+                          : (bmdDynamicRangeSDR | bmdDynamicRangeHDRStaticPQ | bmdDynamicRangeHDRStaticHLG);
+            HRESULT a = edid->SetInt(bmdDeckLinkHDMIInputEDIDDynamicRange, range);
+            HRESULT b = edid->WriteToEDID();
+            printf("EDID dynamic range set to %s: %s -> replug the HDMI cable / power-cycle the source now\n", e,
+                   (a == S_OK && b == S_OK) ? "OK" : "FAILED");
+        } else {
+            printf("EDID interface not available\n");
+        }
+    }
 
     Cb cb; g_input->SetCallback(&cb);
     HRESULT r = g_input->EnableVideoInput(bmdModeHD1080p6000, bmdFormat8BitYUV, bmdVideoInputEnableFormatDetection);
@@ -96,11 +128,12 @@ int main(int argc, char** argv) {
         int64_t dm = 0; if (status) status->GetInt(bmdDeckLinkStatusDetectedVideoInputMode, &dm);
         char dmc[5] = {char(dm >> 24), char(dm >> 16), char(dm >> 8), char(dm), 0};
         int f = g_frames.exchange(0), ns = g_noSignal.exchange(0); long ls = g_lumaSum.exchange(0), ln = g_lumaN.exchange(0);
-        fflush(stdout); printf("t=%3ds  signal_locked=%s  detected_mode='%s'  frames=%d  no_signal_frames=%d  avg_luma=%s\n", s, lk ? "YES" : "no", dm ? dmc : "-", f, ns,
-               ln ? std::to_string(ls / ln).c_str() : "-");
+        long long lsum = g_latSumUs.exchange(0), ln2 = g_latN.exchange(0), lmax = g_latMaxUs.exchange(0);
+        fflush(stdout); printf("t=%3ds  signal_locked=%s  detected_mode='%s'  frames=%d  no_signal_frames=%d  avg_luma=%s  arrival_delay_ms avg=%.1f max=%.1f\n", s, lk ? "YES" : "no", dm ? dmc : "-", f, ns,
+               ln ? std::to_string(ls / ln).c_str() : "-", ln2 ? lsum / 1000.0 / ln2 : -1.0, lmax / 1000.0);
         locked = lk;
     }
     g_input->StopStreams(); g_input->DisableVideoInput(); g_input->SetCallback(nullptr);
-    printf("%s\n", locked ? "RESULT: card is receiving a signal" : "RESULT: card does NOT see a signal on HDMI");
+    printf("%s\n", locked ? "RESULT: card is receiving a signal" : "RESULT: card does NOT see a signal on the selected input");
     return 0;
 }

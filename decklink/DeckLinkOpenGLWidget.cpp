@@ -164,12 +164,7 @@ DeckLinkOpenGLWidget::DeckLinkOpenGLWidget(QWidget *parent) : QOpenGLWidget(pare
 
 DeckLinkOpenGLWidget::~DeckLinkOpenGLWidget()
 {
-    // GL resources must be released with the widget's context current
-    makeCurrent();
-    m_flipFbo.reset();
-    if (m_blitter.isCreated())
-        m_blitter.destroy();
-    doneCurrent();
+    releaseGLResources();
 }
 
 void DeckLinkOpenGLWidget::clear()
@@ -183,6 +178,9 @@ void DeckLinkOpenGLWidget::clear()
 
 void DeckLinkOpenGLWidget::initializeGL()
 {
+    // Called again with a NEW context whenever the widget is reparented, e.g. the dashboard's
+    // fullscreen toggle moves it into a separate window. GL objects belong to the context that
+    // created them, so they are rebuilt here and released before the old context goes away.
     // qDebug() << "initialize GL";
     if (m_deckLinkScreenPreviewHelper)
     {
@@ -192,6 +190,20 @@ void DeckLinkOpenGLWidget::initializeGL()
 
     if (!m_blitter.isCreated() && !m_blitter.create())
         qWarning() << "[DeckLinkOpenGLWidget] Could not create texture blitter; flip is disabled";
+
+    // Free them while their own context is still alive (deleting GL objects under a different
+    // context crashes). UniqueConnection: initializeGL() runs again for every new context.
+    connect(context(), &QOpenGLContext::aboutToBeDestroyed,
+            this, &DeckLinkOpenGLWidget::releaseGLResources, Qt::UniqueConnection);
+}
+
+void DeckLinkOpenGLWidget::releaseGLResources()
+{
+    makeCurrent();
+    m_flipFbo.reset();
+    if (m_blitter.isCreated())
+        m_blitter.destroy();
+    doneCurrent();
 }
 
 // void DeckLinkOpenGLWidget::paintGL()
@@ -300,22 +312,25 @@ void DeckLinkOpenGLWidget::paintGL()
         m_deckLinkScreenPreviewHelper->PaintGL();
     }
 
-    // Step 3: Overlay text based on input source (only if enabled)
-    if (m_showLabel)
+    // Step 3: Overlay. Without a valid input the last frame stays on screen and would look
+    // live, so the picture is covered and the loss is stated plainly.
+    if (!m_signalValid)
+    {
+        QPainter painter(this);
+        painter.fillRect(rect(), QColor(0, 0, 0, 200));
+        painter.setPen(QColor(255, 64, 64));
+        painter.setFont(QFont("Arial", 36, QFont::Bold));
+        painter.drawText(rect(), Qt::AlignCenter, tr("NO SIGNAL\nCheck the camera and cable"));
+    }
+    else if (m_showLabel)
     {
         QPainter painter(this);
         painter.setPen(Qt::white);
         painter.setFont(QFont("Arial", 24, QFont::Bold));
-
-        if (m_inputSource.compare("HDMI", Qt::CaseInsensitive) == 0)
-        {
-            painter.drawText(20, 40, QStringLiteral("🔴 Live • 3840×2160"));
-        }
-        else
-        {
-            // SDI or AHD
-            painter.drawText(20, 40, QStringLiteral("🔴 Live • 1080@60"));
-        }
+        // Real detected format, not a fixed string
+        painter.drawText(20, 40, QStringLiteral("🔴 Live • %1%2")
+                                     .arg(m_inputSource.isEmpty() ? QString() : m_inputSource + " ")
+                                     .arg(m_modeText.isEmpty() ? tr("detecting…") : m_modeText));
     }
 }
 
@@ -417,6 +432,22 @@ bool DeckLinkOpenGLWidget::saveSnapshot(const QString &path, std::function<void(
     }));
 
     return true;
+}
+
+void DeckLinkOpenGLWidget::setSignalValid(bool valid)
+{
+    if (m_signalValid == valid)
+        return;
+    m_signalValid = valid;
+    update();
+}
+
+void DeckLinkOpenGLWidget::setModeText(const QString &modeText)
+{
+    if (m_modeText == modeText)
+        return;
+    m_modeText = modeText;
+    update();
 }
 
 void DeckLinkOpenGLWidget::setShowLabel(bool show)

@@ -47,4 +47,6 @@ reports/__pycache__/
 /build-*/
 
 # Live soak run output
-tests/soak/results/camera_test/
+
+# Local diagnostic run output
+tests/soak/results/

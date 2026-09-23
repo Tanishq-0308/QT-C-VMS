@@ -6,6 +6,7 @@
 #include <QStackedWidget>
 #include <QLabel>
 #include <QToolButton>
+#include <QPushButton>
 #include <QVBoxLayout>
 #include "decklink/DeckLinkDeviceDiscovery.h"
 #include "decklink/DeckLinkInputDevice.h"
@@ -29,6 +30,7 @@ public:
 
 protected:
     void customEvent(QEvent* event) override;
+    bool eventFilter(QObject* watched, QEvent* event) override;
     void updateScaling() override;
 
 signals:
@@ -52,6 +54,8 @@ private:
     void setUp();
     void addDevice(com_ptr<IDeckLink>& decklink);
     void removeDevice(const com_ptr<IDeckLink>& decklink);
+    void setInputSignalValid(bool valid);
+    void setDashboardFullscreen(bool on);
     void reconfigureVideoInput();
     void updateLogo(const QString &logoPath = "");
     void applyStaticStyles();
@@ -64,6 +68,8 @@ private:
     QWidget *topWidget;
     QWidget *bottomWidget;
     QWidget *fullScreenWrapper;
+    QWidget *dashboardFullScreenWrapper = nullptr; // dashboard preview, fullscreen in this window
+    QPushButton *dashboardExitFullscreenBtn = nullptr;
     QLabel *logoLabel;
     
     // Store buttons for dynamic resizing

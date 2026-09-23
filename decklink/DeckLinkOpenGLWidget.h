@@ -68,6 +68,10 @@ public:
 	void setInputSource(const QString &source);
 	void setShowLabel(bool show);
 
+	// Live input state shown on top of the video (safety: a frozen frame must not look live)
+	void setSignalValid(bool valid);
+	void setModeText(const QString &modeText); // e.g. "1920x1080 @ 30"
+
 	void clear();
 
 protected:
@@ -78,6 +82,7 @@ protected:
 
 private slots:
 	void setFrame(com_ptr<IDeckLinkVideoFrame> frame);
+	void releaseGLResources(); // frees the flip buffer/blitter with their own context current
 
 private:
 	com_ptr<DeckLinkOpenGLDelegate> m_delegate;
@@ -94,4 +99,6 @@ private:
 	VideoRecorder *m_videoRecorder = nullptr;
 	QString m_inputSource = "SDI";
 	bool m_showLabel = true;
+	bool m_signalValid = false; // no confirmed signal until the first frame says so
+	QString m_modeText;
 };

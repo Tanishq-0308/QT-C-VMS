@@ -54,6 +54,7 @@ DeckLinkInputDevice::DeckLinkInputDevice(QObject* owner, com_ptr<IDeckLink>& dev
 	m_deckLinkInput(IID_IDeckLinkInput, device),
 	m_deckLinkConfig(IID_IDeckLinkConfiguration, device),
 	m_deckLinkHDMIInputEDID(IID_IDeckLinkHDMIInputEDID, device),
+	m_deckLinkStatus(IID_IDeckLinkStatus, device),
 	m_supportsFormatDetection(false),
 	m_currentlyCapturing(false),
 	m_applyDetectedInputMode(false),
@@ -236,6 +237,21 @@ void DeckLinkInputDevice::stopCapture()
 	m_currentlyCapturing = false;
 }
 
+// Usable PCIe bandwidth of this card's link, in MB/s (0 if it cannot be read).
+// ~80% of the raw rate after protocol overhead: Gen1 250, Gen2 500, Gen3 985 MB/s per lane.
+double DeckLinkInputDevice::pcieLinkCapacityMBps()
+{
+	if (!m_deckLinkStatus)
+		return 0.0;
+	int64_t width = 0, gen = 0;
+	if (m_deckLinkStatus->GetInt(bmdDeckLinkStatusPCIExpressLinkWidth, &width) != S_OK ||
+	    m_deckLinkStatus->GetInt(bmdDeckLinkStatusPCIExpressLinkSpeed, &gen) != S_OK || width <= 0 || gen <= 0)
+		return 0.0;
+
+	const double perLane = (gen >= 3) ? 985.0 : (gen == 2) ? 500.0 : 250.0;
+	return width * perLane * 0.8;
+}
+
 HRESULT DeckLinkInputDevice::VideoInputFormatChanged (BMDVideoInputFormatChangedEvents notificationEvents, IDeckLinkDisplayMode *newMode, BMDDetectedVideoInputFormatFlags detectedSignalFlags)
 {
 	HRESULT 		result;
@@ -276,14 +292,16 @@ HRESULT DeckLinkInputDevice::VideoInputFormatChanged (BMDVideoInputFormatChanged
 	                      (detectedSignalFlags & bmdDetectedVideoInput12BitDepth) ? " 12-bit" : " 8-bit")
 	                  << "; capturing as " << (pixelFormat == bmdFormat8BitARGB ? "8-bit ARGB" : "8-bit YUV");
 
-	// The capture card sits on a PCIe Gen2 x1 link (~400 MB/s usable). Above that the card can
-	// only deliver part of the frames and the picture stutters/lags.
+	// Warn if the input needs more than the card's PCIe link can carry: the card then delivers
+	// only part of the frames, and the picture stutters or lags behind.
 	const double bytesPerPixel = (pixelFormat == bmdFormat8BitARGB) ? 4.0 : 2.0;
 	const double megabytesPerSecond = double(newMode->GetWidth()) * newMode->GetHeight() * bytesPerPixel * fps / 1e6;
-	if (megabytesPerSecond > 380.0)
-		qWarning().nospace() << "DeckLink: input needs " << int(megabytesPerSecond) << " MB/s but the capture card's PCIe x1 link "
-		                     << "carries ~400 MB/s: expect about " << int(fps * 400.0 / megabytesPerSecond) << " of " << int(fps)
-		                     << " frames per second. Set the camera to 1080p (YCbCr for 1080p60).";
+	const double linkMegabytesPerSecond = pcieLinkCapacityMBps();
+	if (linkMegabytesPerSecond > 0.0 && megabytesPerSecond > linkMegabytesPerSecond * 0.95)
+		qWarning().nospace() << "DeckLink: input needs " << int(megabytesPerSecond) << " MB/s but the card's PCIe link carries about "
+		                     << int(linkMegabytesPerSecond) << " MB/s: expect about " << int(fps * linkMegabytesPerSecond / megabytesPerSecond)
+		                     << " of " << int(fps) << " frames per second. Use a lighter input format "
+		                     << "(lower resolution/frame rate, or YCbCr instead of RGB).";
 
 	// Stop the capture
 	m_deckLinkInput->StopStreams();
@@ -306,9 +324,10 @@ HRESULT DeckLinkInputDevice::VideoInputFormatChanged (BMDVideoInputFormatChanged
 		return result;
 	}
 
-	// Notify UI of new display mode
-	if ((m_owner != nullptr) && (notificationEvents & bmdVideoInputDisplayModeChanged))
-		QCoreApplication::postEvent(m_owner, new DeckLinkInputFormatChangedEvent(displayMode));
+	// Notify UI of the new display mode (also when only the colour space changed, so the
+	// on-screen label always matches what is really being captured)
+	if (m_owner != nullptr)
+		QCoreApplication::postEvent(m_owner, new DeckLinkInputFormatChangedEvent(displayMode, newMode->GetWidth(), newMode->GetHeight(), fps));
 
 	return S_OK;
 }
@@ -338,8 +357,8 @@ HRESULT DeckLinkInputDevice::VideoInputFrameArrived(IDeckLinkVideoInputFrame* vi
 
 
 
-DeckLinkInputFormatChangedEvent::DeckLinkInputFormatChangedEvent(BMDDisplayMode displayMode)
-	: QEvent(kVideoFormatChangedEvent), m_displayMode(displayMode)
+DeckLinkInputFormatChangedEvent::DeckLinkInputFormatChangedEvent(BMDDisplayMode displayMode, long width, long height, double fps)
+	: QEvent(kVideoFormatChangedEvent), m_displayMode(displayMode), m_width(width), m_height(height), m_fps(fps)
 {
 }
 
