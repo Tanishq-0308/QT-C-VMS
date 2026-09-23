@@ -135,3 +135,39 @@ sudo apt install libfuse2
 ./linuxdeployqt-continuous-x86_64.AppImage build/medical_qt_app -appimage -desktop-file=medical_qt_app.desktop -icon-file=medical_qt_app.png
 
 chmod +x Medical_Qt_App-873ab4f-x86_64.AppImage
+
+
+
+
+
+
+
+
+
+
+
+
+Commands to run (all need sudo)
+1. Freeze the kernel and drivers
+
+
+sudo apt-mark hold linux-generic-hwe-22.04 linux-image-generic-hwe-22.04 linux-headers-generic-hwe-22.04 \
+  linux-image-6.8.0-138-generic linux-headers-6.8.0-138-generic \
+  linux-modules-6.8.0-138-generic linux-modules-extra-6.8.0-138-generic \
+  desktopvideo desktopvideo-gui mediaexpress
+sudo apt-mark hold $(dpkg -l | awk '/^ii/ && $2 ~ /^(nvidia|libnvidia|cuda)/ {print $2}')
+apt-mark showhold        # check the list
+2. Stop automatic updates
+
+
+sudo systemctl disable --now unattended-upgrades
+sudo systemctl mask apt-daily.timer apt-daily-upgrade.timer apt-daily.service apt-daily-upgrade.service
+3. Stop the desktop's own updater
+
+
+gsettings set org.gnome.software download-updates false          # no sudo, run as your user
+gsettings set org.gnome.software allow-updates false
+4. Stop snap auto-refresh
+
+
+sudo snap refresh --hold
