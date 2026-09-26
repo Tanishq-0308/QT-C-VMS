@@ -1,3 +1,4 @@
+
 #include "SurgeryRecordingPage.hpp"
 #include "../EditSurgeryDialog/EditSurgeryDialog.hpp"
 #include <QPixmap>
@@ -41,14 +42,20 @@ namespace {
 struct UsbCopyResult {
     int succeeded = 0;
     QStringList failed;
+    bool cancelled = false;
 };
 
 // Runs on a worker thread. Each file is written to a temporary file next to the destination,
 // flushed to the device and then renamed over the destination, so an existing copy is only
 // replaced by a complete one (pulling the stick mid-copy never destroys a previous copy).
+// Data is synced every kSyncChunk bytes so progress reflects what is really on the device:
+// slow USB 2.0 sticks otherwise absorb the whole file into the page cache instantly and then
+// sit in one multi-minute fdatasync with the progress bar frozen.
 UsbCopyResult copyFilesToUsb(const QStringList &sources, const QString &destDir,
-                             std::shared_ptr<std::atomic<qint64>> bytesDone)
+                             std::shared_ptr<std::atomic<qint64>> bytesDone,
+                             std::shared_ptr<std::atomic<bool>> cancelled)
 {
+    constexpr qint64 kSyncChunk = 16 << 20;
     UsbCopyResult result;
     QByteArray buffer(4 << 20, Qt::Uninitialized);
 
@@ -56,15 +63,27 @@ UsbCopyResult copyFilesToUsb(const QStringList &sources, const QString &destDir,
         QFile in(sourcePath);
         QSaveFile out(destDir + "/" + QFileInfo(sourcePath).fileName());
         bool ok = in.open(QIODevice::ReadOnly) && out.open(QIODevice::WriteOnly);
+        qint64 unsynced = 0;
 
-        while (ok && !in.atEnd()) {
+        while (ok && !in.atEnd() && !cancelled->load()) {
             const qint64 n = in.read(buffer.data(), buffer.size());
             ok = n >= 0 && out.write(buffer.constData(), n) == n;
-            if (ok)
-                *bytesDone += n;
+            unsynced += qMax<qint64>(n, 0);
+            if (ok && unsynced >= kSyncChunk) {
+                ok = out.flush() && ::fdatasync(out.handle()) == 0;
+                *bytesDone += unsynced;
+                unsynced = 0;
+            }
+        }
+
+        if (cancelled->load()) {
+            out.cancelWriting();
+            result.cancelled = true;
+            break;
         }
 
         ok = ok && out.flush() && ::fdatasync(out.handle()) == 0 && out.commit();
+        *bytesDone += unsynced;
         if (!ok) {
             out.cancelWriting();
             result.failed << QFileInfo(sourcePath).fileName();
@@ -1254,13 +1273,15 @@ void SurgeryRecordingPage::downloadSelectedFiles() {
 
     // Copy on a worker thread: multi-GB recordings must not freeze the UI (and the live view)
     auto bytesDone = std::make_shared<std::atomic<qint64>>(0);
+    auto cancelled = std::make_shared<std::atomic<bool>>(false);
     const int totalMb = int(qMax<qint64>(1, totalBytes >> 20));
 
-    auto *progress = new QProgressDialog("Copying files to the USB device…", QString(), 0, totalMb, this);
+    auto *progress = new QProgressDialog("Copying files to the USB device…", "Cancel", 0, totalMb, this);
     progress->setWindowTitle("Download");
     progress->setWindowModality(Qt::WindowModal);
     progress->setMinimumDuration(0);
     progress->setAutoClose(false);
+    progress->setAutoReset(false);
     progress->setValue(0);
     downloadBtn->setEnabled(false);
 
@@ -1270,21 +1291,32 @@ void SurgeryRecordingPage::downloadSelectedFiles() {
     });
     poll->start(200);
 
+    // Cancel button, Esc and the window's close button all emit canceled(). The worker stops
+    // after the chunk it is syncing and discards the partial file.
+    connect(progress, &QProgressDialog::canceled, progress, [progress, poll, cancelled]() {
+        cancelled->store(true);
+        poll->stop();
+        progress->hide();
+    });
+
     auto *watcher = new QFutureWatcher<UsbCopyResult>(this);
     connect(watcher, &QFutureWatcher<UsbCopyResult>::finished, this, [this, watcher, progress]() {
-        const UsbCopyResult result = watcher->result();
+        const UsbCopyResult resul*******cher->result();
         watcher->deleteLater();
         progress->deleteLater();
         downloadBtn->setEnabled(true);
 
-        showToast("Downloaded " + QString::number(result.succeeded) + " file(s) successfully");
+        if (result.cancelled)
+            showToast("Download cancelled (" + QString::number(result.succeeded) + " file(s) copied)");
+        else if (result.succeeded > 0)
+            showToast("Downloaded " + QString::number(result.succeeded) + " file(s) successfully");
         if (!result.failed.isEmpty()) {
             QMessageBox::warning(this, "Download Error",
                                  QString::number(result.failed.size()) + " file(s) could not be copied:\n" +
                                  result.failed.join("\n"));
         }
     });
-    watcher->setFuture(QtConcurrent::run(copyFilesToUsb, sources, destDir, bytesDone));
+    watcher->setFuture(QtConcurrent::run(copyFilesToUsb, sources, destDir, bytesDone, cancelled));
 
     selectedSnapshots.clear();
     selectedRecordings.clear();
@@ -1308,7 +1340,7 @@ void SurgeryRecordingPage::showToast(const QString &message, int durationMs) {
                 "padding: %1px %2px; border-radius: %3px; font-size: %4px;")
         .arg(toastPadding).arg(toastPadding + 10).arg(toastRadius).arg(toastFontSize)
     );
-    toast->setAttribute(Qt::WA_TransparentForMouseEvents);
+    toast->setAttribute(Q*******ransparentForMouseEvents);
     toast->setWindowFlags(Qt::FramelessWindowHint | Qt::ToolTip);
     toast->adjustSize();
 

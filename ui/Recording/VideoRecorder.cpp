@@ -1,3 +1,4 @@
+
 #include "VideoRecorder.hpp"
 
 #include "cuda/frame_convert.h"
@@ -518,7 +519,11 @@ bool VideoRecorder::encodeBuffer(const PoolBuffer& buffer, QString* errorMessage
     }
 
     m_hwFrame->pts = pts;
-    m_hwFrame->pkt_duration = format.frameDuration;
+    #if LIBAVUTIL_VERSION_INT >= AV_VERSION_INT(57, 30, 100)
+        m_hwFrame->duration = format.frameDuration;
+    #else
+        m_hwFrame->pkt_duration = format.frameDuration;
+    #endif
     m_lastPts = pts;
 
     if (!sendAndWrite(m_hwFrame, errorMessage))
@@ -769,3 +774,6 @@ void VideoRecorder::releaseDevice()
     m_cudaCtx = nullptr;
     av_buffer_unref(&m_hwDeviceCtx);
 }
+
+
+
