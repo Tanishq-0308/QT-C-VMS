@@ -1,4 +1,3 @@
-
 #include "VideoRecorder.hpp"
 
 #include "cuda/frame_convert.h"
@@ -774,6 +773,3 @@ void VideoRecorder::releaseDevice()
     m_cudaCtx = nullptr;
     av_buffer_unref(&m_hwDeviceCtx);
 }
-
-
-

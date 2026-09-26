@@ -1,4 +1,3 @@
-
 #include "SurgeryRecordingPage.hpp"
 #include "../EditSurgeryDialog/EditSurgeryDialog.hpp"
 #include <QPixmap>
@@ -1301,7 +1300,7 @@ void SurgeryRecordingPage::downloadSelectedFiles() {
 
     auto *watcher = new QFutureWatcher<UsbCopyResult>(this);
     connect(watcher, &QFutureWatcher<UsbCopyResult>::finished, this, [this, watcher, progress]() {
-        const UsbCopyResult resul*******cher->result();
+        const UsbCopyResult result = watcher->result();
         watcher->deleteLater();
         progress->deleteLater();
         downloadBtn->setEnabled(true);
@@ -1340,7 +1339,7 @@ void SurgeryRecordingPage::showToast(const QString &message, int durationMs) {
                 "padding: %1px %2px; border-radius: %3px; font-size: %4px;")
         .arg(toastPadding).arg(toastPadding + 10).arg(toastRadius).arg(toastFontSize)
     );
-    toast->setAttribute(Q*******ransparentForMouseEvents);
+    toast->setAttribute(Qt::WA_TransparentForMouseEvents);
     toast->setWindowFlags(Qt::FramelessWindowHint | Qt::ToolTip);
     toast->adjustSize();
 
