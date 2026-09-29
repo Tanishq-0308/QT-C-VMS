@@ -1,7 +1,5 @@
 #include "mainwindow.hpp"
-#include "ui/login/LoginPage.hpp"
 #include "ui/home/HomePage.hpp"
-#include "ui/Recording/RecordingPage.hpp"
 #include "widgets/VideoWidget.hpp"
 #include "widgets/video_signal_bridge.hpp"
 #include <QMessageBox>
@@ -32,17 +30,13 @@ MainWindow::MainWindow(QWidget* parent)
     setCentralWidget(stackedWidget);
     setWindowTitle("Medical Video System");
 
-    loginPage = new LoginPage();
+    // No login: the device opens straight on the dashboard. The login page is kept, unused, in
+    // ui/login (LoginPage, assets/styles/login.qss) in case it is needed again. To re-enable it,
+    // add it to stackedWidget, show it first and connect LoginPage::loginSuccessful to showing
+    // homePage (its pre-filled admin/123456 credentials must be replaced before that).
     homePage = new HomePage();
-    recordingPage = new RecordingPage();
-
-    stackedWidget->addWidget(loginPage);
     stackedWidget->addWidget(homePage);
-    stackedWidget->addWidget(recordingPage);
-
-    // ✅ Switch to any initial page here
-    // stackedWidget->setCurrentWidget(recordingPage);
-    stackedWidget->setCurrentWidget(loginPage);
+    stackedWidget->setCurrentWidget(homePage);
 
     // ✅ Listen globally for any VideoWidget textureReady
     connect(videoSignalBridgeInstance(), &VideoSignalBridge::textureReadyGlobal,
@@ -53,19 +47,8 @@ MainWindow::MainWindow(QWidget* parent)
         }
     });
 
-    // Optional: hook up login success
-    connect(loginPage, &LoginPage::loginSuccessful, this, &MainWindow::showDashboard);
-    connect(homePage, &HomePage::logoutClicked, this, &MainWindow::showLoginPage);
     // connect(homePage->toggleButton, &QPushButton::clicked, this, &MainWindow::toggleFullScreen);
 
-}
-
-void MainWindow::showDashboard() {
-    stackedWidget->setCurrentWidget(homePage);
-}
-
-void MainWindow::showLoginPage() {
-    stackedWidget->setCurrentWidget(loginPage);
 }
 
 void MainWindow::toggleFullScreen()

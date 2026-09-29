@@ -211,7 +211,6 @@ int main(int argc, char *argv[]) {
         ":/assets/styles/patient.qss",
         ":/assets/styles/surgerydetails.qss",
         ":/assets/styles/AddPatient.qss",
-        ":/assets/styles/login.qss",
         ":/assets/styles/surgeryrecordingpage.qss"
         // Add more QSS files here if needed
     };

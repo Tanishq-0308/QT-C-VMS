@@ -4,7 +4,6 @@
         <file>logo.png</file>
 
         <!-- Styles -->
-        <file>styles/login.qss</file>
         <file>styles/dashboard.qss</file>
         <file>styles/patient.qss</file>
         <file>styles/surgerydetails.qss</file>
