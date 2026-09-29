@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=Medical Video System
+Comment=Starts the medical video app when the desktop session starts
+# @APP_BIN@ is replaced by kiosk-setup.sh with the full path of the built binary.
+# The app finds sqlite.db, the migrations and flask_zoom_api relative to that binary.
+Exec=@APP_BIN@
+X-GNOME-Autostart-enabled=true
+X-GNOME-Autostart-Delay=3
+NoDisplay=true
+Terminal=false

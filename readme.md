@@ -23,6 +23,10 @@ sudo apt install ffmpeg
 
 ffmpeg -hide_banner -encoders | grep nvenc
 
+
+# Video playback inside the app (without it: "Cannot play video" when opening a recording)
+sudo apt install libqt5multimedia5-plugins
+
 # ===================================================================================
 
 sudo apt update
@@ -171,3 +175,32 @@ gsettings set org.gnome.software allow-updates false
 
 
 sudo snap refresh --hold
+
+
+5. Kiosk mode: boot straight into the app (no Ubuntu login, no lock screen)
+
+The login screen is Ubuntu's, not the app's, so running the app with sudo does not remove it.
+Build the app first, then run once:
+
+sudo deploy/kiosk-setup.sh                      # for the user who ran sudo, app = build/medical_qt_app
+sudo deploy/kiosk-setup.sh --user brainwave --app /path/to/medical_qt_app
+sudo reboot                                     # should open the app with no password prompt
+
+What it does:
+- GDM automatic login (/etc/gdm3/custom.conf, backup kept as custom.conf.before-kiosk)
+- autostart entry ~/.config/autostart/medical_qt_app.desktop
+- locked dconf defaults: no screen blanking, no lock screen, no auto-suspend
+- /etc/sudoers.d/medical_qt_app: password-less sudo only for systemctl reboot/poweroff
+  and supervisorctl restart go-server
+
+The app runs as the normal user, NOT as root (root GUI apps break the desktop session and
+would write root-owned recordings).
+
+Undo: sudo deploy/kiosk-setup.sh --undo
+
+Video playback in the app needs Qt's GStreamer backend:
+sudo apt install libqt5multimedia5-plugins gstreamer1.0-plugins-good gstreamer1.0-libav
+
+USB sticks: format them as exFAT. FAT32 cannot hold files of 4 GB or more, so long
+recordings fail to copy (the Transfers drawer says so). Use a USB 3 stick in a USB 3
+(blue) port; the copy speed is limited by the stick itself.

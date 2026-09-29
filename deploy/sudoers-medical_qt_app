@@ -1,0 +1,5 @@
+# Commands the app (running as the normal desktop user, NOT as root) may run with sudo,
+# without a password. Installed by kiosk-setup.sh as /etc/sudoers.d/medical_qt_app;
+# @KIOSK_USER@ is replaced with the desktop user.
+@KIOSK_USER@ ALL=(root) NOPASSWD: /usr/bin/systemctl reboot, /usr/bin/systemctl poweroff
+@KIOSK_USER@ ALL=(root) NOPASSWD: /usr/bin/supervisorctl restart go-server
