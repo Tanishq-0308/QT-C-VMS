@@ -1197,7 +1197,15 @@ void SurgeryRecordingPage::generateReport() {
     QNetworkAccessManager *manager = new QNetworkAccessManager(this);
     QNetworkReply *reply = manager->post(request, QJsonDocument(json).toJson());
 
-    connect(reply, &QNetworkReply::finished, this, [this, reply, manager]() {
+    // It can take a while: show that it is working, and don't queue a second report meanwhile
+    const QString reportText = reportBtn->text();
+    reportBtn->setEnabled(false);
+    reportBtn->setText("Generating report…");
+
+    connect(reply, &QNetworkReply::finished, this, [this, reply, manager, reportText]() {
+        reportBtn->setEnabled(true);
+        reportBtn->setText(reportText);
+
         if (reply->error() == QNetworkReply::NoError) {
             QByteArray responseData = reply->readAll();
             QJsonDocument doc = QJsonDocument::fromJson(responseData);
@@ -1210,8 +1218,18 @@ void SurgeryRecordingPage::generateReport() {
             qDebug() << "Emitted:";
 
         } else {
-            qDebug() << "Failed to generate PDF:" << reply->errorString();
-            QMessageBox::information(this, "Warning", "Failed to Generate PDF.");
+            // Say why: the service's own error if it answered, otherwise what went wrong reaching it
+            QString reason = QJsonDocument::fromJson(reply->readAll()).object().value("error").toString();
+            if (reason.isEmpty()) {
+                if (reply->error() == QNetworkReply::OperationCanceledError)
+                    reason = "The report service did not answer within 60 seconds.";
+                else if (reply->error() == QNetworkReply::ConnectionRefusedError)
+                    reason = "The report service is not running. Restart the app.";
+                else
+                    reason = reply->errorString();
+            }
+            qWarning() << "Failed to generate PDF:" << reply->errorString() << reason;
+            QMessageBox::warning(this, "Report not generated", "Failed to generate the PDF report.\n\n" + reason);
         }
         reply->deleteLater();
         manager->deleteLater(); // one manager per report request

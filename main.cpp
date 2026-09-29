@@ -18,6 +18,7 @@
 
 #include <QStandardPaths>
 #include <QDir>
+#include <QFileInfo>
 #include <QScreen>
 
 // QString getWritableDatabasePath() {
@@ -225,7 +226,25 @@ int main(int argc, char *argv[]) {
     // 🚀 Start Flask API in background (detached)
     QString flaskDir = QCoreApplication::applicationDirPath() + "/../flask_zoom_api";
     QString flaskScript = flaskDir + "/app.py";
-    bool success = QProcess::startDetached("python3", QStringList() << flaskScript, flaskDir);
+    // Its output goes to flask.log, never to a terminal: once nobody reads a terminal its buffer
+    // fills, the next print blocks, and every request (reports, zoom) then hangs behind it.
+    // -u: unbuffered, so the log is current.
+    // If the log can't be opened the start fails, so fall back to a folder that is writable (the
+    // install folder may be read-only) and, last, to no log at all.
+    QString flaskLog = flaskDir + "/flask.log";
+    if (!QFileInfo(flaskDir).isWritable()) {
+        const QString dataDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+        flaskLog = QDir().mkpath(dataDir) ? dataDir + "/flask.log" : QProcess::nullDevice();
+    }
+    qInfo() << "Flask API log:" << flaskLog;
+    QProcess flask;
+    flask.setProgram("python3");
+    flask.setArguments(QStringList() << "-u" << flaskScript);
+    flask.setWorkingDirectory(flaskDir);
+    flask.setStandardInputFile(QProcess::nullDevice());
+    flask.setStandardOutputFile(flaskLog, QIODevice::Append);
+    flask.setStandardErrorFile(flaskLog, QIODevice::Append);
+    bool success = flask.startDetached();
     if (!success) {
         qCritical() << "❌ Failed to start Flask server in detached mode!";
         return -1;

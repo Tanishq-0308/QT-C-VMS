@@ -50,3 +50,6 @@ reports/__pycache__/
 
 # Local diagnostic run output
 tests/soak/results/
+
+# Report/zoom service log (written by the app at runtime)
+flask_zoom_api/flask.log

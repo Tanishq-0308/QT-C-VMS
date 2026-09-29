@@ -9,6 +9,7 @@ import sqlite3
 import subprocess
 import uuid
 import websockets
+import concurrent.futures
 
 from onvif import ONVIFCamera
 from recorder import recorder
@@ -26,24 +27,33 @@ def get_camera_settings():
     return "192.168.4.1", 80, "admin", "admin", "ESP32"
 
 # --- WebSocket Client ---
-async def connect_to_esp():
+ESP_CONNECT_TIMEOUT = 3   # seconds for one connection attempt
+ZOOM_REQUEST_TIMEOUT = 5  # seconds a /move-camera request may wait for the ESP32
+
+# retry_forever: the startup connection keeps trying in the background; a zoom request tries once.
+# A camera that is off is reported once, not every 5 s: that output used to pile up.
+async def connect_to_esp(retry_forever=True):
     global ws
+    reported = False
     while True:
         try:
-            print(f"Connecting to ESP32 WebSocket at {ESP_WS_URL}...")
-            ws = await websockets.connect(ESP_WS_URL)
+            ws = await asyncio.wait_for(websockets.connect(ESP_WS_URL), timeout=ESP_CONNECT_TIMEOUT)
             print(f"✅ Connected to ESP32: {ws}")
-            break
+            return True
         except Exception as e:
-            print(f"❌ Failed to connect: {e}")
+            if not reported:
+                print(f"❌ ESP32 not reachable at {ESP_WS_URL}: {e!r}")
+                reported = True
+            if not retry_forever:
+                return False
             await asyncio.sleep(5)
 
 async def send_command_to_esp(action):
     global ws
     try:
         if ws is None or not hasattr(ws, "closed") or ws.closed:
-            print("🔁 Reconnecting to ESP32...")
-            await connect_to_esp()
+            if not await connect_to_esp(retry_forever=False):
+                return {"status": "error", "message": "Zoom camera (ESP32) is not reachable"}
 
         await ws.send(action)
         print(f"✅ Sent to ESP: {action}")
@@ -137,7 +147,11 @@ def move_camera():
         elif model == "ESP32":
             esp_command = "$Z_P#" if direction == "zoom_in" else "$Z_M#"
             future = asyncio.run_coroutine_threadsafe(send_command_to_esp(esp_command), loop)
-            result = future.result()
+            try:
+                result = future.result(timeout=ZOOM_REQUEST_TIMEOUT)
+            except concurrent.futures.TimeoutError:
+                future.cancel()
+                return jsonify({"status": "error", "message": "Zoom camera (ESP32) did not answer"}), 504
             if result["status"] != "success":
                 return jsonify(result), 500
 
