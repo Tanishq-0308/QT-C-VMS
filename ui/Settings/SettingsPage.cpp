@@ -1,4 +1,5 @@
 #include "SettingsPage.hpp"
+#include "core/UsbUtils.hpp"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QFormLayout>
@@ -207,16 +208,12 @@ void SettingsPage::setupUI() {
     // ============== Connections ==============
     
     connect(uploadLogoBtn, &QPushButton::clicked, this, [=]() {
-        QString usbMountPath = "/media/brainwave";
-        QDir usbRoot(usbMountPath);
-        QStringList drives = usbRoot.entryList(QDir::Dirs | QDir::NoDotAndDotDot);
-
-        if (drives.isEmpty()) {
+        const QString usbDrive = UsbUtils::findUsbMount(false);   // only read from
+        if (usbDrive.isEmpty()) {
             QMessageBox::warning(this, "USB Not Found", "No USB drive detected. Please insert the pendrive.");
             return;
         }
 
-        QString usbDrive = usbMountPath + "/" + drives.first();
         QString logoInUsb = usbDrive + "/logo.png";
 
         if (!QFile::exists(logoInUsb)) {

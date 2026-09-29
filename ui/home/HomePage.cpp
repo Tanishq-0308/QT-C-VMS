@@ -8,8 +8,11 @@
 #include "../Recording/RecordingPage.hpp"
 #include "../PdfViewerPage/PdfViewerPage.hpp"
 #include "core/UIScale.hpp"
+#include "core/TransferManager.hpp"
 #include "../Recording/RecordingSession.hpp"
 #include "../Recording/VideoRecorder.hpp"
+#include "widgets/TransferDrawer.hpp"
+#include "widgets/Toast.hpp"
 #include <QProcess>
 #include <QMessageBox>
 #include <QHBoxLayout>
@@ -44,7 +47,9 @@ HomePage::HomePage(QWidget *parent) : ResponsiveWidget(parent) {
     dashboardPage->setRecordingSession(recordingSession);
     pdfViewerPage = new PdfViewerPage;
     surgeryRecordingPage = nullptr;
+    transferManager = new TransferManager(this);
     archivePage = new SurgeryRecordingPage(QString(), -1);
+    archivePage->setTransferManager(transferManager);
 
     stackedPages->addWidget(dashboardPage);
     stackedPages->addWidget(patientPage);
@@ -59,7 +64,31 @@ HomePage::HomePage(QWidget *parent) : ResponsiveWidget(parent) {
     // Apply stylesheet ONCE here - never again
     applyStaticStyles();
 
+    // USB transfers: drawer over the right edge, toggled from the top bar
+    transferDrawer = new TransferDrawer(transferManager, this);
+    transferDrawer->setToggleWidget(transfersBtn);
+    connect(transfersBtn, &QPushButton::clicked, this, [this]() {
+        updateDrawerOffset();
+        transferDrawer->toggleDrawer();
+    });
+    connect(transferManager, &TransferManager::activeCountChanged, this, &HomePage::updateTransfersButton);
+    connect(transferManager, &TransferManager::failuresChanged, this, &HomePage::updateTransfersButton);
+    connect(transferManager, &TransferManager::queueDrained, this, [this](int succeeded, int failed, int cancelled) {
+        if (failed > 0) {
+            Toast::show(this, QString("USB copy finished: %1 copied, %2 failed — see Transfers")
+                                  .arg(succeeded).arg(failed), 5000, "#c40000");
+        } else if (succeeded > 0) {
+            QString text = QString("USB copy finished: %1 file(s) copied").arg(succeeded);
+            if (cancelled > 0)
+                text += QString(", %1 cancelled").arg(cancelled);
+            Toast::show(this, text + ". You can remove the stick.", 4000);
+        }
+    });
+    updateTransfersButton();
+
     // Archive: recordings made from the Dashboard's Record button, not tied to a patient
+    connect(archivePage, &SurgeryRecordingPage::downloadsQueued,
+            this, &HomePage::onDownloadsQueued);
     recBlinkTimer = new QTimer(this);
     recBlinkTimer->setInterval(500);
     connect(recBlinkTimer, &QTimer::timeout, this, [this]() {
@@ -161,6 +190,11 @@ void HomePage::updateScaling() {
 
     // Update logo size
     updateLogo();
+
+    if (transferDrawer) {
+        updateTransfersButton();
+        updateDrawerOffset();
+    }
 }
 
 void HomePage::setupMainLayout() {
@@ -179,12 +213,22 @@ void HomePage::setupMainLayout() {
     updateLogo();
     topLayout->addWidget(logoLabel);
     topLayout->addStretch();
+    transfersBtn = new QPushButton;
+    transfersBtn->setObjectName("TransfersButton");
+    transfersBtn->setCursor(Qt::PointingHandCursor);
+    transfersBtn->setIcon(QIcon(":/assets/icons/usb-transfer.svg"));
+    transfersBadge = new QLabel(transfersBtn);
+    transfersBadge->setAlignment(Qt::AlignCenter);
+    transfersBadge->setAttribute(Qt::WA_TransparentForMouseEvents);
+    transfersBadge->hide();
     recIndicator = new QPushButton;
     recIndicator->setObjectName("RecIndicator");
     recIndicator->setCursor(Qt::PointingHandCursor);
     recIndicator->setToolTip("An Archive recording is running. Tap to go to the Dashboard to stop it.");
     recIndicator->hide();
     topLayout->addWidget(recIndicator);
+    topLayout->addSpacing(12);
+    topLayout->addWidget(transfersBtn);
     mainLayout->addWidget(topBar);
 
     // Sidebar
@@ -330,6 +374,65 @@ void HomePage::showSettings() {
     stackedPages->setCurrentWidget(settingPage);
 }
 
+void HomePage::onDownloadsQueued(int count) {
+    if (count > 0) {
+        // Show the queue once so it is clear where the copy went; a tap anywhere hides it
+        updateDrawerOffset();
+        transferDrawer->openDrawer();
+    } else {
+        Toast::show(this, "Those files are already being copied", 3000, "#555555");
+    }
+}
+
+void HomePage::updateDrawerOffset() {
+    const bool topBarShown = topBar->isVisible();
+    transferDrawer->setTopOffset(topBarShown ? topBar->mapTo(this, QPoint(0, topBar->height())).y() : 0);
+}
+
+void HomePage::updateTransfersButton() {
+    const int active = transferManager->activeCount();
+    const bool failed = transferManager->hasUnseenFailures();
+
+    // Icon-only square button: navy when idle, blue while copying, red after a failure
+    const int size = UIScale::scaled(104, 44, 104, this);
+    const int iconSize = size * 55 / 100;
+    transfersBtn->setFixedSize(size, size);
+    transfersBtn->setIconSize(QSize(iconSize, iconSize));
+
+    QString background = "#003366";
+    QString hover = "#004488";
+    QString tip = "USB transfers";
+    if (active > 0) {
+        background = "#0055aa";
+        hover = "#0066cc";
+        tip = QString("USB transfers: copying %1 file(s)").arg(active);
+    } else if (failed) {
+        background = "#c40000";
+        hover = "#e00000";
+        tip = "USB transfers: a copy failed, tap to see why";
+    }
+    transfersBtn->setToolTip(tip);
+    transfersBtn->setStyleSheet(QString("QPushButton#TransfersButton { background: %1; border: none; "
+                                        "border-radius: %3px; }"
+                                        "QPushButton#TransfersButton:hover { background: %2; }")
+                                    .arg(background, hover).arg(size / 4));
+
+    // Count badge on the top-right corner while files are queued or copying
+    if (active > 0) {
+        const int badge = qMax(18, size * 42 / 100);
+        transfersBadge->setText(active > 99 ? "99+" : QString::number(active));
+        transfersBadge->setStyleSheet(QString("background: #ff3b30; color: white; font-weight: bold; "
+                                              "font-size: %1px; border-radius: %2px; border: 2px solid white;")
+                                          .arg(badge * 55 / 100).arg(badge / 2));
+        transfersBadge->setFixedSize(qMax(badge, transfersBadge->sizeHint().width()), badge);
+        transfersBadge->move(size - transfersBadge->width(), 0);
+        transfersBadge->show();
+        transfersBadge->raise();
+    } else {
+        transfersBadge->hide();
+    }
+}
+
 void HomePage::updateRecIndicator() {
     // Only for Archive recordings: a patient recording has its own full-screen page
     const auto state = recordingSession->state();
@@ -364,6 +467,28 @@ void HomePage::updateRecIndicator() {
     recIndicator->show();
 }
 
+bool HomePage::confirmNoActiveTransfers(const QString& action) {
+    if (!recordingSession->isIdle()) {
+        const auto reply = QMessageBox::warning(
+            this, "Recording in progress",
+            QString("A recording is still running.\nStop it first so the file is saved completely.\n\n"
+                    "%1 anyway?").arg(action),
+            QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
+        if (reply != QMessageBox::Yes)
+            return false;
+    }
+    const int active = transferManager->activeCount();
+    if (active == 0)
+        return true;
+    const auto reply = QMessageBox::warning(
+        this, "USB copy in progress",
+        QString("%1 file(s) are still being copied to the USB stick.\n"
+                "If you %2 now, those copies will be incomplete.\n\n%3 anyway?")
+            .arg(active).arg(action.toLower(), action),
+        QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
+    return reply == QMessageBox::Yes;
+}
+
 void HomePage::restart() {
     QMessageBox::StandardButton reply;
     reply = QMessageBox::question(this,
@@ -371,7 +496,7 @@ void HomePage::restart() {
                                   "Are you sure you want to restart the system?",
                                   QMessageBox::Yes | QMessageBox::No);
 
-    if (reply == QMessageBox::Yes) {
+    if (reply == QMessageBox::Yes && confirmNoActiveTransfers("Restart")) {
         QProcess::startDetached("systemctl", QStringList() << "reboot");
     }
 }
@@ -383,7 +508,7 @@ void HomePage::shutDown() {
                                   "Are you sure you want to shut down the system?",
                                   QMessageBox::Yes | QMessageBox::No);
 
-    if (reply == QMessageBox::Yes) {
+    if (reply == QMessageBox::Yes && confirmNoActiveTransfers("Shut down")) {
         QProcess::startDetached("systemctl", QStringList() << "poweroff");
     }
 }
@@ -425,6 +550,7 @@ void HomePage::setDashboardFullscreen(bool on) {
             }
         });
 
+        transferDrawer->closeDrawer();
         topBar->hide();
         sidebar->hide();
         layoutSwitcher->setCurrentIndex(2);
@@ -453,6 +579,7 @@ void HomePage::showRecording(const QString &patientId, int surgeryId) {
     // The recording page takes over the screen; leave the dashboard's fullscreen first
     if (dashboardPage && dashboardPage->isFullscreen())
         dashboardPage->toggleFullscreen();
+    transferDrawer->closeDrawer();
 
     if (!recordingPage->parent()) {
         recordingPage->setParent(fullScreenWrapper);
@@ -487,6 +614,7 @@ void HomePage::showSurgeryRecordingPage(const QString &patientId, int surgeryId)
         delete surgeryRecordingPage;
     }
     surgeryRecordingPage = new SurgeryRecordingPage(patientId, surgeryId);
+    surgeryRecordingPage->setTransferManager(transferManager);
     stackedPages->addWidget(surgeryRecordingPage);
     stackedPages->setCurrentWidget(surgeryRecordingPage);
 
@@ -500,6 +628,8 @@ void HomePage::showSurgeryRecordingPage(const QString &patientId, int surgeryId)
 
     connect(surgeryRecordingPage, &SurgeryRecordingPage::openPdfReport,
             this, &HomePage::showPdfReport);
+    connect(surgeryRecordingPage, &SurgeryRecordingPage::downloadsQueued,
+            this, &HomePage::onDownloadsQueued);
 }
 
 void HomePage::showPdfReport(const QString &pdfPath) {

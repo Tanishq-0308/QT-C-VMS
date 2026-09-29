@@ -1,4 +1,5 @@
 #include "PdfViewerPage.hpp"
+#include "core/UsbUtils.hpp"
 #include <QLabel>
 #include <QImage>
 #include <QPixmap>
@@ -239,27 +240,16 @@ void PdfViewerPage::downloadReport()
         return;
     }
 
-    // Detect USB device under /media/brainwave/
-    QString basePath = "/media/brainwave";
-    QDir mediaDir(basePath);
-    QString destDir;
-
-    if (mediaDir.exists()) {
-        QStringList deviceDirs = mediaDir.entryList(QDir::Dirs | QDir::NoDotAndDotDot);
-
-        if (!deviceDirs.isEmpty()) {
-            QString usbMountPath = basePath + "/" + deviceDirs.first();
-            destDir = usbMountPath + "/Reports";
-        }
-    }
-
-    if (destDir.isEmpty()) {
+    // A single small PDF: copied right here rather than through the transfer queue
+    const QString usbMountPath = UsbUtils::findUsbMount();
+    if (usbMountPath.isEmpty()) {
         QMessageBox::warning(this,
                              "No USB Device Found",
                              "Please connect a USB device before attempting to download the report.");
-        qWarning() << "No USB mount found under:" << basePath;
+        qWarning() << "No USB stick mounted";
         return;
     }
+    const QString destDir = usbMountPath + "/Reports";
 
     QDir().mkpath(destDir);
 

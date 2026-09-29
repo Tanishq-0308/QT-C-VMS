@@ -20,6 +20,8 @@ class RecordingPage;
 class SurgeryDetailsPage;
 class SurgeryRecordingPage;
 class PdfViewerPage;
+class TransferManager;
+class TransferDrawer;
 class RecordingSession;
 class QTimer;
 
@@ -58,7 +60,12 @@ private:
     void reconfigureVideoInput();
     void updateLogo(const QString &logoPath = "");
     void applyStaticStyles();
+    void onDownloadsQueued(int count);
+    void updateTransfersButton();
+    void updateDrawerOffset();
     void updateRecIndicator();
+    // Asks before a reboot/poweroff would cut a USB copy short; true = go ahead
+    bool confirmNoActiveTransfers(const QString& action);
 
     // Layout widgets
     QStackedWidget *stackedPages;
@@ -71,6 +78,8 @@ private:
     QWidget *dashboardFullScreenWrapper = nullptr; // dashboard preview, fullscreen in this window
     QPushButton *dashboardExitFullscreenBtn = nullptr;
     QLabel *logoLabel;
+    QPushButton *transfersBtn = nullptr;
+    QLabel *transfersBadge = nullptr;   // count of files still copying, on the button's corner
     QPushButton *recIndicator = nullptr;  // "● REC" in the top bar while an Archive recording runs
     QTimer *recBlinkTimer = nullptr;
     bool recBlinkOn = true;
@@ -94,6 +103,10 @@ private:
 
     // The one recording at a time: Archive (Dashboard) or patient (RecordingPage)
     RecordingSession *recordingSession = nullptr;
+
+    // USB copies run here, independent of the page that started them
+    TransferManager *transferManager = nullptr;
+    TransferDrawer *transferDrawer = nullptr;
 
     // DeckLink
     com_ptr<DeckLinkDeviceDiscovery> m_deckLinkDiscovery;

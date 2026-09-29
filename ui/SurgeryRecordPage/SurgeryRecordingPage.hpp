@@ -16,6 +16,8 @@
 #include <QShowEvent>
 #include "../ClickableLabel/ClickableLabel.hpp"
 
+class TransferManager;
+
 // Structure to hold card widget references for scaling
 struct CardWidgets {
     QWidget* card;
@@ -38,6 +40,8 @@ public:
     explicit SurgeryRecordingPage(const QString& patientId, int surgeryId, QWidget *parent = nullptr);
     void refreshRecordings();
     bool isGeneral() const { return m_patientId.isEmpty(); }
+    // USB downloads are queued here; it outlives this page, so a copy survives leaving it
+    void setTransferManager(TransferManager* manager);
     void showToast(const QString& message, int durationMs = 2000);
 
 signals:
@@ -45,6 +49,7 @@ signals:
     void goToRecordingPage(const QString& patientId, int surgeryId);
     void requestPageChange(QWidget* newPage);
     void openPdfReport(const QString &pdfPath);
+    void downloadsQueued(int count);
 
 protected:
     void resizeEvent(QResizeEvent* event) override;
@@ -133,6 +138,8 @@ private:
     // IDs (empty patient id = general recordings)
     QString m_patientId;
     int m_surgeryId;
+
+    TransferManager* m_transferManager = nullptr;
 
     // Track last size to avoid unnecessary updates
     int m_lastWidth = 0;

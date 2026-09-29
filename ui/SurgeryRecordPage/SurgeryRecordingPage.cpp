@@ -29,55 +29,8 @@
 #include <QFile>
 #include <QDir>
 #include "ClickableSlider.hpp"
-#include <QFutureWatcher>
-#include <QProgressDialog>
-#include <QSaveFile>
-#include <QtConcurrent/QtConcurrent>
-#include <atomic>
-#include <memory>
-#include <unistd.h>
-
-namespace {
-
-struct UsbCopyResult {
-    int succeeded = 0;
-    QStringList failed;
-};
-
-// Runs on a worker thread. Each file is written to a temporary file next to the destination,
-// flushed to the device and then renamed over the destination, so an existing copy is only
-// replaced by a complete one (pulling the stick mid-copy never destroys a previous copy).
-UsbCopyResult copyFilesToUsb(const QStringList &sources, const QString &destDir,
-                             std::shared_ptr<std::atomic<qint64>> bytesDone)
-{
-    UsbCopyResult result;
-    QByteArray buffer(4 << 20, Qt::Uninitialized);
-
-    for (const QString &sourcePath : sources) {
-        QFile in(sourcePath);
-        QSaveFile out(destDir + "/" + QFileInfo(sourcePath).fileName());
-        bool ok = in.open(QIODevice::ReadOnly) && out.open(QIODevice::WriteOnly);
-
-        while (ok && !in.atEnd()) {
-            const qint64 n = in.read(buffer.data(), buffer.size());
-            ok = n >= 0 && out.write(buffer.constData(), n) == n;
-            if (ok)
-                *bytesDone += n;
-        }
-
-        ok = ok && out.flush() && ::fdatasync(out.handle()) == 0 && out.commit();
-        if (!ok) {
-            out.cancelWriting();
-            result.failed << QFileInfo(sourcePath).fileName();
-            qWarning() << "Failed to copy:" << sourcePath << in.errorString() << out.errorString();
-        } else {
-            result.succeeded++;
-        }
-    }
-    return result;
-}
-
-} // namespace
+#include "core/TransferManager.hpp"
+#include "core/UsbUtils.hpp"
 
 // ============== Responsive Helper Methods ==============
 
@@ -132,6 +85,10 @@ SurgeryRecordingPage::SurgeryRecordingPage(const QString &patientId, int surgery
         loadSurgeryDetails();
 }
 
+void SurgeryRecordingPage::setTransferManager(TransferManager* manager) {
+    m_transferManager = manager;
+}
+
 void SurgeryRecordingPage::setupUI() {
     mainLayout = new QVBoxLayout(this);
 
@@ -167,7 +124,6 @@ void SurgeryRecordingPage::setupUI() {
     // Surgery info section
     surgeryInfoSection = createSurgeryInfoSection();
     mainLayout->addWidget(surgeryInfoSection);
-
 
     // Action buttons
     QHBoxLayout *actionBtnLayout = new QHBoxLayout;
@@ -668,7 +624,6 @@ QWidget* SurgeryRecordingPage::createRecordingSection(const QString &title, cons
         query.bindValue(":patientId", m_patientId);
         query.bindValue(":surgeryId", m_surgeryId);
     }
-
 
     if (query.exec()) {
         int i = 0;
@@ -1269,70 +1224,27 @@ void SurgeryRecordingPage::downloadSelectedFiles() {
         return;
     }
 
-    QString basePath = "/media/brainwave";
-    QDir mediaDir(basePath);
-    QString destDir;
-
-    if (mediaDir.exists()) {
-        QStringList deviceDirs = mediaDir.entryList(QDir::Dirs | QDir::NoDotAndDotDot);
-        if (!deviceDirs.isEmpty()) {
-            QString usbMountPath = basePath + "/" + deviceDirs.first();
-            destDir = usbMountPath + "/SurgeryDownloads";
-        }
-    }
-
-    if (destDir.isEmpty()) {
+    const QString usbMountPath = UsbUtils::findUsbMount();
+    if (usbMountPath.isEmpty()) {
         QMessageBox::warning(this,
                              "No USB Device Found",
                              "Please connect a USB device before attempting to download the files.");
-        qWarning() << "No USB mount found under:" << basePath;
+        qWarning() << "No USB stick mounted";
+        return;
+    }
+    if (!m_transferManager) {
+        qWarning() << "SurgeryRecordingPage: no TransferManager, cannot download";
         return;
     }
 
-    if (!QDir().mkpath(destDir)) {
-        QMessageBox::warning(this, "Download Error", "Could not create the folder on the USB device:\n" + destDir);
-        return;
-    }
-
+    const QString destDir = usbMountPath + (isGeneral() ? "/Archive" : "/SurgeryDownloads");
     QStringList sources = selectedSnapshots.values();
     sources += selectedRecordings.values();
-    qint64 totalBytes = 0;
-    for (const QString &path : sources)
-        totalBytes += QFileInfo(path).size();
 
-    // Copy on a worker thread: multi-GB recordings must not freeze the UI (and the live view)
-    auto bytesDone = std::make_shared<std::atomic<qint64>>(0);
-    const int totalMb = int(qMax<qint64>(1, totalBytes >> 20));
-
-    auto *progress = new QProgressDialog("Copying files to the USB device…", QString(), 0, totalMb, this);
-    progress->setWindowTitle("Download");
-    progress->setWindowModality(Qt::WindowModal);
-    progress->setMinimumDuration(0);
-    progress->setAutoClose(false);
-    progress->setValue(0);
-    downloadBtn->setEnabled(false);
-
-    auto *poll = new QTimer(progress);
-    connect(poll, &QTimer::timeout, progress, [progress, bytesDone]() {
-        progress->setValue(int(bytesDone->load() >> 20));
-    });
-    poll->start(200);
-
-    auto *watcher = new QFutureWatcher<UsbCopyResult>(this);
-    connect(watcher, &QFutureWatcher<UsbCopyResult>::finished, this, [this, watcher, progress]() {
-        const UsbCopyResult result = watcher->result();
-        watcher->deleteLater();
-        progress->deleteLater();
-        downloadBtn->setEnabled(true);
-
-        showToast("Downloaded " + QString::number(result.succeeded) + " file(s) successfully");
-        if (!result.failed.isEmpty()) {
-            QMessageBox::warning(this, "Download Error",
-                                 QString::number(result.failed.size()) + " file(s) could not be copied:\n" +
-                                 result.failed.join("\n"));
-        }
-    });
-    watcher->setFuture(QtConcurrent::run(copyFilesToUsb, sources, destDir, bytesDone));
+    // The copy runs in the background (TransferManager); progress is in the Transfers drawer,
+    // so the page stays usable and the copy continues if the page is left
+    const int queued = m_transferManager->enqueue(sources, destDir);
+    emit downloadsQueued(queued);
 
     selectedSnapshots.clear();
     selectedRecordings.clear();
