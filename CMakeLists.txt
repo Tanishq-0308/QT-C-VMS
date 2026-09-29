@@ -144,6 +144,11 @@ link_directories(
     /usr/lib
 )
 
+# The library folders (e.g. /opt/ffmpeg-full/lib) are stored in the binary as RPATH, not RUNPATH:
+# RUNPATH only covers the app's direct libraries, so libavcodec's own dependency libswresample
+# was not found when the app started without LD_LIBRARY_PATH (login autostart, file manager).
+target_link_options(${PROJECT_NAME} PRIVATE "-Wl,--disable-new-dtags")
+
 # ✅ Link libraries
 target_link_libraries(${PROJECT_NAME}
     Qt5::Core
