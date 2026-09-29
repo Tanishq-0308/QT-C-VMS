@@ -79,6 +79,11 @@ public:
         return qBound(minSize, scaled(size4k, widget), maxSize);
     }
 
+    // Red page headings (Dashboard, Archive): 30px at 1080p, 36px at most on 4K
+    static int pageTitleFontSize(QWidget* widget = nullptr) {
+        return fontSize(60, 20, 36, widget);
+    }
+
     // Spacing/margin scaling
     static int spacing(int space4k, QWidget* widget = nullptr) {
         return qBound(2, scaled(space4k, widget), 100);

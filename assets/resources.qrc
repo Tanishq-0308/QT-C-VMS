@@ -23,5 +23,17 @@
         <file>icons/zoom-out.png</file>
         <file>icons/play-button.png</file>
         <file>icons/restart.png</file>
+        <file>icons/zoom-in.svg</file>
+        <file>icons/zoom-out.svg</file>
+        <file>icons/rotate.svg</file>
+        <file>icons/fullscreen.svg</file>
+        <file>icons/record.svg</file>
+        <file>icons/record-blink.svg</file>
+        <file>icons/usb-transfer.svg</file>
+        <file>icons/archive.svg</file>
+        <file>icons/snapshot.svg</file>
+        <file>icons/comment.svg</file>
+        <file>icons/exit.svg</file>
+        <file>icons/stop.svg</file>
     </qresource>
 </RCC>

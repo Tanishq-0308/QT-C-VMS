@@ -326,9 +326,15 @@ void DeckLinkOpenGLWidget::paintGL()
     {
         QPainter painter(this);
         painter.setPen(Qt::white);
-        painter.setFont(QFont("Arial", 24, QFont::Bold));
+        // Sized from the view's height, so it stays in proportion from the small recording
+        // preview up to fullscreen
+        const int fontPx = qBound(14, height() / 40, 32);
+        QFont font("Arial");
+        font.setBold(true);
+        font.setPixelSize(fontPx);
+        painter.setFont(font);
         // Real detected format, not a fixed string
-        painter.drawText(20, 40, QStringLiteral("🔴 Live • %1%2")
+        painter.drawText(fontPx * 4 / 5, fontPx * 8 / 5, QStringLiteral("🔴 Live • %1%2")
                                      .arg(m_inputSource.isEmpty() ? QString() : m_inputSource + " ")
                                      .arg(m_modeText.isEmpty() ? tr("detecting…") : m_modeText));
     }

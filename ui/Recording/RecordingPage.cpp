@@ -17,7 +17,17 @@
 #include <QSqlQuery>
 #include <QSqlError>
 #include <QMessageBox>
+#include <QIcon>
 #include "diag/DiagProbe.h"
+
+static const char* const kRecordIcon = ":/assets/icons/record.svg";
+static const char* const kStopIcon = ":/assets/icons/stop.svg";
+
+// Same icon set as the Dashboard controls, next to a text label
+static void setButtonContent(QPushButton* btn, const QString& icon, const QString& text) {
+    btn->setIcon(QIcon(icon));
+    btn->setText(text);
+}
 
 // Ensure necessary folders exist
 void RecordingPage::ensureFoldersExist() {
@@ -78,7 +88,7 @@ RecordingPage::RecordingPage(QWidget* parent)
     cardLayout->addWidget(m_previewView);
 
     // Recording time label
-    recordingTimeLabel = new QLabel("⏱ 00:00:00", this);
+    recordingTimeLabel = new QLabel("00:00:00", this);
     recordingTimeLabel->setStyleSheet("font-size: 24px; color: red;");
     recordingTimeLabel->setAlignment(Qt::AlignCenter);
     cardLayout->addWidget(recordingTimeLabel);
@@ -89,13 +99,13 @@ RecordingPage::RecordingPage(QWidget* parent)
     QHBoxLayout* controls = new QHBoxLayout();
     controls->setSpacing(16);
 
-    zoomInBtn = new QPushButton("➕ Zoom In");
-    zoomOutBtn = new QPushButton("➖ Zoom Out");
-    snapshotBtn = new QPushButton("📸 Snapshot");
-    recordBtn = new QPushButton("⏺ Start Recording");
-    commentBtn = new QPushButton("💬 Comment");
-    exitBtn = new QPushButton("❌ Exit");
-    rotateBtn = new QPushButton("🔄 Image Rotation");
+    zoomInBtn = new QPushButton(QIcon(":/assets/icons/zoom-in.svg"), "Zoom In");
+    zoomOutBtn = new QPushButton(QIcon(":/assets/icons/zoom-out.svg"), "Zoom Out");
+    snapshotBtn = new QPushButton(QIcon(":/assets/icons/snapshot.svg"), "Snapshot");
+    recordBtn = new QPushButton(QIcon(kRecordIcon), "Start Recording");
+    commentBtn = new QPushButton(QIcon(":/assets/icons/comment.svg"), "Comment");
+    exitBtn = new QPushButton(QIcon(":/assets/icons/exit.svg"), "Exit");
+    rotateBtn = new QPushButton(QIcon(":/assets/icons/rotate.svg"), "Image Rotation");
 
     QList<QPushButton*> buttons = {
         zoomOutBtn, zoomInBtn, rotateBtn, snapshotBtn, recordBtn, commentBtn, exitBtn
@@ -103,6 +113,7 @@ RecordingPage::RecordingPage(QWidget* parent)
 
     for (auto* btn : buttons) {
         btn->setMinimumHeight(48);
+        btn->setIconSize(QSize(28, 28));
         btn->setCursor(Qt::PointingHandCursor);
         controls->addWidget(btn);
     }
@@ -182,12 +193,12 @@ void RecordingPage::updateRecordingLabel() {
     int hours = recordingSeconds / 3600;
     int minutes = (recordingSeconds % 3600) / 60;
     int seconds = recordingSeconds % 60;
-    QString text = QString("⏱ %1:%2:%3")
+    QString text = QString("%1:%2:%3")
                        .arg(hours, 2, 10, QChar('0'))
                        .arg(minutes, 2, 10, QChar('0'))
                        .arg(seconds, 2, 10, QChar('0'));
     if (m_droppedFrames > 0)
-        text += QString("   ⚠ %1 frames lost").arg(m_droppedFrames);
+        text += QString("   %1 frames lost").arg(m_droppedFrames);
     recordingTimeLabel->setText(text);
 }
 
@@ -195,7 +206,7 @@ void RecordingPage::resetRecordingUi() {
     if (uiRecordingTimer)
         uiRecordingTimer->stop();
     recordingTimeLabel->hide();
-    recordBtn->setText("⏺ Start Recording");
+    setButtonContent(recordBtn, kRecordIcon, "Start Recording");
     recordBtn->setEnabled(true);
     m_recording = false;
     currentRecordingId = -1;
@@ -205,7 +216,7 @@ void RecordingPage::resetRecordingUi() {
 void RecordingPage::onToggleRecording() {
     if (!m_recording) {
         if (m_videoRecorder->isRecording()) {
-            showToast("⏳ Previous recording is still being saved…");
+            showToast("Previous recording is still being saved…");
             return;
         }
 
@@ -228,7 +239,7 @@ void RecordingPage::onToggleRecording() {
         }
 
         // The encoder opens on the recorder thread; onRecordingStarted() confirms it
-        recordBtn->setText("⏳ Starting…");
+        recordBtn->setText("Starting…");
         recordBtn->setEnabled(false);
     } else {
         qDebug() << "⏹️ Stopping recording...";
@@ -236,7 +247,7 @@ void RecordingPage::onToggleRecording() {
         m_videoRecorder->stopRecording();
         if (uiRecordingTimer)
             uiRecordingTimer->stop();
-        recordBtn->setText("💾 Saving…");
+        recordBtn->setText("Saving…");
         recordBtn->setEnabled(false);
     }
 }
@@ -247,7 +258,7 @@ void RecordingPage::onRecordingStarted(const QString& path) {
     updateRecordingLabel();
     recordingTimeLabel->show();
     uiRecordingTimer->start(1000);  // UI timer for HH:MM:SS
-    recordBtn->setText("⏹ Stop Recording");
+    setButtonContent(recordBtn, kStopIcon, "Stop Recording");
     recordBtn->setEnabled(true);
 
     currentRecordingId = insertRecordingRow(path);
@@ -266,15 +277,15 @@ void RecordingPage::onRecordingStopped(const QString& path, qint64 framesEncoded
     if (!wasRecording)
         return; // start failed; errorOccurred() already told the user
     if (framesDropped > 0)
-        showToast(QString("⚠ Recording saved, %1 frames were lost").arg(framesDropped), 5000);
+        showToast(QString("Recording saved, %1 frames were lost").arg(framesDropped), 5000);
     else
-        showToast("✅ Recording saved", 2000);
+        showToast("Recording saved", 2000);
 }
 
 void RecordingPage::onSegmentStarted(const QString& path) {
     // The input format changed; the recorder continued in a new file
     insertRecordingRow(path);
-    showToast("ℹ Video input changed — recording continues in a new file", 4000);
+    showToast("Video input changed — recording continues in a new file", 4000);
 }
 
 void RecordingPage::onFramesDropped(qint64 totalDropped) {
@@ -306,7 +317,7 @@ void RecordingPage::onSnapshot()
     auto onSaved = [this, cleanPath, title, patientId, surgeryId](bool saved) {
         if (!saved) {
             qWarning() << "❌ Snapshot could not be written:" << cleanPath;
-            showToast("❌ Failed to save snapshot");
+            showToast("Failed to save snapshot");
             return;
         }
         QSqlQuery query;
@@ -318,16 +329,16 @@ void RecordingPage::onSnapshot()
 
         if (!query.exec()) {
             qDebug() << "❌ Failed to insert snapshot path into DB:" << query.lastError().text();
-            showToast("❌ Snapshot saved but not added to the surgery record");
+            showToast("Snapshot saved but not added to the surgery record");
         } else {
             qDebug() << "✅ Snapshot saved to DB:" << title;
-            showToast("📸 Snapshot taken successfully!");
+            showToast("Snapshot taken successfully!");
         }
     };
 
     if (!m_previewView || !m_previewView->saveSnapshot(outputPath, onSaved)) {
         qWarning() << "❌ Snapshot: no image to capture";
-        showToast("❌ Failed to take snapshot");
+        showToast("Failed to take snapshot");
     }
 }
 

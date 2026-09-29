@@ -52,7 +52,7 @@ QPushButton#ZoomButton {
     border:none;
     color:#ffffff;
     font-weight:600;
-    padding:12px 32px;
+    padding:12px 28px;
     margin:0 18px;
     border-radius:12px;
     font-size:20px;

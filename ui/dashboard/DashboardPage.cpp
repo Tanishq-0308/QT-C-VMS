@@ -1,4 +1,6 @@
 #include "DashboardPage.hpp"
+#include "core/UIScale.hpp"
+#include <QIcon>
 #include "../widgets/VideoWidget.hpp"
 #include "../widgets/video_signal_bridge.hpp"
 #include "../widgets/CameraZoomAPI.hpp"
@@ -64,7 +66,8 @@ DashboardPage::DashboardPage(QWidget *parent) : QWidget(parent)
 
     // Title label
     QLabel *titleLabel = new QLabel("Dashboard");
-    titleLabel->setStyleSheet("color: red; font-weight: bold; font-size: 40px;");
+    titleLabel->setStyleSheet(QString("color: red; font-weight: bold; font-size: %1px;")
+                                  .arg(UIScale::pageTitleFontSize()));
     titleLabel->setAlignment(Qt::AlignCenter);
     titleLayout->addWidget(titleLabel);
 
@@ -105,20 +108,25 @@ DashboardPage::DashboardPage(QWidget *parent) : QWidget(parent)
     auto *zoomL = new QHBoxLayout(zoomBar);
     zoomL->addStretch();
 
-    auto *zoomOut = new QPushButton("Zoom Out", zoomBar);
-    zoomOut->setObjectName("ZoomButton");
+    // Icon-only controls; the tooltip names each one
+    auto makeIconButton = [zoomBar](const QString &icon, const QString &tip) {
+        auto *btn = new QPushButton(zoomBar);
+        btn->setObjectName("ZoomButton");
+        btn->setIcon(QIcon(icon));
+        btn->setIconSize(QSize(UIScale::scaled(64, 28, 64), UIScale::scaled(64, 28, 64)));
+        btn->setToolTip(tip);
+        btn->setCursor(Qt::PointingHandCursor);
+        return btn;
+    };
+
+    auto *zoomOut = makeIconButton(":/assets/icons/zoom-out.svg", "Zoom out (hold)");
     zoomOut->setAutoRepeat(false);  // We handle repeat manually
 
-    auto *zoomIn = new QPushButton("Zoom In", zoomBar);
-    zoomIn->setObjectName("ZoomButton");
+    auto *zoomIn = makeIconButton(":/assets/icons/zoom-in.svg", "Zoom in (hold)");
     zoomIn->setAutoRepeat(false);
 
-    auto *rotateBtn = new QPushButton("Rotate", zoomBar);
-    rotateBtn->setObjectName("ZoomButton");
-
-    auto *fullscreenBtn = new QPushButton("⛶", zoomBar);
-    fullscreenBtn->setObjectName("ZoomButton");
-    fullscreenBtn->setToolTip("Fullscreen");
+    auto *rotateBtn = makeIconButton(":/assets/icons/rotate.svg", "Rotate");
+    auto *fullscreenBtn = makeIconButton(":/assets/icons/fullscreen.svg", "Fullscreen");
 
     zoomL->addWidget(zoomOut);
     zoomL->addWidget(zoomIn);
