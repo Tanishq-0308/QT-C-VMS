@@ -58,6 +58,9 @@ private:
     void setInputSignalValid(bool valid);
     void setDashboardFullscreen(bool on);
     void reconfigureVideoInput();
+    QString selectedVideoInput() const;   // Settings' video input: SDI, HDMI or AHD
+    com_ptr<DeckLinkInputDevice> deviceForInput(const QString& input) const;
+    void startCaptureOn(com_ptr<DeckLinkInputDevice> device, const QString& input);
     void updateLogo(const QString &logoPath = "");
     void applyStaticStyles();
     void onDownloadsQueued(int count);

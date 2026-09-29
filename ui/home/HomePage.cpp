@@ -720,60 +720,94 @@ void HomePage::addDevice(com_ptr<IDeckLink>& deckLink) {
     auto inputDevice = make_com_ptr<DeckLinkInputDevice>(this, deckLink);
     if (!inputDevice->Init())
         return;
-
-    QString selectedInput = "SDI";
-    {
-        QSqlQuery q("SELECT video_input FROM settings ORDER BY id LIMIT 1");
-        if (q.next())
-            selectedInput = q.value(0).toString();
-    }
-
-    int64_t inputConnection = (selectedInput.compare("SDI", Qt::CaseInsensitive) == 0)
-                                ? bmdVideoConnectionSDI
-                                : bmdVideoConnectionHDMI;
-
-    com_ptr<IDeckLinkConfiguration> config;
-    deckLink->QueryInterface(IID_IDeckLinkConfiguration, reinterpret_cast<void**>(config.releaseAndGetAddressOf()));
-    if (config) {
-        if (config->SetInt(bmdDeckLinkConfigVideoInputConnection, inputConnection) != S_OK) {
-            qWarning() << "Failed to set DeckLink input connection to" << selectedInput;
-        } else {
-            qDebug() << "DeckLink input connection set to" << selectedInput;
-        }
-    }
-
     m_inputDevices[key] = inputDevice;
-
-    // Only one input feeds the live view. Starting every discovered device into the same
-    // preview would interleave different sources and multiply the frame rate.
-    if (m_selectedDevice) {
-        qWarning() << "Additional DeckLink device detected; not capturing from it:" << inputDevice->getDeviceName();
-        return;
-    }
-    m_currentDeckLink = deckLink;
 
     if (!m_sharedDelegate) {
         m_sharedDelegate = dashboardPage->createSharedDelegate();
         dashboardPage->setSharedDelegate(m_sharedDelegate);
         recordingPage->setSharedDelegate(m_sharedDelegate);
+
+        bool showLabel = true;
+        QSqlQuery labelQuery("SELECT show_video_label FROM settings ORDER BY id LIMIT 1");
+        if (labelQuery.next())
+            showLabel = labelQuery.value(0).toInt() == 1;
+        dashboardPage->sharedGLWidget()->setShowLabel(showLabel);
     }
 
-    // ✅ ADD THIS LINE - Set input source on startup
-    dashboardPage->sharedGLWidget()->setInputSource(selectedInput);
-
-    // After setInputSource line, add:
-    bool showLabel = true;
-    QSqlQuery labelQuery("SELECT show_video_label FROM settings ORDER BY id LIMIT 1");
-    if (labelQuery.next()) {
-        showLabel = labelQuery.value(0).toInt() == 1;
+    // Only one input feeds the live view (starting every card into the same preview would
+    // interleave sources). Keep the current card unless this one has the selected input and it
+    // doesn't, e.g. HDMI selected while capturing from an SDI-only card.
+    const QString selectedInput = selectedVideoInput();
+    const com_ptr<DeckLinkInputDevice> wanted = deviceForInput(selectedInput);
+    if (m_selectedDevice && wanted == m_selectedDevice) {
+        qInfo() << "Additional DeckLink device detected; not capturing from it:" << inputDevice->getDeviceName();
+        return;
     }
-    dashboardPage->sharedGLWidget()->setShowLabel(showLabel);
+    startCaptureOn(wanted, selectedInput);
+}
 
+// "SDI" -> SDI; HDMI and AHD (through an HDMI converter) -> HDMI
+QString HomePage::selectedVideoInput() const {
+    QSqlQuery q("SELECT video_input FROM settings ORDER BY id LIMIT 1");
+    return q.next() ? q.value(0).toString() : QStringLiteral("SDI");
+}
+
+static int64_t connectionForInput(const QString& input) {
+    return input.compare("SDI", Qt::CaseInsensitive) == 0 ? bmdVideoConnectionSDI : bmdVideoConnectionHDMI;
+}
+
+static bool hasInputConnection(com_ptr<DeckLinkInputDevice> device, int64_t connection) {
+    if (!device)
+        return false;
+    com_ptr<IDeckLinkProfileAttributes> attributes;
+    device->getDeckLinkInstance()->QueryInterface(IID_IDeckLinkProfileAttributes,
+                                                  reinterpret_cast<void**>(attributes.releaseAndGetAddressOf()));
+    int64_t connections = 0;
+    return attributes && attributes->GetInt(BMDDeckLinkVideoInputConnections, &connections) == S_OK
+           && (connections & connection);
+}
+
+// The card to capture from for this input: the current one if it has the input, otherwise the
+// first card that does; if none has it, the current (or first) card
+com_ptr<DeckLinkInputDevice> HomePage::deviceForInput(const QString& input) const {
+    const int64_t connection = connectionForInput(input);
+    if (hasInputConnection(m_selectedDevice, connection))
+        return m_selectedDevice;
+    for (const auto& pair : m_inputDevices)
+        if (hasInputConnection(pair.second, connection))
+            return pair.second;
+    if (m_selectedDevice)
+        return m_selectedDevice;
+    return m_inputDevices.empty() ? com_ptr<DeckLinkInputDevice>() : m_inputDevices.begin()->second;
+}
+
+// Captures `input` on `device`, moving the live view and the recorder off the previous card
+void HomePage::startCaptureOn(com_ptr<DeckLinkInputDevice> device, const QString& input) {
+    if (!device)
+        return;
+    if (m_selectedDevice && !(m_selectedDevice == device)) {
+        m_selectedDevice->stopCapture();
+        m_selectedDevice->setVideoFrameSink(nullptr);
+    }
+    device->stopCapture();
+
+    const int64_t connection = connectionForInput(input);
+    com_ptr<IDeckLinkConfiguration> config = device->getDeckLinkConfiguration();
+    if (!hasInputConnection(device, connection))
+        qWarning() << device->getDeviceName() << "has no" << input << "input and no card found so far has one;"
+                   << "capturing its current input";
+    else if (!config || config->SetInt(bmdDeckLinkConfigVideoInputConnection, connection) != S_OK)
+        qWarning() << "Could not switch" << device->getDeviceName() << "to" << input;
+    else
+        qInfo() << "Capturing" << input << "from" << device->getDeviceName();
+
+    dashboardPage->sharedGLWidget()->setInputSource(input);
     // Frames go to the recorder straight from the capture thread
-    inputDevice->setVideoFrameSink(recordingSession->recorder());
+    device->setVideoFrameSink(recordingSession->recorder());
     setInputSignalValid(false);
-    inputDevice->startCapture(kCaptureDisplayMode, m_sharedDelegate.get(), true);
-    m_selectedDevice = inputDevice;
+    device->startCapture(kCaptureDisplayMode, m_sharedDelegate.get(), true);
+    m_selectedDevice = device;
+    m_currentDeckLink = device->getDeckLinkInstance();
 }
 
 void HomePage::removeDevice(const com_ptr<IDeckLink>& deckLink) {
@@ -804,32 +838,10 @@ void HomePage::removeDevice(const com_ptr<IDeckLink>& deckLink) {
 }
 
 void HomePage::reconfigureVideoInput() {
-    if (!m_selectedDevice || !m_currentDeckLink)
+    if (m_inputDevices.empty())
         return;
-
-    m_selectedDevice->stopCapture();
-
-    QString selectedInput = "SDI";
-    QSqlQuery q("SELECT video_input FROM settings ORDER BY id LIMIT 1");
-    if (q.next())
-        selectedInput = q.value(0).toString();
-    
-    qDebug() << selectedInput;
-    
-    if (dashboardPage)
-        dashboardPage->sharedGLWidget()->setInputSource(selectedInput);
-
-    int64_t inputConnection = (selectedInput.compare("SDI", Qt::CaseInsensitive) == 0)
-                                ? bmdVideoConnectionSDI
-                                : bmdVideoConnectionHDMI;
-
-    com_ptr<IDeckLinkConfiguration> config;
-    m_currentDeckLink->QueryInterface(IID_IDeckLinkConfiguration, reinterpret_cast<void**>(config.releaseAndGetAddressOf()));
-    if (config)
-        config->SetInt(bmdDeckLinkConfigVideoInputConnection, inputConnection);
-
-    setInputSignalValid(false);
-    m_selectedDevice->startCapture(kCaptureDisplayMode, m_sharedDelegate.get(), true);
+    const QString input = selectedVideoInput();
+    startCaptureOn(deviceForInput(input), input);
 }
 
 HomePage::~HomePage() {
