@@ -41,7 +41,9 @@ Test-case IDs refer to [TEST_CASES.md](TEST_CASES.md).
 - [ ] Tests never touch the production `sqlite.db` (they use temp copies)
 
 ### Security
-- [ ] No hard-coded credentials remain (login, sudo password, shutdown key, RTSP password) (SEC-01)
+- [ ] No hard-coded credentials remain (sudo password, shutdown key, RTSP password). The login page is disabled by design; its code is kept, unused, in `ui/login` (SEC-01)
+- [ ] Kiosk setup applied (`sudo deploy/kiosk-setup.sh`): boots to the Dashboard with no password prompt and never locks (UI-02)
+- [ ] `/etc/sudoers.d/medical_qt_app` only allows reboot/poweroff and the go-server restart
 - [ ] Flask API is bound to 127.0.0.1, or is authenticated (SEC-02)
 - [ ] The repo or package contains no patient data (sqlite.db, recordings, reports) (SEC-03)
 
@@ -57,12 +59,12 @@ Test-case IDs refer to [TEST_CASES.md](TEST_CASES.md).
 - [ ] **[C]** Make a 10 s test recording, then play it back from the surgery page: the file plays and the duration is right
 - [ ] Take a test snapshot; it appears in the gallery
 - [ ] Patient and surgery are selected correctly **before** pressing Record
-- [ ] USB export drive is present, if the case needs export
+- [ ] USB export drive is present, if the case needs export. It must be **exFAT**: FAT32 can't hold recordings of 4 GB or more
 - [ ] Zoom control works, if a camera with zoom is used
 
 ## C. Post-surgery
 
 - [ ] Stop recording **before** leaving the page or closing the app
 - [ ] Recording plays back in full
-- [ ] Export or backup is done; the USB drive is safely ejected
+- [ ] Export or backup is done: the **USB Transfers** drawer shows every file as Copied, with no Failed rows. Only then eject the USB drive
 - [ ] Clean shutdown from the app (not a power switch)

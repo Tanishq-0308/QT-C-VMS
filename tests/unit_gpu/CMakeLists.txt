@@ -18,7 +18,7 @@ endif()
 get_filename_component(REPO_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/../.. ABSOLUTE)
 set(SANITIZE "" CACHE STRING "address | thread | empty")
 
-find_package(Qt5 REQUIRED COMPONENTS Core Test)
+find_package(Qt5 REQUIRED COMPONENTS Core Sql Test)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(AV REQUIRED libavformat libavcodec libavutil)
 
@@ -44,3 +44,19 @@ elseif(SANITIZE STREQUAL "thread")
   target_link_options(tst_videorecorder PRIVATE -fsanitize=thread)
 endif()
 target_compile_definitions(tst_videorecorder PRIVATE SRC_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
+
+# The app's shared RecordingSession (patient + Archive recordings) over the real VideoRecorder
+add_executable(tst_recording_session
+  tst_recording_session.cpp
+  ${REPO_ROOT}/ui/Recording/RecordingSession.cpp
+  ${REPO_ROOT}/ui/Recording/RecordingSession.hpp
+  ${REPO_ROOT}/ui/Recording/VideoRecorder.cpp
+  ${REPO_ROOT}/ui/Recording/VideoRecorder.hpp
+  ${REPO_ROOT}/cuda/frame_convert.cu
+)
+target_include_directories(tst_recording_session PRIVATE
+  ${REPO_ROOT} ${REPO_ROOT}/include ${REPO_ROOT}/decklink
+  /usr/local/cuda/include ${AV_INCLUDE_DIRS})
+target_link_directories(tst_recording_session PRIVATE /usr/local/cuda/targets/x86_64-linux/lib ${AV_LIBRARY_DIRS})
+target_link_libraries(tst_recording_session PRIVATE Qt5::Core Qt5::Sql Qt5::Test ${AV_LIBRARIES} cuda cudart pthread)
+target_compile_definitions(tst_recording_session PRIVATE APP_SOURCE_DIR="${REPO_ROOT}")

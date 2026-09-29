@@ -12,9 +12,14 @@ export QT_QPA_PLATFORM=offscreen
 
 run_variant() {   # $1 = build dir name, $2 = label, $3.. = extra cmake args
     local bdir="$APP/$1" label="$2"; shift 2
+    # A build folder configured from another checkout (e.g. after the repo moved) can't be reused
+    if [[ -f "$bdir/CMakeCache.txt" ]] && ! grep -qx "CMAKE_HOME_DIRECTORY:INTERNAL=$HERE" "$bdir/CMakeCache.txt"; then
+        echo "$(basename "$bdir") was configured for another checkout; rebuilding it from scratch"
+        rm -rf "$bdir"
+    fi
     cmake -S "$HERE" -B "$bdir" "$@" > "$RES/cmake_$label.txt" 2>&1
     make -C "$bdir" -j"$JOBS" > "$RES/build_$label.txt" 2>&1 || { echo "build $label failed (see $RES/build_$label.txt)"; return 1; }
-    for t in tst_comptr tst_database tst_widget_lifetime; do
+    for t in tst_comptr tst_database tst_widget_lifetime tst_features; do
         ( cd "$bdir" && \
           ASAN_OPTIONS=detect_leaks=1:fast_unwind_on_malloc=0:malloc_context_size=40 \
           LSAN_OPTIONS="suppressions=$HERE/lsan.supp" \

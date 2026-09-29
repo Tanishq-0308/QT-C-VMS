@@ -67,7 +67,7 @@
 | MEM-04 | P1 | Recorder start/stop ×50 | tst_videorecorder startStopCycles | RSS growth < 20 MB and GPU growth < 16 MB between cycle 5 and 50 | tst_videorecorder | |
 | MEM-05 | P1 | ASan/LSan whole-app run | `build-asan`: navigate all pages, open all dialogs, record ×3, snapshot ×5, clean exit | No LSan leak in app code | asan | |
 | MEM-06 | P2 | Dialog lifetime ×100 | Open/close every dialog 100× | Child-QObject count of the parent returns to baseline. Suspects: `new EditPatientDialog(…, this)` in SurgeryDetailsPage and `new QDialog(this)` in SurgeryRecordingPage | tst_widget_lifetime | |
-| MEM-07 | P2 | Page navigation ×200 | Login → home → patient → surgery → surgery-recording → record page → back | RSS and QObject count flat; SurgeryRecordingPage rebuilt without leaking | manual + monitor | |
+| MEM-07 | P2 | Page navigation ×200 | Dashboard → patient → surgery → surgery-recording → record page → back; Dashboard → Archive → record page → back | RSS and QObject count flat; SurgeryRecordingPage rebuilt without leaking | manual + monitor | |
 | MEM-08 | P2 | Report generation ×50 | Generate the PDF report 50× | No QNetworkAccessManager growth (one is created per click) | manual + monitor | |
 | MEM-09 | P3 | Heap-churn profile | `perf record -g` for 60 s while live | Top allocations per frame identified: QImage in paintGL, av_frame per frame | perf | |
 
@@ -117,9 +117,33 @@
 |---|---|---|---|---|---|---|
 | PLAY-01 | P2 | Play a recording ×100 | Open/close the player dialog | Plays; RSS and QObject count flat | manual + monitor | |
 | PLAY-02 | P2 | Surgery with 500 thumbnails | Open the surgery recording page | UI responsive; live view unaffected | manual + diag | |
-| PLAY-03 | P1 | USB export of a 4 GB recording | Export while live | Live view does not freeze (the copy is synchronous on the GUI thread today); progress is shown | manual + diag | |
+| PLAY-03 | P1 | USB export of a 4 GB recording | Export while live, to an exFAT stick | Live view does not freeze; the copy runs in the background (TransferManager) and the Transfers drawer shows progress, MB/s and time left; no modal dialog | manual + diag | |
 | PLAY-04 | P2 | No USB / USB removed mid-copy / two USB drives | Export | Clear error; the destination file is not deleted before the copy succeeds; the right drive is used | manual | |
 | PLAY-05 | P2 | PDF report | Generate, view, export | Correct patient data; rendering doesn't block the live view for more than 100 ms | manual + diag | |
+
+## GEN — General (non-patient) recordings
+
+| ID | P | Parameters | Steps | Expected | Auto | Result |
+|---|---|---|---|---|---|---|
+| GEN-01 | P1 | Record from the Dashboard | Press ⏺ Record on the Dashboard, wait 1 min, press it again | No page change. While recording, the button's red dot blinks and a blinking ● REC timer shows in the top bar (nothing is drawn over the video). After the stop, a toast says "Recording saved to the Archive"; the file is in `recordings/general/` and `SELECT * FROM recordings WHERE patient_id IS NULL` shows it | manual | |
+| GEN-02 | P1 | Archive page | Open it from the sidebar | Lists the general media newest first; no surgery info, Edit, Report or Back; view, comment, delete and download work | manual | |
+| GEN-03 | P1 | Separation | Record for a patient and a general recording | Patient media never appears in the Archive, and general media never appears under a surgery | manual | |
+| GEN-04 | P1 | Record in the background | Start an Archive recording, go fullscreen and back, rotate, open Patients, Settings and the Archive, then tap the top-bar ● REC and stop | Recording never stops while navigating; ● REC stays visible in the top bar (it is hidden with the top bar in fullscreen); the file plays in full with the rotation applied from that point | manual | |
+| GEN-05 | P2 | One recording at a time | While an Archive recording runs, open a surgery and press Start Recording | Refused with "An Archive recording is running. Stop it from the Dashboard first."; the Archive recording continues | manual | |
+
+## XFER — Background USB transfers
+
+| ID | P | Parameters | Steps | Expected | Auto | Result |
+|---|---|---|---|---|---|---|
+| XFER-01 | P1 | Use the app while copying | Download several GB, then open Patients, another surgery, Settings and the Dashboard mid-copy | UI responsive; the drawer keeps updating; the top-bar button shows "Copying N file(s)…"; a toast reports the result when done | manual | |
+| XFER-02 | P1 | Leave the page that started the copy | Start a download on a surgery gallery, go back and open another surgery | Copy continues and completes (the gallery page is rebuilt, the copy is not lost) | manual | |
+| XFER-03 | P1 | Cancel | Cancel one queued file, the file being copied, and then Cancel all | Cancelled rows say so; no partial or temp file is left on the stick; the remaining files still copy | manual | |
+| XFER-04 | P1 | Stick pulled mid-copy | Remove the stick during a copy | That file and the rest are marked Failed with a reason; the app doesn't hang; a previous copy of the file on the stick is intact | manual | |
+| XFER-05 | P1 | FAT32 stick, file ≥ 4 GB | Download a ≥ 4 GB recording to a FAT32 stick | Fails at once with "format it as exFAT"; smaller files in the same batch still copy | manual | |
+| XFER-06 | P2 | Stick too small | Download more than the free space | The file that doesn't fit fails with "Not enough free space" before copying | manual | |
+| XFER-07 | P2 | Speed | `dd if=<4 GB recording> of=<stick>/t bs=4M oflag=direct status=progress`, then export the same file | The app's MB/s (shown in the drawer) is close to the `dd` figure | manual | |
+| XFER-08 | P2 | Restart / Shut Down while copying | Press Restart or Shut Down mid-copy | An extra warning says a copy is running; No keeps the device on | manual | |
+| XFER-09 | P3 | Duplicate download | Download the same file twice while it's queued | The second request adds nothing ("already being copied") | manual | |
 
 ## DB — Data integrity
 
@@ -138,7 +162,7 @@
 | ID | P | Parameters | Steps | Expected | Auto | Result |
 |---|---|---|---|---|---|---|
 | UI-01 | P2 | Navigation loop ×200 | See MEM-07 | No crash; flat memory | manual | |
-| UI-02 | P2 | Logout/login while capturing | Log out, log in, check live | Live OK; no second capture | manual + diag | |
+| UI-02 | P1 | Boot to dashboard | After `sudo deploy/kiosk-setup.sh`, reboot; leave the device idle for 30 min | No Ubuntu login and no in-app login: the app opens on the Dashboard with live video. The screen never blanks, locks or asks for a password | manual | |
 | UI-03 | P1 | Leave the Recording page while recording | Press Back during a recording | Recording continues or stops explicitly; it is never lost silently | manual | |
 | UI-04 | P1 | Close the app while recording | Close the window | Recording is finalised and the file is valid | manual | |
 | UI-05 | P2 | Clean shutdown | Close the app | Exits in < 3 s; capture stopped; Flask child stopped; no crash | manual | |
@@ -156,7 +180,7 @@
 
 | ID | P | Item | Expected | Result |
 |---|---|---|---|---|
-| SEC-01 | P1 | Hard-coded login (admin/123456, pre-filled), sudo password in source, shutdown key | Removed | |
+| SEC-01 | P1 | Hard-coded login (admin/123456, pre-filled), sudo password in source, shutdown key | Removed from use | Login page not shown (client requirement: no login); its code is kept, unused, in `ui/login` for later. The device relies on physical access control |
 | SEC-02 | P1 | Flask on 0.0.0.0:8001 with no auth; endpoints return the camera password or PHI and write arbitrary paths | Localhost-only plus auth | |
 | SEC-03 | P1 | Patient DB, recordings and reports committed to the repo | Excluded | |
 | SEC-04 | P2 | Existing `test_*` binaries modify the real sqlite.db | Tests use temp DBs only | |

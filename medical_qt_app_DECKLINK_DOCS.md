@@ -10,13 +10,26 @@ Source folder: `/home/brainwave/Desktop/medical_qt_app/`
 
 ## What the application does
 
-1. **Live preview** of the operating-room camera on the dashboard
-2. **Record** the surgery to an MP4 file, scoped to a specific patient/surgery
-3. **Snapshots** to JPG during recording
-4. **Add comments** linked to the recording (saved in DB)
-5. **Zoom** an external PTZ camera (over network — separate from DeckLink)
-6. **Reports** generated as PDFs (separate Flask sidecar)
-7. **Patient / doctor / surgery management** through a SQLite database
+1. **No login.** The device boots straight into the dashboard: Ubuntu logs in
+   automatically and starts the app (see [Kiosk setup](#kiosk-setup-no-login-screen)),
+   and the app shows no login page (the code is kept, unused, in `ui/login`)
+2. **Live preview** of the operating-room camera on the dashboard
+3. **Record** the surgery to an MP4 file, scoped to a specific patient/surgery
+4. **Archive recordings.** The Dashboard's **⏺ Record** button starts recording at
+   once, not tied to any patient, with no page change and no snapshots.
+   - While it records, the button's red dot blinks and a blinking **● REC** timer
+     shows in the top bar.
+   - The user can go fullscreen or to any page while it records; recording continues
+     until Record is pressed again.
+   - Recordings are listed on the **Archive** page (sidebar)
+5. **Snapshots** to JPG during recording
+6. **Add comments** linked to the recording (saved in DB)
+7. **USB export in the background.** Selected files are queued and copied to the
+   pendrive one at a time, while the app stays fully usable. A **USB Transfers**
+   drawer on the right shows each file's progress, speed and result
+8. **Zoom** an external PTZ camera (over network — separate from DeckLink)
+9. **Reports** generated as PDFs (separate Flask sidecar)
+10. **Patient / doctor / surgery management** through a SQLite database
 
 ---
 
@@ -70,6 +83,39 @@ Source folder: `/home/brainwave/Desktop/medical_qt_app/`
 > renders at 1080p inside a smaller window, the file is 1080p even if the card
 > is feeding 4K. The USB version fixes this — see the other doc.
 
+### USB export
+
+```
+Gallery page                HomePage (lives as long as the app)
+"Download Selected" ---->   TransferManager ---- queue: one job per file
+                              |  one worker thread (QThreadPool, max 1)
+                              |  copyFile(): 8 MiB reads, fdatasync every 64 MiB,
+                              |  temp file + rename (QSaveFile)
+                              v
+                            progress every 200 ms
+                              |
+            +-----------------+------------------+
+            v                                    v
+  TransferDrawer (right-side panel)     Top-bar "USB Transfers" button
+  one row per file: bar, MB/s,          shows "Copying N file(s)…",
+  time left, Cancel                     turns red after a failure
+```
+
+1. The gallery (`SurgeryRecordingPage`) finds the stick with `UsbUtils::findUsbMount()`
+   and calls `TransferManager::enqueue()`. It returns at once, and HomePage opens the drawer.
+2. The manager copies one file at a time on its own thread. Two copies to one stick
+   at the same time are slower than one after the other.
+3. The gallery page can be closed or rebuilt mid-copy, because the manager belongs to
+   HomePage, not to the page.
+4. Before each file, the manager checks that:
+   - the source file still exists;
+   - the stick is still mounted;
+   - the file fits in the free space;
+   - the file is not 4 GB or larger when the stick is FAT32. FAT32 cannot hold such
+     files, so the job fails with "format it as exFAT".
+5. When the queue empties, a toast reports the result. Restart and Shut Down warn
+   if a copy is still running.
+
 ---
 
 ## Folder layout
@@ -77,7 +123,7 @@ Source folder: `/home/brainwave/Desktop/medical_qt_app/`
 ```
 medical_qt_app/
 +-- main.cpp                    starts QApplication, opens DB, launches Flask, shows MainWindow
-+-- mainwindow.cpp/.hpp         stacks LoginPage / HomePage / RecordingPage
++-- mainwindow.cpp/.hpp         holds HomePage (login page not used: the app opens on the dashboard; ui/login is kept for later)
 +-- CMakeLists.txt              build system — links DeckLinkAPI, CUDA, NVENC, FFmpeg
 |
 +-- decklink/                   capture-layer code (DeckLink-specific)
@@ -90,17 +136,21 @@ medical_qt_app/
 +-- sdk/                        BlackMagic SDK extras
 +-- cuda/                       NV12 -> RGBA CUDA kernel (used during rotation)
 |
-+-- core/                       AppController, ResponsiveWidget, UIScale
++-- core/                       AppController, ResponsiveWidget, UIScale,
+|                               TransferManager (background USB copy queue),
+|                               UsbUtils (find the mounted stick, FAT32 check)
 +-- database/                   DatabaseManager, SQL migration scripts
-+-- widgets/                    misc shared widgets (VideoWidget, CameraZoomAPI, ...)
++-- widgets/                    misc shared widgets (VideoWidget, CameraZoomAPI, ...),
+|                               TransferDrawer (USB transfers panel), Toast
++-- deploy/                     kiosk-setup.sh (autologin + autostart + no lock screen),
+|                               autostart .desktop entry, sudoers rule
 |
 +-- ui/
-|   +-- login/                  LoginPage
-|   +-- home/                   HomePage  -- main shell, sidebar, page switching
-|   +-- dashboard/              DashboardPage -- live preview + zoom controls
+|   +-- home/                   HomePage  -- main shell, sidebar, page switching, USB transfers
+|   +-- dashboard/              DashboardPage -- live preview, zoom, fullscreen, Record (general)
 |   +-- patient/                PatientPage  -- patient list / CRUD
 |   +-- SurgeryDetails/         per-patient surgery list
-|   +-- SurgeryRecordPage/      per-surgery video/snapshot grid
+|   +-- SurgeryRecordPage/      video/snapshot grid: per surgery, or the Archive
 |   +-- Recording/              RecordingPage + VideoRecorder (the encoder)
 |   +-- Settings/               hospital info, video input (HDMI/SDI), etc.
 |   +-- Profile/                user profile
@@ -114,8 +164,8 @@ medical_qt_app/
 |
 +-- flask_zoom_api/             Python Flask sidecar (PTZ camera control via ESP32 / ONVIF)
 +-- assets/                     icons, QSS stylesheets, logo, resources.qrc
-+-- recordings/                 (output) MP4 files, organized by patient/surgery
-+-- snapshots/                  (output) JPG snapshots
++-- recordings/                 (output) MP4 files: <patient_id>/<surgery_id>/ or general/
++-- snapshots/                  (output) JPG snapshots: <patient_id>/<surgery_id>/ or general/
 +-- sqlite.db                   the local database
 ```
 
@@ -143,13 +193,73 @@ Owns the encoding pipeline. On `startRecording`:
 
 ### `ui/home/HomePage`
 The application shell. Holds the sidebar, top bar, and the stacked page
-container. Owns the DeckLink discovery object. When the SDK reports a card
+container.
+- **Sidebar, top:** Dashboard, Patients and Archive.
+- **Sidebar, bottom:** Restart, Shut Down and Settings.
+- **Top bar:** the **USB Transfers** button.
+
+It also owns:
+- the `TransferManager` and the `TransferDrawer`, so USB copies outlive whichever
+  page started them;
+- the long-lived Archive gallery (general media);
+- the `RecordingSession` (below), which the capture device feeds, and the top-bar
+  **● REC** indicator shown while an Archive recording runs (tap to go to the
+  Dashboard to stop it). Restart and Shut Down warn while a recording is running.
+
+It owns the DeckLink discovery object too. When the SDK reports a card
 arrival, `addDevice()`:
 - looks up `video_input` from settings (`"HDMI"` or `"SDI"`)
 - configures the card via `IDeckLinkConfiguration`
 - creates a single shared delegate that fans out frames to dashboard and
   recording pages
 - starts capture in `bmdMode4K2160p30`
+
+### `ui/Recording/RecordingSession`
+The app's one recording at a time, owned by HomePage.
+- It owns the `VideoRecorder`, which the capture device feeds directly.
+- It builds the file path (`mediaDir()`) and inserts the `recordings` rows.
+- It tracks the state: Idle, Starting, Recording or Saving.
+
+Two users share it:
+- **`DashboardPage`:** its Record button calls `start("", -1, flip)` and `stop()`.
+  Archive files go to `recordings/general/`, and their rows have `patient_id` and
+  `surgery_id` set to NULL. The page shows the blinking icon; the
+  REC timer is in HomePage's top bar.
+- **`RecordingPage`:** patient recordings. It only reacts to a recording it started
+  itself (`m_ownsRecording`).
+
+A second start while one is running is refused with a message; for example, starting a
+patient recording while an Archive recording runs.
+
+### `ui/SurgeryRecordPage/SurgeryRecordingPage`
+The video and snapshot grid, with view, delete and download.
+- **With a patient id:** shows one surgery's media, plus its details, Edit and
+  Generate Report.
+- **With an empty patient id:** it is the **Archive** page. It lists video rows
+  `WHERE patient_id IS NULL`, newest first. It hides the surgery-only parts, Start
+  Recording and the snapshot section.
+
+Downloads are handed to the `TransferManager` (`setTransferManager()`) and go to
+`<stick>/SurgeryDownloads/` or `<stick>/Archive/`.
+
+### `core/TransferManager` and `widgets/TransferDrawer`
+**`TransferManager`** is the background USB copy queue. It:
+- tracks each job's state (Queued, Copying, Done, Failed or Cancelled), bytes
+  copied, speed and error;
+- lets you cancel a single job or all of them;
+- emits a `queueDrained` summary when the queue empties.
+
+The copy loop (`copyFile`):
+- reads 8 MiB at a time;
+- calls `fdatasync` every 64 MiB. Each sync is slow on a flash stick, and on FAT it
+  also rewrites the allocation table, so fewer syncs is faster. The limit also caps
+  how far the progress bar can run ahead of what is really on the stick;
+- drops already-written pages from the page cache;
+- writes to a temp file that is renamed over the destination only when complete.
+  A pulled stick or a cancel never leaves a half-written file under the real name.
+
+**`TransferDrawer`** is the slide-in panel that shows the queue. A tap outside it
+closes it, and it never blocks the rest of the app.
 
 ### `ui/Settings/SettingsPage`
 Hospital info form. The relevant capture-related field is **Video Input**: a
@@ -169,11 +279,18 @@ make -j$(nproc)
 ./medical_qt_app
 ```
 
+On the theatre device, the app is started automatically at boot. See
+[Kiosk setup](#kiosk-setup-no-login-screen).
+
 Requirements:
 - BlackMagic Desktop Video driver (provides `libDeckLinkAPI`, `libDeckLinkPreviewAPI`)
 - CUDA 12 + NVIDIA driver supporting NVENC
 - FFmpeg dev libraries: `libavformat-dev libavcodec-dev libavutil-dev libswscale-dev`
 - Qt5 dev: `qtbase5-dev qtmultimedia5-dev qtdeclarative5-dev`
+- Video playback in the app: `libqt5multimedia5-plugins` (Qt's GStreamer backend) plus
+  `gstreamer1.0-plugins-good gstreamer1.0-libav` (MP4 demuxer, H.264 decoder).
+  Without the first, every video fails with "The QMediaPlayer object does not have a
+  valid service"
 - `libpoppler-qt5-dev`, `libopencv-dev`
 
 The `CMakeLists.txt` hard-codes:
@@ -189,7 +306,9 @@ SQLite file at `sqlite.db`. Schema is created from
 
 - `settings` — single-row hospital configuration (logo, name, address, video_input, etc.)
 - `patients`, `doctors`, `surgeries`
-- `recordings` (per-surgery MP4 paths), `snapshots` (per-surgery JPG paths)
+- `recordings` (per-surgery MP4 paths), `snapshots` (per-surgery JPG paths).
+  **General** recordings and snapshots are rows with `patient_id` and `surgery_id`
+  NULL, so no schema change was needed
 - `comments_video` (timestamped comments tied to a recording)
 
 ---
@@ -201,6 +320,25 @@ SQLite file at `sqlite.db`. Schema is created from
   ONVIF profile listing.
 - **PDF generator** — separate endpoint on port 5000 that produces the
   surgery report from DB data.
+
+---
+
+## Kiosk setup (no login screen)
+
+The login screen is Ubuntu's (GDM), not the app's, so running the app with `sudo`
+does not remove it. The OS asks for the password before any app can start.
+`deploy/kiosk-setup.sh` (run once with `sudo`) makes the device boot straight into the app:
+
+| Step | What it changes |
+|---|---|
+| Automatic login | `/etc/gdm3/custom.conf`: `AutomaticLoginEnable=True`, `AutomaticLogin=<user>`, `WaylandEnable=false`. A backup is kept as `custom.conf.before-kiosk` |
+| Start the app | `~/.config/autostart/medical_qt_app.desktop` runs `build/medical_qt_app` when the session starts |
+| No lock or blank screen | locked dconf defaults in `/etc/dconf/db/local.d/00-medical-kiosk`: no idle blanking, no lock screen, no auto-suspend |
+| Password-less sudo | `/etc/sudoers.d/medical_qt_app`, only for `systemctl reboot/poweroff` and `supervisorctl restart go-server` |
+
+The app runs as the normal desktop user, not as root. A root GUI app breaks the X
+and audio session, and it would write root-owned recordings. To go back to the
+normal login, run `sudo deploy/kiosk-setup.sh --undo`.
 
 ---
 

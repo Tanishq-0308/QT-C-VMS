@@ -25,7 +25,7 @@ if(UNIT_SANITIZE)
 endif()
 
 # Same Qt modules / pkg-config packages as the main CMakeLists.txt (subset needed)
-find_package(Qt5 REQUIRED COMPONENTS Core Gui Widgets Sql Network Multimedia MultimediaWidgets Test)
+find_package(Qt5 REQUIRED COMPONENTS Core Gui Widgets Sql Network Multimedia MultimediaWidgets Concurrent Test)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(POPPLER poppler-qt5)
 
@@ -81,6 +81,8 @@ unit_test(tst_database
         ${API_CONTROLLER_SOURCES}
         ${APP_DIR}/ui/Settings/SettingsPage.cpp
         ${APP_DIR}/ui/Settings/SettingsPage.hpp
+        ${APP_DIR}/core/UsbUtils.cpp
+        ${APP_DIR}/core/UsbUtils.hpp
     LIBS Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Sql Qt5::Network)
 
 # ---------------------------------------------------------------- tst_widget_lifetime
@@ -109,11 +111,15 @@ set(WIDGET_SOURCES
     ${APP_DIR}/ui/SurgeryRecordPage/SurgeryRecordingPage.cpp
     ${APP_DIR}/ui/SurgeryRecordPage/SurgeryRecordingPage.hpp
     ${APP_DIR}/ui/SurgeryRecordPage/ClickableSlider.hpp
+    ${APP_DIR}/core/UsbUtils.cpp
+    ${APP_DIR}/core/UsbUtils.hpp
+    ${APP_DIR}/core/TransferManager.cpp
+    ${APP_DIR}/core/TransferManager.hpp
     ${APP_DIR}/ui/ClickableLabel/ClickableLabel.cpp
     ${APP_DIR}/ui/ClickableLabel/ClickableLabel.hpp
     ${APP_DIR}/assets/resources.qrc
 )
-set(WIDGET_LIBS Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Sql Qt5::Network Qt5::Multimedia Qt5::MultimediaWidgets)
+set(WIDGET_LIBS Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Sql Qt5::Network Qt5::Multimedia Qt5::MultimediaWidgets Qt5::Concurrent)
 if(POPPLER_FOUND)
     list(APPEND WIDGET_SOURCES
         ${APP_DIR}/ui/PdfViewerPage/PdfViewerPage.cpp
@@ -125,3 +131,22 @@ if(POPPLER_FOUND)
     target_compile_definitions(tst_widget_lifetime PRIVATE HAVE_POPPLER=1)
     target_include_directories(tst_widget_lifetime PRIVATE ${POPPLER_INCLUDE_DIRS})
 endif()
+
+# ---------------------------------------------------------------- tst_features
+# Background USB copy queue, USB detection, Generate Report button, Archive heading, icons
+unit_test(tst_features SOURCES ${WIDGET_SOURCES} LIBS ${WIDGET_LIBS})
+if(POPPLER_FOUND)
+    target_compile_definitions(tst_features PRIVATE HAVE_POPPLER=1)
+    target_include_directories(tst_features PRIVATE ${POPPLER_INCLUDE_DIRS})
+endif()
+
+# ---------------------------------------------------------------- transfer_benchmark (tool, not a test)
+# Export speed of videos and snapshots to the mounted USB device, through TransferManager
+add_executable(transfer_benchmark
+    ${APP_DIR}/tests/tools/transfer_benchmark.cpp
+    ${APP_DIR}/core/TransferManager.cpp
+    ${APP_DIR}/core/TransferManager.hpp
+    ${APP_DIR}/core/UsbUtils.cpp
+    ${APP_DIR}/core/UsbUtils.hpp)
+target_include_directories(transfer_benchmark PRIVATE ${COMMON_INCLUDES})
+target_link_libraries(transfer_benchmark PRIVATE Qt5::Core Qt5::Gui Qt5::Concurrent)
