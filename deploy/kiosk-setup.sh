@@ -44,6 +44,13 @@ DCONF_PROFILE=/etc/dconf/profile/user
 DCONF_KEYS=/etc/dconf/db/local.d/00-medical-kiosk
 DCONF_LOCKS=/etc/dconf/db/local.d/locks/00-medical-kiosk
 SUDOERS=/etc/sudoers.d/medical_qt_app
+DCONF_DB=/etc/dconf/db/local
+# What setup created that didn't exist before, so --undo can remove exactly that
+CREATED=/etc/medical_qt_app-kiosk.created
+
+record_created() {
+    grep -qxF "$1" "$CREATED" 2>/dev/null || echo "$1" >> "$CREATED"
+}
 
 # Sets key=value in the [daemon] section of the GDM config, adding it if missing.
 # Commented-out example lines are left alone.
@@ -57,9 +64,24 @@ set_gdm_key() {
 }
 
 if [[ $UNDO -eq 1 ]]; then
-    set_gdm_key AutomaticLoginEnable False
+    # GDM: back to the file as it was before setup (automatic login off otherwise)
+    if [[ -f "$GDM_CONF.before-kiosk" ]]; then
+        cp -a "$GDM_CONF.before-kiosk" "$GDM_CONF" && rm -f "$GDM_CONF.before-kiosk"
+    else
+        set_gdm_key AutomaticLoginEnable False
+    fi
     rm -f "$AUTOSTART" "$DCONF_KEYS" "$DCONF_LOCKS" "$SUDOERS"
     command -v dconf >/dev/null && dconf update
+    # Then whatever setup had to create for them (only under /etc/dconf)
+    if [[ -f "$CREATED" ]]; then
+        while IFS= read -r entry; do
+            case "$entry" in
+                profile-line) sed -i '/^system-db:local$/d' "$DCONF_PROFILE" ;;
+                /etc/dconf/*) rm -rf -- "$entry" ;;
+            esac
+        done < "$CREATED"
+        rm -f "$CREATED"
+    fi
     echo "Kiosk setup removed. The login screen returns after the next reboot."
     exit 0
 fi
@@ -82,9 +104,13 @@ echo "✔ Autostart entry $AUTOSTART"
 # 3. Never blank, lock or suspend (system-wide dconf defaults, locked so they can't drift)
 if [[ ! -f "$DCONF_PROFILE" ]]; then
     printf 'user-db:user\nsystem-db:local\n' > "$DCONF_PROFILE"
+    record_created "$DCONF_PROFILE"
 elif ! grep -q '^system-db:local' "$DCONF_PROFILE"; then
     echo 'system-db:local' >> "$DCONF_PROFILE"
+    record_created profile-line
 fi
+[[ -d "$(dirname "$DCONF_KEYS")" ]] || record_created "$(dirname "$DCONF_KEYS")"
+[[ -e "$DCONF_DB" ]] || record_created "$DCONF_DB"
 install -d "$(dirname "$DCONF_KEYS")" "$(dirname "$DCONF_LOCKS")"
 cat > "$DCONF_KEYS" <<'KEYS'
 [org/gnome/desktop/session]
