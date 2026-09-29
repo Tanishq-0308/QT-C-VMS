@@ -1,5 +1,6 @@
 #include "SurgeryRecordingPage.hpp"
 #include "core/UIScale.hpp"
+#include <memory>
 #include "../EditSurgeryDialog/EditSurgeryDialog.hpp"
 #include <QPixmap>
 #include <QSizePolicy>
@@ -966,6 +967,27 @@ void SurgeryRecordingPage::handleThumbnailClick(const QString &filePath, int fil
         QMediaPlayer *player = new QMediaPlayer(dialog);
         player->setVideoOutput(videoWidgett);
         player->setMedia(QUrl::fromLocalFile(filePath));
+
+        // Without Qt's GStreamer backend (package libqt5multimedia5-plugins) nothing can play;
+        // say so instead of showing a player that silently does nothing.
+        // open(), never exec(): a nested event loop inside the player's own signal can run the
+        // preview's pending deleteLater() and destroy the player mid-signal (double free).
+        auto errorShown = std::make_shared<bool>(false);
+        connect(player, QOverload<QMediaPlayer::Error>::of(&QMediaPlayer::error), dialog,
+                [dialog, player, errorShown](QMediaPlayer::Error error) {
+            if (*errorShown || !dialog->isVisible())
+                return;   // one message per preview; none once the preview is closing
+            *errorShown = true;
+            QString message = player->errorString();
+            if (error == QMediaPlayer::ServiceMissingError)
+                message = "Video playback is not installed on this system.\n\n"
+                          "Install it with:\n  sudo apt install libqt5multimedia5-plugins\n"
+                          "then restart the app.";
+            auto *box = new QMessageBox(QMessageBox::Warning, "Cannot play video", message,
+                                        QMessageBox::Ok, dialog);
+            box->setAttribute(Qt::WA_DeleteOnClose);
+            box->open();
+        });
 
         QHBoxLayout *controlsLayout = new QHBoxLayout();
         QPushButton *playPauseBtn = new QPushButton("Play", dialog);
