@@ -1,4 +1,5 @@
 #include "SurgeryRecordingPage.hpp"
+#include "core/UIScale.hpp"
 #include "../EditSurgeryDialog/EditSurgeryDialog.hpp"
 #include <QPixmap>
 #include <QSizePolicy>
@@ -127,7 +128,8 @@ SurgeryRecordingPage::SurgeryRecordingPage(const QString &patientId, int surgery
     
     setupUI();
     applyStyles();
-    loadSurgeryDetails();
+    if (!isGeneral())
+        loadSurgeryDetails();
 }
 
 void SurgeryRecordingPage::setupUI() {
@@ -140,13 +142,32 @@ void SurgeryRecordingPage::setupUI() {
     topBtnLayout->addStretch();
     mainLayout->addLayout(topBtnLayout);
 
-    // Title
+    // Title. The Archive is a sidebar page, so it gets the Dashboard's heading: red lines either side
+    QWidget *titleRow = new QWidget;
+    QHBoxLayout *titleLayout = new QHBoxLayout(titleRow);
+    titleLayout->setContentsMargins(0, 0, 0, 0);
+    auto makeTitleLine = [titleRow]() {
+        QFrame *line = new QFrame(titleRow);
+        line->setFrameShape(QFrame::HLine);
+        line->setFrameShadow(QFrame::Sunken);
+        line->setStyleSheet("color: red; background-color: red;");
+        line->setFixedHeight(3);
+        line->setVisible(false);
+        return line;
+    };
+    titleLeftLine = makeTitleLine();
+    titleRightLine = makeTitleLine();
     titleLabel = new QLabel("Surgery Details");
     titleLabel->setAlignment(Qt::AlignCenter);
-    mainLayout->addWidget(titleLabel);
+    titleLayout->addWidget(titleLeftLine, 1);
+    titleLayout->addWidget(titleLabel, 0);
+    titleLayout->addWidget(titleRightLine, 1);
+    mainLayout->addWidget(titleRow);
 
     // Surgery info section
-    mainLayout->addWidget(createSurgeryInfoSection());
+    surgeryInfoSection = createSurgeryInfoSection();
+    mainLayout->addWidget(surgeryInfoSection);
+
 
     // Action buttons
     QHBoxLayout *actionBtnLayout = new QHBoxLayout;
@@ -187,6 +208,19 @@ void SurgeryRecordingPage::setupUI() {
     
     buttonLayout->addStretch();
     mainLayout->addLayout(buttonLayout);
+
+    if (isGeneral()) {
+        // Not tied to a patient: no surgery to show, edit or report on, and it is a
+        // top-level page (sidebar), so there is nothing to go back to. Archive recordings are
+        // started and stopped from the Dashboard and have no snapshots.
+        titleLabel->setText("Archive");
+        titleLeftLine->setVisible(true);
+        titleRightLine->setVisible(true);
+        for (QWidget *w : {static_cast<QWidget*>(goBackBtn), surgeryInfoSection,
+                           static_cast<QWidget*>(editBtn), static_cast<QWidget*>(reportBtn),
+                           static_cast<QWidget*>(recordBtn), snapshotSection})
+            w->hide();
+    }
 
     // Signal Connections
     connect(goBackBtn, &QPushButton::clicked, this, [=]() {
@@ -307,11 +341,17 @@ void SurgeryRecordingPage::updateScaling() {
     );
 
     // ============== Title ==============
-    int titleFontSize = percentHeight(2.8, 18, 30);
-    titleLabel->setStyleSheet(
-        QString("font-size: %1px; font-weight: bold; color: #c40000;")
-        .arg(titleFontSize)
-    );
+    if (isGeneral()) {
+        // Same heading as the Dashboard's
+        titleLabel->setStyleSheet(QString("color: red; font-weight: bold; font-size: %1px;")
+                                      .arg(UIScale::pageTitleFontSize(this)));
+    } else {
+        int titleFontSize = percentHeight(2.8, 18, 30);
+        titleLabel->setStyleSheet(
+            QString("font-size: %1px; font-weight: bold; color: #c40000;")
+            .arg(titleFontSize)
+        );
+    }
 
     // ============== Surgery Info Labels ==============
     int labelFontSize = percentHeight(2, 12, 20);
@@ -619,10 +659,16 @@ QWidget* SurgeryRecordingPage::createRecordingSection(const QString &title, cons
     }
 
     QSqlQuery query;
-    QString queryStr = QString("SELECT id, file_path FROM %1 WHERE patient_id = :patientId AND surgery_id = :surgeryId").arg(tableName);
-    query.prepare(queryStr);
-    query.bindValue(":patientId", m_patientId);
-    query.bindValue(":surgeryId", m_surgeryId);
+    if (isGeneral()) {
+        // General media has no patient; newest first
+        query.prepare(QString("SELECT id, file_path FROM %1 WHERE patient_id IS NULL ORDER BY id DESC").arg(tableName));
+    } else {
+        QString queryStr = QString("SELECT id, file_path FROM %1 WHERE patient_id = :patientId AND surgery_id = :surgeryId").arg(tableName);
+        query.prepare(queryStr);
+        query.bindValue(":patientId", m_patientId);
+        query.bindValue(":surgeryId", m_surgeryId);
+    }
+
 
     if (query.exec()) {
         int i = 0;
@@ -761,6 +807,8 @@ void SurgeryRecordingPage::refreshRecordings() {
     // Insert before download button layout (which is at the end)
     mainLayout->insertWidget(mainLayout->count() - 1, videoSection);
     mainLayout->insertWidget(mainLayout->count() - 1, snapshotSection);
+    if (isGeneral())
+        snapshotSection->hide();   // the Archive has no snapshots
     
     // Trigger scaling update
     m_lastWidth = 0;

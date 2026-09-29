@@ -20,6 +20,8 @@ class RecordingPage;
 class SurgeryDetailsPage;
 class SurgeryRecordingPage;
 class PdfViewerPage;
+class RecordingSession;
+class QTimer;
 
 class HomePage : public ResponsiveWidget {
     Q_OBJECT
@@ -33,15 +35,12 @@ protected:
     bool eventFilter(QObject* watched, QEvent* event) override;
     void updateScaling() override;
 
-signals:
-    void logoutClicked();
-
 private slots:
     void showDashboard();
     void showPatients();
+    void showArchive();
     void showUser();
     void showSettings();
-    void signOut();
     void restart();
     void shutDown();
     void showRecording(const QString &patientId, int surgeryId);
@@ -59,6 +58,7 @@ private:
     void reconfigureVideoInput();
     void updateLogo(const QString &logoPath = "");
     void applyStaticStyles();
+    void updateRecIndicator();
 
     // Layout widgets
     QStackedWidget *stackedPages;
@@ -71,6 +71,9 @@ private:
     QWidget *dashboardFullScreenWrapper = nullptr; // dashboard preview, fullscreen in this window
     QPushButton *dashboardExitFullscreenBtn = nullptr;
     QLabel *logoLabel;
+    QPushButton *recIndicator = nullptr;  // "● REC" in the top bar while an Archive recording runs
+    QTimer *recBlinkTimer = nullptr;
+    bool recBlinkOn = true;
     
     // Store buttons for dynamic resizing
     QList<QToolButton*> sidebarButtons;
@@ -87,6 +90,10 @@ private:
     SurgeryDetailsPage *surgeryDetailsPage;
     SurgeryRecordingPage *surgeryRecordingPage;
     PdfViewerPage *pdfViewerPage;
+    SurgeryRecordingPage *archivePage = nullptr;  // media not tied to a patient
+
+    // The one recording at a time: Archive (Dashboard) or patient (RecordingPage)
+    RecordingSession *recordingSession = nullptr;
 
     // DeckLink
     com_ptr<DeckLinkDeviceDiscovery> m_deckLinkDiscovery;

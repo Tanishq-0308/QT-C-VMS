@@ -43,7 +43,7 @@ void RecordingPage::ensureFoldersExist() {
 // Constructor
 RecordingPage::RecordingPage(QWidget* parent)
     : QWidget(parent), m_recording(false), currentRecordingId(-1),
-      m_videoRecorder(nullptr), recordingSeconds(0)
+      recordingSeconds(0)
 {
     this->setStyleSheet(R"(
         QWidget {
@@ -135,20 +135,12 @@ RecordingPage::RecordingPage(QWidget* parent)
     connect(rotateBtn, &QPushButton::clicked, this, &RecordingPage::onRotate);
     connect(commentBtn, &QPushButton::clicked, this, &RecordingPage::onAddComment);
     connect(exitBtn, &QPushButton::clicked, this, [this]() {
-        if (m_recording || m_videoRecorder->isRecording()) {
+        if (m_ownsRecording) {
             QMessageBox::warning(this, "Recording in Progress", "Stop the recording first before exiting.");
         } else {
             emit goBackToRecordingPage();
         }
     });
-
-    // Recorder: fed by the capture device on its own thread, reports back through signals
-    m_videoRecorder = new VideoRecorder(this);
-    connect(m_videoRecorder, &VideoRecorder::recordingStarted, this, &RecordingPage::onRecordingStarted);
-    connect(m_videoRecorder, &VideoRecorder::errorOccurred, this, &RecordingPage::onRecorderError);
-    connect(m_videoRecorder, &VideoRecorder::recordingStopped, this, &RecordingPage::onRecordingStopped);
-    connect(m_videoRecorder, &VideoRecorder::segmentStarted, this, &RecordingPage::onSegmentStarted);
-    connect(m_videoRecorder, &VideoRecorder::framesDropped, this, &RecordingPage::onFramesDropped);
 
     // UI timer for recording time
     uiRecordingTimer = new QTimer(this);
@@ -168,25 +160,18 @@ RecordingPage::RecordingPage(QWidget* parent)
 
 // Destructor
 RecordingPage::~RecordingPage() {
-    // The recorder (a child) finalises the file in its own destructor
-    if (m_videoRecorder)
-        m_videoRecorder->stopRecording();
+    // Stop a recording started here; the session finalises the file
+    if (m_ownsRecording && m_session)
+        m_session->stop();
 }
 
-int RecordingPage::insertRecordingRow(const QString& path) {
-    QSqlQuery query;
-    query.prepare("INSERT INTO recordings (patient_id, surgery_id, file_path) VALUES (?, ?, ?)");
-    query.addBindValue(m_patientId);
-    query.addBindValue(m_surgeryId);
-    query.addBindValue(path);
-
-    if (!query.exec()) {
-        qWarning() << "❌ Failed to insert into recordings table:" << query.lastError().text();
-        return -1;
-    }
-    const int id = query.lastInsertId().toInt();
-    qDebug() << "✅ Recording saved to DB with id:" << id;
-    return id;
+void RecordingPage::setRecordingSession(RecordingSession* session) {
+    m_session = session;
+    connect(session, &RecordingSession::recordingStarted, this, &RecordingPage::onRecordingStarted);
+    connect(session, &RecordingSession::errorOccurred, this, &RecordingPage::onRecorderError);
+    connect(session, &RecordingSession::recordingStopped, this, &RecordingPage::onRecordingStopped);
+    connect(session, &RecordingSession::segmentStarted, this, &RecordingPage::onSegmentStarted);
+    connect(session, &RecordingSession::framesDropped, this, &RecordingPage::onFramesDropped);
 }
 
 void RecordingPage::updateRecordingLabel() {
@@ -214,37 +199,25 @@ void RecordingPage::resetRecordingUi() {
 
 // Toggle recording
 void RecordingPage::onToggleRecording() {
+    if (!m_session)
+        return;
     if (!m_recording) {
-        if (m_videoRecorder->isRecording()) {
-            showToast("Previous recording is still being saved…");
-            return;
-        }
-
         ensureFoldersExist();
 
-        QString timestamp = QDateTime::currentDateTime().toString("yyyyMMdd_HHmmss");
-        QString outputDir = QCoreApplication::applicationDirPath() + QString("/../recordings/%1/%2")
-                                .arg(m_patientId, QString::number(m_surgeryId));
-        QDir().mkpath(outputDir);
-        QString outputPath = QDir::cleanPath(QString("%1/recording_%2.mp4").arg(outputDir, timestamp));
-
-        qDebug() << "🔴 Starting recording to:" << outputPath;
-
-        m_videoRecorder->setFlipStep(m_flipStep);
         QString error;
-        if (!m_videoRecorder->startRecording(outputPath, &error)) {
+        if (!m_session->start(m_patientId, m_surgeryId, m_flipStep, &error)) {
             // Nothing was started: no DB row, no "recording" state
             QMessageBox::critical(this, "Recording could not start", error);
             return;
         }
+        m_ownsRecording = true;
 
         // The encoder opens on the recorder thread; onRecordingStarted() confirms it
         recordBtn->setText("Starting…");
         recordBtn->setEnabled(false);
     } else {
-        qDebug() << "⏹️ Stopping recording...";
         // Returns immediately; onRecordingStopped() runs once the file is finalised
-        m_videoRecorder->stopRecording();
+        m_session->stop();
         if (uiRecordingTimer)
             uiRecordingTimer->stop();
         recordBtn->setText("Saving…");
@@ -252,7 +225,9 @@ void RecordingPage::onToggleRecording() {
     }
 }
 
-void RecordingPage::onRecordingStarted(const QString& path) {
+void RecordingPage::onRecordingStarted(const QString& /*path*/) {
+    if (!m_ownsRecording)
+        return;   // an Archive recording from the Dashboard
     m_droppedFrames = 0;
     recordingSeconds = 0;
     updateRecordingLabel();
@@ -261,18 +236,22 @@ void RecordingPage::onRecordingStarted(const QString& path) {
     setButtonContent(recordBtn, kStopIcon, "Stop Recording");
     recordBtn->setEnabled(true);
 
-    currentRecordingId = insertRecordingRow(path);
+    currentRecordingId = m_session->currentRecordingId();
     m_recording = true;
 }
 
 void RecordingPage::onRecorderError(const QString& message) {
+    if (!m_ownsRecording)
+        return;
     qWarning() << "❌ Recording error:" << message;
     QMessageBox::critical(this, "Recording problem", message);
 }
 
-void RecordingPage::onRecordingStopped(const QString& path, qint64 framesEncoded, qint64 framesDropped) {
-    qDebug() << "✅ Recording finalised:" << path << "frames" << framesEncoded << "lost" << framesDropped;
-    const bool wasRecording = m_recording;
+void RecordingPage::onRecordingStopped(const QString& /*path*/, qint64 /*framesEncoded*/,
+                                       qint64 framesDropped, bool wasRecording) {
+    if (!m_ownsRecording)
+        return;
+    m_ownsRecording = false;
     resetRecordingUi();
     if (!wasRecording)
         return; // start failed; errorOccurred() already told the user
@@ -282,13 +261,16 @@ void RecordingPage::onRecordingStopped(const QString& path, qint64 framesEncoded
         showToast("Recording saved", 2000);
 }
 
-void RecordingPage::onSegmentStarted(const QString& path) {
-    // The input format changed; the recorder continued in a new file
-    insertRecordingRow(path);
+void RecordingPage::onSegmentStarted(const QString& /*path*/) {
+    if (!m_ownsRecording)
+        return;
+    // The input format changed; the session continued (and logged) a new file
     showToast("Video input changed — recording continues in a new file", 4000);
 }
 
 void RecordingPage::onFramesDropped(qint64 totalDropped) {
+    if (!m_ownsRecording)
+        return;
     m_droppedFrames = totalDropped;
     updateRecordingLabel();
 }
@@ -301,8 +283,7 @@ void RecordingPage::onSnapshot()
 {
     const QDateTime now = QDateTime::currentDateTime();
     QString timestamp = now.toString("yyyyMMdd_HHmmss");
-    QString outputDir = QCoreApplication::applicationDirPath() + QString("/../snapshots/%1/%2")
-                            .arg(m_patientId, QString::number(m_surgeryId));
+    QString outputDir = RecordingSession::mediaDir("snapshots", m_patientId, m_surgeryId);
     QDir().mkpath(outputDir);
 
     // Millisecond file names: several snapshots in the same second must not overwrite each other.
@@ -481,8 +462,8 @@ void RecordingPage::onRotate() {
     if (m_previewView)
         m_previewView->setFlipStep(m_flipStep);
     // Keep the recording oriented like the preview
-    if (m_videoRecorder)
-        m_videoRecorder->setFlipStep(m_flipStep);
+    if (m_ownsRecording && m_session)
+        m_session->setFlipStep(m_flipStep);
 }
 
 void RecordingPage::setSharedDelegate(const com_ptr<DeckLinkOpenGLDelegate>& delegate)

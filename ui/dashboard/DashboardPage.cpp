@@ -1,6 +1,9 @@
 #include "DashboardPage.hpp"
 #include "core/UIScale.hpp"
+#include "ui/Recording/RecordingSession.hpp"
+#include "widgets/Toast.hpp"
 #include <QIcon>
+#include <QMessageBox>
 #include "../widgets/VideoWidget.hpp"
 #include "../widgets/video_signal_bridge.hpp"
 #include "../widgets/CameraZoomAPI.hpp"
@@ -127,11 +130,13 @@ DashboardPage::DashboardPage(QWidget *parent) : QWidget(parent)
 
     auto *rotateBtn = makeIconButton(":/assets/icons/rotate.svg", "Rotate");
     auto *fullscreenBtn = makeIconButton(":/assets/icons/fullscreen.svg", "Fullscreen");
+    m_recordBtn = makeIconButton(":/assets/icons/record.svg", "Start recording to the Archive");
 
     zoomL->addWidget(zoomOut);
     zoomL->addWidget(zoomIn);
     zoomL->addWidget(rotateBtn);
     zoomL->addWidget(fullscreenBtn);
+    zoomL->addWidget(m_recordBtn);
     zoomL->addStretch();
     m_centerLayout->addWidget(zoomBar, 0, Qt::AlignCenter);  // Index 2
 
@@ -161,6 +166,83 @@ DashboardPage::DashboardPage(QWidget *parent) : QWidget(parent)
     
     connect(rotateBtn, &QPushButton::clicked, this, &DashboardPage::onRotate);
     connect(fullscreenBtn, &QPushButton::clicked, this, &DashboardPage::toggleFullscreen);
+    connect(m_recordBtn, &QPushButton::clicked, this, &DashboardPage::onRecordClicked);
+
+    // Blinks the Record button's dot while recording (the REC timer is in HomePage's top bar)
+    m_blinkTimer = new QTimer(this);
+    m_blinkTimer->setInterval(500);
+    connect(m_blinkTimer, &QTimer::timeout, this, [this]() {
+        m_blinkOn = !m_blinkOn;
+        updateRecordingUi();
+    });
+}
+
+void DashboardPage::setRecordingSession(RecordingSession *session)
+{
+    m_session = session;
+    connect(session, &RecordingSession::stateChanged, this, &DashboardPage::updateRecordingUi);
+    connect(session, &RecordingSession::errorOccurred, this, [this](const QString &message) {
+        if (m_session->isArchive())
+            QMessageBox::critical(this, "Recording problem", message);
+    });
+    connect(session, &RecordingSession::recordingStopped, this,
+            [this](const QString &, qint64, qint64 dropped, bool wasRecording) {
+        if (!m_session->isArchive() || !wasRecording)
+            return;
+        if (dropped > 0)
+            Toast::show(window(), QString("Recording saved to the Archive, %1 frames were lost").arg(dropped),
+                        5000, "#c40000");
+        else
+            Toast::show(window(), "Recording saved to the Archive");
+    });
+    updateRecordingUi();
+}
+
+void DashboardPage::onRecordClicked()
+{
+    if (!m_session)
+        return;
+    switch (m_session->state()) {
+    case RecordingSession::State::Idle: {
+        QString error;
+        if (!m_session->start(QString(), -1, m_flipStep, &error))
+            QMessageBox::critical(this, "Recording could not start", error);
+        break;
+    }
+    case RecordingSession::State::Starting:
+    case RecordingSession::State::Recording:
+        if (m_session->isArchive())
+            m_session->stop();
+        break;
+    case RecordingSession::State::Saving:
+        Toast::show(window(), "The previous recording is still being saved…", 3000, "#555555");
+        break;
+    }
+}
+
+void DashboardPage::updateRecordingUi()
+{
+    if (!m_recordBtn)
+        return;
+    const auto state = m_session ? m_session->state() : RecordingSession::State::Idle;
+    const bool mine = m_session && m_session->isArchive();
+    const bool recording = mine && (state == RecordingSession::State::Starting ||
+                                    state == RecordingSession::State::Recording);
+    const bool saving = mine && state == RecordingSession::State::Saving;
+
+    if (recording && !m_blinkTimer->isActive()) {
+        m_blinkOn = true;
+        m_blinkTimer->start();
+    } else if (!recording && m_blinkTimer->isActive()) {
+        m_blinkTimer->stop();
+        m_blinkOn = true;
+    }
+
+    // Blinking red dot while recording; the button then stops the recording
+    m_recordBtn->setIcon(QIcon(recording && !m_blinkOn ? ":/assets/icons/record-blink.svg"
+                                                       : ":/assets/icons/record.svg"));
+    m_recordBtn->setToolTip(recording ? "Stop recording" : "Start recording to the Archive");
+    m_recordBtn->setEnabled(!saving);
 }
 
 DeckLinkOpenGLWidget *DashboardPage::sharedGLWidget() const
@@ -181,6 +263,9 @@ void DashboardPage::onRotate()
 
     if (m_previewView)
         m_previewView->setFlipStep(m_flipStep);
+    // Keep an Archive recording oriented like the preview
+    if (m_session && m_session->isArchive() && !m_session->isIdle())
+        m_session->setFlipStep(m_flipStep);
 }
 
 // ─── Long Press Zoom Functions ───────────────────

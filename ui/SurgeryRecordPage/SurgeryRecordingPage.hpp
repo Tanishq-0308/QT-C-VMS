@@ -28,6 +28,8 @@ struct CardWidgets {
     bool isVideo;
 };
 
+// Gallery of recordings and snapshots. With a patient id it shows one surgery's media; with an
+// empty patient id it is the "Archive" page (media not tied to any patient).
 class SurgeryRecordingPage : public QWidget
 {
     Q_OBJECT
@@ -35,6 +37,7 @@ class SurgeryRecordingPage : public QWidget
 public:
     explicit SurgeryRecordingPage(const QString& patientId, int surgeryId, QWidget *parent = nullptr);
     void refreshRecordings();
+    bool isGeneral() const { return m_patientId.isEmpty(); }
     void showToast(const QString& message, int durationMs = 2000);
 
 signals:
@@ -78,7 +81,10 @@ private:
 
     // Top section widgets
     QPushButton* goBackBtn;
+    QWidget* surgeryInfoSection = nullptr;
     QLabel* titleLabel;
+    QFrame* titleLeftLine = nullptr;   // shown only on the Archive (Dashboard-style heading)
+    QFrame* titleRightLine = nullptr;
     QLabel* recTitle;
 
     // Surgery info labels
@@ -124,7 +130,7 @@ private:
     QMap<QString, int> snapshotPathToId;
     QMap<QString, int> recordingPathToId;
 
-    // IDs
+    // IDs (empty patient id = general recordings)
     QString m_patientId;
     int m_surgeryId;
 

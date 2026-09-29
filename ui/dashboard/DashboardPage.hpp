@@ -8,6 +8,7 @@
 #include "decklink/DeckLinkOpenGLWidget.h"
 
 class CameraZoomAPI;
+class RecordingSession;
 
 class DashboardPage : public QWidget {
     Q_OBJECT
@@ -26,6 +27,10 @@ public:
     void reattachVideoBox();
     bool isFullscreen() const { return m_isFullscreen; }
 
+    // The Record button starts/stops an Archive recording (no patient) on this session.
+    // It keeps running while the user goes fullscreen or to other pages.
+    void setRecordingSession(RecordingSession* session);
+
 signals:
     void fullscreenRequested(bool on);
 
@@ -40,6 +45,9 @@ private slots:
     void startZoomOut();
     void stopZoom();
 private:
+    void onRecordClicked();
+    void updateRecordingUi();   // button icon/tooltip, blinking
+
     int m_flipStep = 0;
     DeckLinkOpenGLWidget* m_previewView;
     CameraZoomAPI* zoomAPI = nullptr;
@@ -52,4 +60,10 @@ private:
     // Long press zoom
     QTimer* m_zoomTimer = nullptr;
     QString m_currentZoomDirection;
+
+    // Archive recording
+    RecordingSession* m_session = nullptr;
+    QPushButton* m_recordBtn = nullptr;
+    QTimer* m_blinkTimer = nullptr;
+    bool m_blinkOn = true;
 };

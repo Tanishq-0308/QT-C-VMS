@@ -8,6 +8,8 @@
 #include "../Recording/RecordingPage.hpp"
 #include "../PdfViewerPage/PdfViewerPage.hpp"
 #include "core/UIScale.hpp"
+#include "../Recording/RecordingSession.hpp"
+#include "../Recording/VideoRecorder.hpp"
 #include <QProcess>
 #include <QMessageBox>
 #include <QHBoxLayout>
@@ -37,8 +39,12 @@ HomePage::HomePage(QWidget *parent) : ResponsiveWidget(parent) {
     profilePage = new ProfilePage;
     settingPage = new SettingsPage;
     recordingPage = new RecordingPage;
+    recordingSession = new RecordingSession(this);
+    recordingPage->setRecordingSession(recordingSession);
+    dashboardPage->setRecordingSession(recordingSession);
     pdfViewerPage = new PdfViewerPage;
     surgeryRecordingPage = nullptr;
+    archivePage = new SurgeryRecordingPage(QString(), -1);
 
     stackedPages->addWidget(dashboardPage);
     stackedPages->addWidget(patientPage);
@@ -46,11 +52,27 @@ HomePage::HomePage(QWidget *parent) : ResponsiveWidget(parent) {
     stackedPages->addWidget(profilePage);
     stackedPages->addWidget(settingPage);
     stackedPages->addWidget(pdfViewerPage);
+    stackedPages->addWidget(archivePage);
 
     setupMainLayout();
     
     // Apply stylesheet ONCE here - never again
     applyStaticStyles();
+
+    // Archive: recordings made from the Dashboard's Record button, not tied to a patient
+    recBlinkTimer = new QTimer(this);
+    recBlinkTimer->setInterval(500);
+    connect(recBlinkTimer, &QTimer::timeout, this, [this]() {
+        recBlinkOn = !recBlinkOn;
+        updateRecIndicator();
+    });
+    connect(recordingSession, &RecordingSession::stateChanged, this, &HomePage::updateRecIndicator);
+    connect(recordingSession, &RecordingSession::recordingStopped, this, [this]() {
+        if (recordingSession->isArchive() && stackedPages->currentWidget() == archivePage)
+            archivePage->refreshRecordings();   // show what was just recorded
+    });
+    connect(recIndicator, &QPushButton::clicked, this, &HomePage::showDashboard);
+    updateRecIndicator();
 
     connect(surgeryDetailsPage, &SurgeryDetailsPage::openSurgeryRecordingPage,
             this, &HomePage::showSurgeryRecordingPage);
@@ -157,6 +179,12 @@ void HomePage::setupMainLayout() {
     updateLogo();
     topLayout->addWidget(logoLabel);
     topLayout->addStretch();
+    recIndicator = new QPushButton;
+    recIndicator->setObjectName("RecIndicator");
+    recIndicator->setCursor(Qt::PointingHandCursor);
+    recIndicator->setToolTip("An Archive recording is running. Tap to go to the Dashboard to stop it.");
+    recIndicator->hide();
+    topLayout->addWidget(recIndicator);
     mainLayout->addWidget(topBar);
 
     // Sidebar
@@ -179,7 +207,7 @@ void HomePage::setupMainLayout() {
     QList<Item> items = {
         {":assets/icons/apps.png", "Dashboard", &HomePage::showDashboard},
         {":assets/icons/person-simple.png", "Patients", &HomePage::showPatients},
-        {":assets/icons/sign-out-alt.png", "Sign Out", &HomePage::signOut}
+        {":assets/icons/archive.svg", "Archive", &HomePage::showArchive}
     };
     
     for (auto &item : items) {
@@ -293,12 +321,47 @@ void HomePage::showUser() {
     }
 }
 
+void HomePage::showArchive() {
+    archivePage->refreshRecordings();
+    stackedPages->setCurrentWidget(archivePage);
+}
+
 void HomePage::showSettings() {
     stackedPages->setCurrentWidget(settingPage);
 }
 
-void HomePage::signOut() {
-    emit logoutClicked();
+void HomePage::updateRecIndicator() {
+    // Only for Archive recordings: a patient recording has its own full-screen page
+    const auto state = recordingSession->state();
+    const bool archive = recordingSession->isArchive();
+    const bool recording = archive && (state == RecordingSession::State::Starting ||
+                                       state == RecordingSession::State::Recording);
+    const bool saving = archive && state == RecordingSession::State::Saving;
+
+    if (recording && !recBlinkTimer->isActive()) {
+        recBlinkOn = true;
+        recBlinkTimer->start();
+    } else if (!recording && recBlinkTimer->isActive()) {
+        recBlinkTimer->stop();
+    }
+    if (!recording && !saving) {
+        recIndicator->hide();
+        return;
+    }
+
+    const qint64 secs = recordingSession->elapsedSeconds();
+    recIndicator->setText(saving ? "Saving recording…"
+                                 : QString("%1 REC  %2:%3:%4")
+                                       .arg(recBlinkOn ? "●" : "○")
+                                       .arg(secs / 3600, 2, 10, QChar('0'))
+                                       .arg((secs % 3600) / 60, 2, 10, QChar('0'))
+                                       .arg(secs % 60, 2, 10, QChar('0')));
+    const int fontPx = UIScale::scaled(40, 16, 40, this);
+    recIndicator->setStyleSheet(QString("QPushButton#RecIndicator { background: #fff0f0; color: #c40000; "
+                                        "border: 2px solid #c40000; border-radius: 8px; font-weight: bold; "
+                                        "font-size: %1px; padding: %2px %3px; }")
+                                    .arg(fontPx).arg(fontPx / 3).arg(fontPx / 2));
+    recIndicator->show();
 }
 
 void HomePage::restart() {
@@ -577,7 +640,7 @@ void HomePage::addDevice(com_ptr<IDeckLink>& deckLink) {
     dashboardPage->sharedGLWidget()->setShowLabel(showLabel);
 
     // Frames go to the recorder straight from the capture thread
-    inputDevice->setVideoFrameSink(recordingPage->recorder());
+    inputDevice->setVideoFrameSink(recordingSession->recorder());
     setInputSignalValid(false);
     inputDevice->startCapture(kCaptureDisplayMode, m_sharedDelegate.get(), true);
     m_selectedDevice = inputDevice;
