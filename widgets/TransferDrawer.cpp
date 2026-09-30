@@ -293,7 +293,8 @@ void TransferDrawer::updateRow(int id) {
         color = "#777";
         break;
     }
-    row.status->setText(text);
+    // Which device the file is going to: several can be copying at once
+    row.status->setText(QString("To %1 · %2").arg(job->deviceName, text));
     row.status->setStyleSheet(QString("font-size: %1px; color: %2;").arg(m_fontPx - 2).arg(color));
 
     const bool active = job->state == TransferManager::State::Queued ||

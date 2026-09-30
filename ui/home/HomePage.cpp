@@ -74,15 +74,17 @@ HomePage::HomePage(QWidget *parent) : ResponsiveWidget(parent) {
     });
     connect(transferManager, &TransferManager::activeCountChanged, this, &HomePage::updateTransfersButton);
     connect(transferManager, &TransferManager::failuresChanged, this, &HomePage::updateTransfersButton);
-    connect(transferManager, &TransferManager::queueDrained, this, [this](int succeeded, int failed, int cancelled) {
+    // One message per device, when that device has nothing left to copy (others may still be busy)
+    connect(transferManager, &TransferManager::deviceFinished, this,
+            [this](const QString& device, int succeeded, int failed, int cancelled) {
         if (failed > 0) {
-            Toast::show(this, QString("USB copy finished: %1 copied, %2 failed — see Transfers")
-                                  .arg(succeeded).arg(failed), 7000, "#c40000");
+            Toast::show(this, QString("Copy to %1 finished: %2 copied, %3 failed — see Transfers")
+                                  .arg(device).arg(succeeded).arg(failed), 7000, "#c40000");
         } else if (succeeded > 0) {
-            QString text = QString("USB copy finished: %1 file(s) copied").arg(succeeded);
+            QString text = QString("Copy to %1 finished: %2 file(s) copied").arg(device).arg(succeeded);
             if (cancelled > 0)
                 text += QString(", %1 cancelled").arg(cancelled);
-            Toast::show(this, text + ". You can remove the stick.", 6000);
+            Toast::show(this, text + ". You can remove it.", 6000);
         }
     });
     updateTransfersButton();

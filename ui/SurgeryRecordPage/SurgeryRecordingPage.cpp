@@ -34,6 +34,7 @@
 #include "core/UsbUtils.hpp"
 #include "core/MediaInfo.hpp"
 #include "core/MediaRename.hpp"
+#include "widgets/UsbDeviceDialog.hpp"
 #include <QInputDialog>
 #include <QFutureWatcher>
 #include <QPointer>
@@ -1371,8 +1372,8 @@ void SurgeryRecordingPage::downloadSelectedFiles() {
         return;
     }
 
-    const QString usbMountPath = UsbUtils::findUsbMount();
-    if (usbMountPath.isEmpty()) {
+    const QList<UsbUtils::Device> devices = UsbUtils::listDevices();
+    if (devices.isEmpty()) {
         QMessageBox::warning(this,
                              "No USB Device Found",
                              "Please connect a USB device before attempting to download the files.");
@@ -1384,13 +1385,24 @@ void SurgeryRecordingPage::downloadSelectedFiles() {
         return;
     }
 
-    const QString destDir = usbMountPath + (isGeneral() ? "/Archive" : "/SurgeryDownloads");
     QStringList sources = selectedSnapshots.values();
     sources += selectedRecordings.values();
+    qint64 largest = 0;
+    for (const QString& source : sources)
+        largest = qMax(largest, QFileInfo(source).size());
 
-    // The copy runs in the background (TransferManager); progress is in the Transfers drawer,
-    // so the page stays usable and the copy continues if the page is left
-    const int queued = m_transferManager->enqueue(sources, destDir);
+    // One device: no question. Several: the user ticks where the files go (one or more).
+    const QList<UsbUtils::Device> targets = UsbDeviceDialog::choose(this, devices, largest);
+    if (targets.isEmpty())
+        return;   // cancelled: the selection stays
+
+    // The copies run in the background (TransferManager), each device at the same time;
+    // progress is in the Transfers drawer, so the page stays usable and the copies continue
+    // if the page is left
+    const QString folder = isGeneral() ? "/Archive" : "/SurgeryDownloads";
+    int queued = 0;
+    for (const UsbUtils::Device& device : targets)
+        queued += m_transferManager->enqueue(sources, device.mountPath + folder, device.name);
     emit downloadsQueued(queued);
 
     selectedSnapshots.clear();

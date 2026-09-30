@@ -15,8 +15,10 @@
 #include <unistd.h>
 
 TransferManager::TransferManager(QObject* parent) : QObject(parent) {
+    // One copy per device at a time is enforced by the queues; the pool only has to be large
+    // enough for every device that can be plugged in at once
     m_pool = new QThreadPool(this);
-    m_pool->setMaxThreadCount(1);
+    m_pool->setMaxThreadCount(32);
 
     m_pollTimer = new QTimer(this);
     m_pollTimer->setInterval(200);
@@ -24,9 +26,9 @@ TransferManager::TransferManager(QObject* parent) : QObject(parent) {
 }
 
 TransferManager::~TransferManager() {
-    // Stop the copy in progress (its partial file is discarded) before the pool goes away
-    if (m_currentCancel)
-        m_currentCancel->store(true);
+    // Stop the copies in progress (their partial files are discarded) before the pool goes away
+    for (const Active& active : m_active)
+        active.cancel->store(true);
     m_pool->waitForDone();
 }
 
@@ -100,7 +102,10 @@ TransferManager::CopyResult TransferManager::copyFile(const QString& source, con
     return result;
 }
 
-int TransferManager::enqueue(const QStringList& sources, const QString& destDir) {
+int TransferManager::enqueue(const QStringList& sources, const QString& destDir, const QString& deviceName) {
+    const QString device = UsbUtils::volumeRoot(destDir);
+    const QString shownName = !deviceName.isEmpty() ? deviceName : QFileInfo(device).fileName().isEmpty()
+                                                                       ? device : QFileInfo(device).fileName();
     int added = 0;
     for (const QString& source : sources) {
         const QFileInfo info(source);
@@ -120,6 +125,8 @@ int TransferManager::enqueue(const QStringList& sources, const QString& destDir)
         job.source = source;
         job.destDir = destDir;
         job.fileName = info.fileName();
+        job.device = device;
+        job.deviceName = shownName;
         job.size = info.size();
         m_jobs.append(job);
         ++added;
@@ -128,84 +135,81 @@ int TransferManager::enqueue(const QStringList& sources, const QString& destDir)
 
     if (added > 0) {
         emit activeCountChanged(activeCount());
-        if (m_currentId == 0)
-            startNext();
+        startNext(device);
     }
     return added;
 }
 
-void TransferManager::startNext() {
-    Job* next = nullptr;
-    for (Job& j : m_jobs) {
-        if (j.state == State::Queued) {
-            next = &j;
-            break;
+// Starts the device's next queued file, unless it is already copying one
+void TransferManager::startNext(const QString& device) {
+    if (m_active.contains(device))
+        return;
+
+    for (;;) {
+        Job* next = nullptr;
+        for (Job& j : m_jobs) {
+            if (j.state == State::Queued && j.device == device) {
+                next = &j;
+                break;
+            }
         }
-    }
+        if (!next) {
+            reportIfIdle(device);
+            return;
+        }
 
-    if (!next) {
-        m_pollTimer->stop();
-        emit activeCountChanged(0);
-        if (m_batchSucceeded + m_batchFailed + m_batchCancelled > 0)
-            emit queueDrained(m_batchSucceeded, m_batchFailed, m_batchCancelled);
-        m_batchSucceeded = m_batchFailed = m_batchCancelled = 0;
-        return;
-    }
+        // Checks that would otherwise fail only after minutes of copying
+        QString problem;
+        if (!QFileInfo::exists(next->source)) {
+            problem = "The file no longer exists on this system";
+        } else if (!QDir().mkpath(next->destDir)) {
+            problem = "USB stick not found or not writable";
+        } else if (next->size > UsbUtils::kFat32MaxFileSize && UsbUtils::isFat32(next->destDir)) {
+            problem = "The stick is FAT32, which cannot hold files over 4 GB. Format it as exFAT.";
+        } else {
+            const QStorageInfo storage(next->destDir);
+            if (storage.isValid() && storage.bytesAvailable() >= 0 && next->size > storage.bytesAvailable())
+                problem = "Not enough free space on the USB stick";
+        }
+        if (!problem.isEmpty()) {
+            finishJob(*next, State::Failed, problem);
+            continue;   // try the device's next file
+        }
 
-    // Checks that would otherwise fail only after minutes of copying
-    if (!QFileInfo::exists(next->source)) {
-        finishJob(*next, State::Failed, "The file no longer exists on this system");
-        QTimer::singleShot(0, this, &TransferManager::startNext);
-        return;
-    }
-    if (!QDir().mkpath(next->destDir)) {
-        finishJob(*next, State::Failed, "USB stick not found or not writable");
-        QTimer::singleShot(0, this, &TransferManager::startNext);
-        return;
-    }
-    if (next->size > UsbUtils::kFat32MaxFileSize && UsbUtils::isFat32(next->destDir)) {
-        finishJob(*next, State::Failed,
-                  "The stick is FAT32, which cannot hold files over 4 GB. Format it as exFAT.");
-        QTimer::singleShot(0, this, &TransferManager::startNext);
-        return;
-    }
-    const QStorageInfo storage(next->destDir);
-    if (storage.isValid() && storage.bytesAvailable() >= 0 && next->size > storage.bytesAvailable()) {
-        finishJob(*next, State::Failed, "Not enough free space on the USB stick");
-        QTimer::singleShot(0, this, &TransferManager::startNext);
-        return;
-    }
+        next->state = State::Copying;
+        next->bytesDone = 0;
+        next->bytesPerSecond = 0;
 
-    next->state = State::Copying;
-    next->bytesDone = 0;
-    next->bytesPerSecond = 0;
-    m_currentId = next->id;
-    m_currentBytes = std::make_shared<std::atomic<qint64>>(0);
-    m_currentCancel = std::make_shared<std::atomic<bool>>(false);
-    m_speedBytes = 0;
-    m_speedClock.start();
-    emit jobChanged(next->id);
-
-    if (!m_watcher) {
-        m_watcher = new QFutureWatcher<CopyResult>(this);
-        connect(m_watcher, &QFutureWatcher<CopyResult>::finished, this, &TransferManager::onCopyFinished);
+        Active active;
+        active.jobId = next->id;
+        active.bytes = std::make_shared<std::atomic<qint64>>(0);
+        active.cancel = std::make_shared<std::atomic<bool>>(false);
+        active.speedClock.start();
+        active.watcher = new QFutureWatcher<CopyResult>(this);
+        connect(active.watcher, &QFutureWatcher<CopyResult>::finished, this,
+                [this, device]() { onCopyFinished(device); });
+        const QString dest = QDir(next->destDir).filePath(next->fileName);
+        const int id = next->id;
+        active.watcher->setFuture(QtConcurrent::run(m_pool, &TransferManager::copyFile,
+                                                    next->source, dest, active.bytes, active.cancel));
+        m_active.insert(device, active);
+        m_pollTimer->start();
+        emit jobChanged(id);
+        return;
     }
-    const QString dest = QDir(next->destDir).filePath(next->fileName);
-    m_watcher->setFuture(QtConcurrent::run(m_pool, &TransferManager::copyFile,
-                                           next->source, dest, m_currentBytes, m_currentCancel));
-    m_pollTimer->start();
 }
 
-void TransferManager::onCopyFinished() {
-    const CopyResult result = m_watcher->result();
-    const int id = m_currentId;
-    m_currentId = 0;
-    const qint64 bytes = m_currentBytes ? m_currentBytes->load() : 0;
-    m_currentBytes.reset();
-    m_currentCancel.reset();
+void TransferManager::onCopyFinished(const QString& device) {
+    auto it = m_active.find(device);
+    if (it == m_active.end())
+        return;
+    const Active active = it.value();
+    m_active.erase(it);
+    const CopyResult result = active.watcher->result();
+    active.watcher->deleteLater();
 
-    if (Job* job = findJob(id)) {
-        job->bytesDone = bytes;
+    if (Job* job = findJob(active.jobId)) {
+        job->bytesDone = active.bytes->load();
         if (result.ok)
             finishJob(*job, State::Done);
         else if (result.cancelled)
@@ -213,45 +217,82 @@ void TransferManager::onCopyFinished() {
         else
             finishJob(*job, State::Failed, result.error);
     }
-    startNext();
+    if (m_active.isEmpty())
+        m_pollTimer->stop();
+    startNext(device);
 }
 
 void TransferManager::pollProgress() {
-    Job* job = findJob(m_currentId);
-    if (!job || !m_currentBytes)
-        return;
+    for (auto it = m_active.begin(); it != m_active.end(); ++it) {
+        Active& active = it.value();
+        Job* job = findJob(active.jobId);
+        if (!job)
+            continue;
 
-    const qint64 bytes = m_currentBytes->load();
-    const qint64 elapsedMs = m_speedClock.elapsed();
-    if (elapsedMs >= 1000) {
-        const double instant = double(bytes - m_speedBytes) * 1000.0 / double(elapsedMs);
-        // Smoothed, so the figure doesn't jump around with every sync
-        job->bytesPerSecond = job->bytesPerSecond > 0 ? 0.7 * job->bytesPerSecond + 0.3 * instant : instant;
-        m_speedBytes = bytes;
-        m_speedClock.restart();
+        const qint64 bytes = active.bytes->load();
+        const qint64 elapsedMs = active.speedClock.elapsed();
+        if (elapsedMs >= 1000) {
+            const double instant = double(bytes - active.speedBytes) * 1000.0 / double(elapsedMs);
+            // Smoothed, so the figure doesn't jump around with every sync
+            job->bytesPerSecond = job->bytesPerSecond > 0 ? 0.7 * job->bytesPerSecond + 0.3 * instant : instant;
+            active.speedBytes = bytes;
+            active.speedClock.restart();
+        }
+        job->bytesDone = bytes;
+        emit jobChanged(job->id);
     }
-    job->bytesDone = bytes;
-    emit jobChanged(job->id);
 }
 
 void TransferManager::finishJob(Job& job, State state, const QString& error) {
     job.state = state;
     job.error = error;
     job.bytesPerSecond = 0;
+    Counts& deviceBatch = m_deviceBatch[job.device];
     if (state == State::Done) {
         job.bytesDone = job.size;
-        ++m_batchSucceeded;
+        ++m_batch.succeeded;
+        ++deviceBatch.succeeded;
     } else if (state == State::Failed) {
-        ++m_batchFailed;
+        ++m_batch.failed;
+        ++deviceBatch.failed;
         if (!m_unseenFailures) {
             m_unseenFailures = true;
             emit failuresChanged(true);
         }
     } else if (state == State::Cancelled) {
-        ++m_batchCancelled;
+        ++m_batch.cancelled;
+        ++deviceBatch.cancelled;
     }
     emit jobChanged(job.id);
     emit activeCountChanged(activeCount());
+}
+
+// Tells when a device has nothing left to copy, and when no device has
+void TransferManager::reportIfIdle(const QString& device) {
+    if (m_active.contains(device))
+        return;
+    for (const Job& j : m_jobs) {
+        if (j.device == device && j.state == State::Queued)
+            return;
+    }
+
+    const Counts counts = m_deviceBatch.take(device);
+    if (counts.any()) {
+        QString name = device;
+        for (const Job& j : m_jobs) {
+            if (j.device == device)
+                name = j.deviceName;
+        }
+        emit deviceFinished(name, counts.succeeded, counts.failed, counts.cancelled);
+    }
+
+    if (activeCount() == 0) {
+        emit activeCountChanged(0);
+        const Counts all = m_batch;
+        m_batch = Counts();
+        if (all.any())
+            emit queueDrained(all.succeeded, all.failed, all.cancelled);
+    }
 }
 
 void TransferManager::cancel(int id) {
@@ -259,23 +300,30 @@ void TransferManager::cancel(int id) {
     if (!job)
         return;
     if (job->state == State::Queued) {
+        const QString device = job->device;
         finishJob(*job, State::Cancelled);
-        if (activeCount() == 0)
-            startNext();   // reports the drained queue
-    } else if (job->state == State::Copying && m_currentCancel) {
-        m_currentCancel->store(true);   // onCopyFinished() marks it once the worker stops
+        reportIfIdle(device);
+    } else if (job->state == State::Copying) {
+        for (const Active& active : m_active) {
+            if (active.jobId == id)
+                active.cancel->store(true);   // onCopyFinished() marks it once the worker stops
+        }
     }
 }
 
 void TransferManager::cancelAll() {
+    QStringList devices;
     for (Job& job : m_jobs) {
-        if (job.state == State::Queued)
+        if (job.state == State::Queued) {
+            if (!devices.contains(job.device))
+                devices << job.device;
             finishJob(job, State::Cancelled);
+        }
     }
-    if (m_currentCancel)
-        m_currentCancel->store(true);
-    else if (activeCount() == 0)
-        startNext();
+    for (const Active& active : m_active)
+        active.cancel->store(true);
+    for (const QString& device : devices)
+        reportIfIdle(device);   // devices that were only waiting
 }
 
 void TransferManager::clearFinished() {
@@ -313,6 +361,10 @@ int TransferManager::activeCount() const {
             ++count;
     }
     return count;
+}
+
+int TransferManager::copyingCount() const {
+    return m_active.size();
 }
 
 bool TransferManager::isActiveSource(const QString& source) const {

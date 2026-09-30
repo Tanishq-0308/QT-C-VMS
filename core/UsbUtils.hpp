@@ -1,9 +1,28 @@
 #pragma once
 
+#include <QList>
 #include <QString>
 
 // USB stick helpers shared by every page that reads from or writes to a pendrive.
 namespace UsbUtils {
+
+// One connected USB storage device (a mounted removable volume)
+struct Device {
+    QString mountPath;    // e.g. /media/brainwave/KINGSTON
+    QString name;         // its label, or the mount folder's name when it has none
+    QString fileSystem;   // "FAT32", "exFAT", "NTFS", ...
+    qint64 bytesFree = 0;
+    qint64 bytesTotal = 0;
+    bool fat32 = false;   // cannot hold files of 4 GiB or more
+};
+
+// Every removable volume mounted by the desktop, in mount-path order. With `requireWritable`,
+// read-only volumes are skipped.
+QList<Device> listDevices(bool requireWritable = true);
+
+// The mounted volume `path` is (or will be) on: the mount point of its nearest existing parent
+// folder. Two folders with the same root are on the same device.
+QString volumeRoot(const QString& path);
 
 // Root of the first removable volume mounted by the desktop (/media/<user>/<label> or
 // /run/media/<user>/<label>), or an empty string when no stick is mounted. With

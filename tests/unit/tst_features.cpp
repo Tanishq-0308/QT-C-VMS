@@ -20,6 +20,8 @@
 #include <QPushButton>
 #include <QRegularExpression>
 #include <QSignalSpy>
+#include <QCheckBox>
+#include <QDialog>
 #include <QInputDialog>
 #include <QLineEdit>
 #include <QProcess>
@@ -39,6 +41,8 @@
 #include "core/UIScale.hpp"
 #include "core/UsbUtils.hpp"
 #include "ui/SurgeryRecordPage/SurgeryRecordingPage.hpp"
+#include "widgets/Toast.hpp"
+#include "widgets/UsbDeviceDialog.hpp"
 
 namespace {
 
@@ -47,8 +51,10 @@ using State = TransferManager::State;
 QByteArray patternBytes(qint64 size, int seed)
 {
     QByteArray b(int(size), Qt::Uninitialized);
-    for (int i = 0; i < b.size(); ++i)
-        b[i] = char((i * 31 + seed * 7 + (i >> 11)) & 0xff);
+    for (int i = 0; i < b.size(); ++i) {
+        const quint32 u = quint32(i);   // unsigned: wraps instead of overflowing on large files
+        b[i] = char((u * 31u + quint32(seed) * 7u + (u >> 11)) & 0xffu);
+    }
     return b;
 }
 
@@ -447,6 +453,227 @@ private slots:
         const double overall = data.size() / seconds;
         QVERIFY2(maxSpeed < overall * 1.35, qPrintable(QString("drawer showed %1 MB/s for a real %2 MB/s")
                      .arg(maxSpeed / (1 << 20), 0, 'f', 1).arg(overall / (1 << 20), 0, 'f', 1)));
+    }
+
+    // ================================================================ Several USB devices
+    void usb_listDevicesAndVolumeRoot()
+    {
+        QTemporaryDir a, b;
+        QCOMPARE(UsbUtils::volumeRoot(a.path()), UsbUtils::volumeRoot(b.path()));           // same disk
+        QCOMPARE(UsbUtils::volumeRoot(a.filePath("not/created/yet")), UsbUtils::volumeRoot(a.path()));
+        QVERIFY(UsbUtils::volumeRoot("/dev/shm") != UsbUtils::volumeRoot(a.path()));        // another volume
+
+        const QList<UsbUtils::Device> devices = UsbUtils::listDevices();
+        if (devices.isEmpty())
+            QSKIP("no USB device mounted");
+        for (const UsbUtils::Device& d : devices) {
+            qInfo("device: %s", qPrintable(UsbDeviceDialog::describe(d)));
+            QVERIFY(d.mountPath.startsWith("/media/") || d.mountPath.startsWith("/run/media/"));
+            QVERIFY(!d.name.isEmpty());
+            QVERIFY(d.bytesTotal > 0 && d.bytesFree >= 0 && d.bytesFree <= d.bytesTotal);
+            QCOMPARE(UsbUtils::volumeRoot(d.mountPath + "/SurgeryDownloads"), d.mountPath);
+            QCOMPARE(d.fat32, UsbUtils::isFat32(d.mountPath));
+        }
+        QCOMPARE(UsbUtils::findUsbMount(), devices.first().mountPath);
+    }
+
+    // Two devices copy at the same time; one device copies its files one after the other
+    void transfer_devicesCopyInParallel()
+    {
+        QTemporaryDir src, diskDst;
+        QTemporaryDir shmDst("/dev/shm/tst_features_XXXXXX");   // a second volume: its own queue
+        if (!shmDst.isValid() || UsbUtils::volumeRoot(shmDst.path()) == UsbUtils::volumeRoot(diskDst.path()))
+            QSKIP("no second volume available for the test");
+        const QString a = src.filePath("a.mp4"), b = src.filePath("b.mp4");
+        QVERIFY(makeSparse(a, 96 << 20));
+        QVERIFY(makeSparse(b, 96 << 20));
+
+        TransferManager m;
+        QSignalSpy drained(&m, &TransferManager::queueDrained);
+        QSignalSpy deviceDone(&m, &TransferManager::deviceFinished);
+        int maxCopying = 0;
+        connect(&m, &TransferManager::jobChanged, this, [&]() { maxCopying = qMax(maxCopying, m.copyingCount()); });
+
+        QCOMPARE(m.enqueue({a, b}, diskDst.path(), "DISK"), 2);
+        QCOMPARE(m.copyingCount(), 1);                       // second file waits for the first
+        QCOMPARE(m.enqueue({a, b}, shmDst.path(), "MEMORY"), 2);
+        QCOMPARE(m.copyingCount(), 2);                       // the other device started at once
+        QCOMPARE(m.activeCount(), 4);
+
+        // Per device never more than one file at a time
+        QHash<QString, int> copyingPerDevice;
+        for (const TransferManager::Job& j : m.jobs())
+            if (j.state == State::Copying) ++copyingPerDevice[j.deviceName];
+        QCOMPARE(copyingPerDevice.value("DISK"), 1);
+        QCOMPARE(copyingPerDevice.value("MEMORY"), 1);
+
+        QTRY_COMPARE_WITH_TIMEOUT(drained.count(), 1, 120000);
+        QCOMPARE(drained.at(0).at(0).toInt(), 4);
+        QCOMPARE(maxCopying, 2);
+        QCOMPARE(deviceDone.count(), 2);                     // one "you can remove it" per device
+        QStringList names;
+        for (const auto& args : deviceDone) {
+            names << args.at(0).toString();
+            QCOMPARE(args.at(1).toInt(), 2);
+        }
+        names.sort();
+        QCOMPARE(names, QStringList({"DISK", "MEMORY"}));
+        for (const QString& dir : {diskDst.path(), shmDst.path()}) {
+            QCOMPARE(QFileInfo(dir + "/a.mp4").size(), qint64(96 << 20));
+            QCOMPARE(QFileInfo(dir + "/b.mp4").size(), qint64(96 << 20));
+        }
+    }
+
+    // A failure or a cancel on one device leaves the other device's copies alone
+    void transfer_devicesAreIndependent()
+    {
+        QTemporaryDir src, diskDst;
+        QTemporaryDir shmDst("/dev/shm/tst_features_XXXXXX");
+        if (!shmDst.isValid() || UsbUtils::volumeRoot(shmDst.path()) == UsbUtils::volumeRoot(diskDst.path()))
+            QSKIP("no second volume available for the test");
+        const QString a = src.filePath("a.mp4"), b = src.filePath("b.mp4");
+        QVERIFY(makeSparse(a, 256 << 20));
+        QVERIFY(makeSparse(b, 8 << 20));
+
+        TransferManager m;
+        QSignalSpy drained(&m, &TransferManager::queueDrained);
+        QSignalSpy deviceDone(&m, &TransferManager::deviceFinished);
+        m.enqueue({a, b}, diskDst.path(), "DISK");
+        m.enqueue({a, b}, shmDst.path(), "MEMORY");
+        for (const TransferManager::Job& j : m.jobs())
+            if (j.deviceName == "DISK") m.cancel(j.id);      // cancel everything going to DISK
+
+        QTRY_COMPARE_WITH_TIMEOUT(drained.count(), 1, 120000);
+        QCOMPARE(drained.at(0).at(0).toInt(), 2);            // MEMORY's two files
+        QCOMPARE(drained.at(0).at(2).toInt(), 2);            // DISK's two cancelled
+        QVERIFY(QDir(diskDst.path()).entryList(QDir::Files).isEmpty());
+        QCOMPARE(QFileInfo(shmDst.path() + "/a.mp4").size(), qint64(256 << 20));
+        QCOMPARE(QFileInfo(shmDst.path() + "/b.mp4").size(), qint64(8 << 20));
+        QCOMPARE(deviceDone.count(), 2);
+    }
+
+    // Real hardware: the same file to two USB devices at once (skipped with fewer than two).
+    // Test folders on the devices are removed afterwards.
+    void transfer_twoRealUsbDevicesAtOnce()
+    {
+        const QList<UsbUtils::Device> devices = UsbUtils::listDevices();
+        if (devices.size() < 2)
+            QSKIP("needs two USB devices");
+        QTemporaryDir src;
+        const QByteArray data = patternBytes(96 << 20, 9);
+        const QString file = src.filePath("parallel_test.bin");
+        QVERIFY(writeFile(file, data));
+        const QString folder = "/tst_features_parallel_test";
+        const UsbUtils::Device d0 = devices[0], d1 = devices[1];
+        auto cleanup = [&]() { for (const auto& d : {d0, d1}) QDir(d.mountPath + folder).removeRecursively(); };
+
+        auto copyTo = [&](const QList<UsbUtils::Device>& targets, QHash<QString, double>* seconds, int* maxCopying) {
+            cleanup();
+            ::sync();
+            TransferManager m;
+            QSignalSpy drained(&m, &TransferManager::queueDrained);
+            QElapsedTimer clock;
+            connect(&m, &TransferManager::deviceFinished, this, [&](const QString& name) {
+                (*seconds)[name] = clock.elapsed() / 1000.0; });
+            connect(&m, &TransferManager::jobChanged, this, [&]() { *maxCopying = qMax(*maxCopying, m.copyingCount()); });
+            clock.start();
+            for (const UsbUtils::Device& d : targets)
+                m.enqueue({file}, d.mountPath + folder, d.name);
+            *maxCopying = qMax(*maxCopying, m.copyingCount());
+            if (!QTest::qWaitFor([&]() { return drained.count() == 1; }, 300000)) return false;
+            return drained.at(0).at(0).toInt() == targets.size();
+        };
+
+        QHash<QString, double> alone, together;
+        int copying = 0, copyingTogether = 0;
+        QVERIFY(copyTo({d0}, &alone, &copying));
+        QVERIFY(copyTo({d1}, &alone, &copying));
+        QVERIFY(copyTo({d0, d1}, &together, &copyingTogether));
+        const bool intact = readAll(d0.mountPath + folder + "/parallel_test.bin") == data
+                         && readAll(d1.mountPath + folder + "/parallel_test.bin") == data;
+        cleanup();
+
+        const double mb = data.size() / 1e6;
+        for (const UsbUtils::Device& d : {d0, d1})
+            qInfo("%s: alone %.1f s (%.1f MB/s), together %.1f s (%.1f MB/s)", qPrintable(d.name),
+                  alone[d.name], mb / alone[d.name], together[d.name], mb / together[d.name]);
+        const double oneAfterTheOther = alone[d0.name] + alone[d1.name];
+        const double bothAtOnce = qMax(together[d0.name], together[d1.name]);
+        qInfo("both devices: one after the other %.1f s, at the same time %.1f s", oneAfterTheOther, bothAtOnce);
+        QVERIFY(intact);
+        QCOMPARE(copyingTogether, 2);                 // both were being written at once
+        QVERIFY2(bothAtOnce < oneAfterTheOther, "copying to both at once should beat one after the other");
+    }
+
+    void usbChooser_oneDeviceIsNotAsked()
+    {
+        UsbUtils::Device only;
+        only.mountPath = "/media/x/ONLY"; only.name = "ONLY"; only.fileSystem = "exFAT";
+        ts::ModalCloser closer;   // would record a dialog if one appeared
+        const QList<UsbUtils::Device> chosen = UsbDeviceDialog::choose(nullptr, {only});
+        QCOMPARE(chosen.size(), 1);
+        QVERIFY(closer.closed.isEmpty());
+        QVERIFY(UsbDeviceDialog::choose(nullptr, {}).isEmpty());
+    }
+
+    void usbChooser_pickSeveral()
+    {
+        UsbUtils::Device a, b, c;
+        a.mountPath = "/media/x/KINGSTON"; a.name = "KINGSTON"; a.fileSystem = "exFAT"; a.bytesFree = 28100000000LL; a.bytesTotal = 29000000000LL;
+        b.mountPath = "/media/x/SANDISK"; b.name = "SANDISK"; b.fileSystem = "FAT32"; b.fat32 = true; b.bytesFree = 7000000000LL; b.bytesTotal = 8000000000LL;
+        c.mountPath = "/media/x/SSD"; c.name = "SSD"; c.fileSystem = "NTFS"; c.bytesFree = 400000000000LL; c.bytesTotal = 500000000000LL;
+        QCOMPARE(UsbDeviceDialog::describe(a), QString::fromUtf8("KINGSTON — 28.1 GB free of 29.0 GB · exFAT"));
+
+        // Drives the dialog: `tick` = which boxes to leave ticked; records what it showed
+        QStringList shown;
+        bool downloadEnabledWithNoneTicked = true;
+        auto drive = [&](const QList<bool>& tick, bool accept) {
+            auto* timer = new QTimer(this);
+            timer->setSingleShot(true);
+            connect(timer, &QTimer::timeout, this, [&, tick, accept, timer]() {
+                auto* dialog = qobject_cast<QDialog*>(QApplication::activeModalWidget());
+                QVERIFY(dialog);
+                const QList<QCheckBox*> boxes = dialog->findChildren<QCheckBox*>();
+                shown.clear();
+                for (QCheckBox* box : boxes) shown << box->text();
+                for (QLabel* l : dialog->findChildren<QLabel*>()) shown << l->text();
+                const QString shotDir = qEnvironmentVariable("SHOT_DIR");
+                if (!shotDir.isEmpty() && accept)
+                    dialog->grab().save(shotDir + "/usb_chooser.png");
+                for (QCheckBox* box : boxes) box->setChecked(false);
+                for (QPushButton* btn : dialog->findChildren<QPushButton*>())
+                    if (btn->text() == "Download") downloadEnabledWithNoneTicked = btn->isEnabled();
+                for (int i = 0; i < boxes.size(); ++i) boxes[i]->setChecked(tick.value(i));
+                accept ? dialog->accept() : dialog->reject();
+                timer->deleteLater();
+            });
+            timer->start(50);
+        };
+
+        drive({true, false, true}, true);
+        QList<UsbUtils::Device> chosen = UsbDeviceDialog::choose(nullptr, {a, b, c}, 5LL << 30);
+        QCOMPARE(chosen.size(), 2);
+        QCOMPARE(chosen[0].name, QString("KINGSTON"));
+        QCOMPARE(chosen[1].name, QString("SSD"));
+        QVERIFY(!downloadEnabledWithNoneTicked);                       // nothing ticked: can't download
+        QVERIFY2(shown.join("|").contains("FAT32: files over 4 GB"), qPrintable(shown.join("|")));   // 5 GB file
+
+        drive({true, true, true}, false);                              // Cancel
+        QVERIFY(UsbDeviceDialog::choose(nullptr, {a, b, c}, 1000).isEmpty());
+        QVERIFY2(!shown.join("|").contains("files over 4 GB"), "no FAT32 note for small files");
+    }
+
+    // Two messages at once (two devices finishing together) don't cover each other
+    void toast_messagesStack()
+    {
+        QWidget window;
+        window.resize(1280, 720);
+        window.show();
+        Toast::show(&window, "Copy to KINGSTON finished: 2 file(s) copied. You can remove it.", 2000);
+        Toast::show(&window, "Copy to SSD finished: 2 file(s) copied. You can remove it.", 2000);
+        const QList<QLabel*> toasts = window.findChildren<QLabel*>("AppToast");
+        QCOMPARE(toasts.size(), 2);
+        QVERIFY(!toasts[0]->geometry().intersects(toasts[1]->geometry()));
     }
 
     // ================================================================ Generate Report

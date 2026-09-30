@@ -1,5 +1,6 @@
 #include "PdfViewerPage.hpp"
 #include "core/UsbUtils.hpp"
+#include "widgets/UsbDeviceDialog.hpp"
 #include <QLabel>
 #include <QImage>
 #include <QPixmap>
@@ -241,34 +242,40 @@ void PdfViewerPage::downloadReport()
     }
 
     // A single small PDF: copied right here rather than through the transfer queue
-    const QString usbMountPath = UsbUtils::findUsbMount();
-    if (usbMountPath.isEmpty()) {
+    const QList<UsbUtils::Device> devices = UsbUtils::listDevices();
+    if (devices.isEmpty()) {
         QMessageBox::warning(this,
                              "No USB Device Found",
                              "Please connect a USB device before attempting to download the report.");
         qWarning() << "No USB stick mounted";
         return;
     }
-    const QString destDir = usbMountPath + "/Reports";
+    // Several devices connected: the user chooses which (one or more)
+    const QList<UsbUtils::Device> targets = UsbDeviceDialog::choose(this, devices);
+    if (targets.isEmpty())
+        return;
 
-    QDir().mkpath(destDir);
-
-    QFileInfo fileInfo(sourcePath);
-    QString destPath = destDir + "/" + fileInfo.fileName();
-
-    if (QFile::exists(destPath)) {
-        QFile::remove(destPath);
+    const QString fileName = QFileInfo(sourcePath).fileName();
+    QStringList copied, failed;
+    for (const UsbUtils::Device& device : targets) {
+        const QString destDir = device.mountPath + "/Reports";
+        const QString destPath = destDir + "/" + fileName;
+        QDir().mkpath(destDir);
+        if (QFile::exists(destPath))
+            QFile::remove(destPath);
+        if (QFile::copy(sourcePath, destPath)) {
+            copied << destPath;
+            qDebug() << "Report copied to:" << destPath;
+        } else {
+            failed << device.name;
+            qWarning() << "Failed to copy report from:" << sourcePath << " to " << destPath;
+        }
     }
 
-    if (QFile::copy(sourcePath, destPath)) {
-        QMessageBox::information(this,
-                                 "Download Successful",
-                                 QString("Report successfully downloaded to:\n%1").arg(destPath));
-        qDebug() << "Report copied to:" << destPath;
-    } else {
-        QMessageBox::warning(this,
-                             "Download Error",
-                             "Failed to download the report to the USB device.");
-        qWarning() << "Failed to copy report from:" << sourcePath << " to " << destPath;
-    }
+    if (!copied.isEmpty())
+        QMessageBox::information(this, "Download Successful",
+                                 "Report successfully downloaded to:\n" + copied.join("\n"));
+    if (!failed.isEmpty())
+        QMessageBox::warning(this, "Download Error",
+                             "Failed to download the report to: " + failed.join(", "));
 }
