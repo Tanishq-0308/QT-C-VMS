@@ -76,12 +76,12 @@ HomePage::HomePage(QWidget *parent) : ResponsiveWidget(parent) {
     connect(transferManager, &TransferManager::queueDrained, this, [this](int succeeded, int failed, int cancelled) {
         if (failed > 0) {
             Toast::show(this, QString("USB copy finished: %1 copied, %2 failed — see Transfers")
-                                  .arg(succeeded).arg(failed), 5000, "#c40000");
+                                  .arg(succeeded).arg(failed), 7000, "#c40000");
         } else if (succeeded > 0) {
             QString text = QString("USB copy finished: %1 file(s) copied").arg(succeeded);
             if (cancelled > 0)
                 text += QString(", %1 cancelled").arg(cancelled);
-            Toast::show(this, text + ". You can remove the stick.", 4000);
+            Toast::show(this, text + ". You can remove the stick.", 6000);
         }
     });
     updateTransfersButton();

@@ -28,6 +28,7 @@ endif()
 find_package(Qt5 REQUIRED COMPONENTS Core Gui Widgets Sql Network Multimedia MultimediaWidgets Concurrent Test)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(POPPLER poppler-qt5)
+pkg_check_modules(AV REQUIRED libavformat libavcodec libavutil)   # core/MediaInfo (video length)
 
 # Same DeckLink API macro as the main build
 add_definitions(-DBLACKMAGIC_DECKLINK_API_VERSION=0x00000003)
@@ -115,11 +116,13 @@ set(WIDGET_SOURCES
     ${APP_DIR}/core/UsbUtils.hpp
     ${APP_DIR}/core/TransferManager.cpp
     ${APP_DIR}/core/TransferManager.hpp
+    ${APP_DIR}/core/MediaInfo.cpp
+    ${APP_DIR}/core/MediaInfo.hpp
     ${APP_DIR}/ui/ClickableLabel/ClickableLabel.cpp
     ${APP_DIR}/ui/ClickableLabel/ClickableLabel.hpp
     ${APP_DIR}/assets/resources.qrc
 )
-set(WIDGET_LIBS Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Sql Qt5::Network Qt5::Multimedia Qt5::MultimediaWidgets Qt5::Concurrent)
+set(WIDGET_LIBS Qt5::Core Qt5::Gui Qt5::Widgets Qt5::Sql Qt5::Network Qt5::Multimedia Qt5::MultimediaWidgets Qt5::Concurrent ${AV_LINK_LIBRARIES})
 if(POPPLER_FOUND)
     list(APPEND WIDGET_SOURCES
         ${APP_DIR}/ui/PdfViewerPage/PdfViewerPage.cpp
@@ -127,6 +130,7 @@ if(POPPLER_FOUND)
     list(APPEND WIDGET_LIBS ${POPPLER_LINK_LIBRARIES})
 endif()
 unit_test(tst_widget_lifetime SOURCES ${WIDGET_SOURCES} LIBS ${WIDGET_LIBS})
+target_include_directories(tst_widget_lifetime PRIVATE ${AV_INCLUDE_DIRS})
 if(POPPLER_FOUND)
     target_compile_definitions(tst_widget_lifetime PRIVATE HAVE_POPPLER=1)
     target_include_directories(tst_widget_lifetime PRIVATE ${POPPLER_INCLUDE_DIRS})
@@ -135,6 +139,7 @@ endif()
 # ---------------------------------------------------------------- tst_features
 # Background USB copy queue, USB detection, Generate Report button, Archive heading, icons
 unit_test(tst_features SOURCES ${WIDGET_SOURCES} LIBS ${WIDGET_LIBS})
+target_include_directories(tst_features PRIVATE ${AV_INCLUDE_DIRS})
 if(POPPLER_FOUND)
     target_compile_definitions(tst_features PRIVATE HAVE_POPPLER=1)
     target_include_directories(tst_features PRIVATE ${POPPLER_INCLUDE_DIRS})

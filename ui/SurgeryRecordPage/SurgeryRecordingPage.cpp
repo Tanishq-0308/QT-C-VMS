@@ -32,6 +32,10 @@
 #include "ClickableSlider.hpp"
 #include "core/TransferManager.hpp"
 #include "core/UsbUtils.hpp"
+#include "core/MediaInfo.hpp"
+#include <QFutureWatcher>
+#include <QPointer>
+#include <QtConcurrent/QtConcurrent>
 
 // ============== Responsive Helper Methods ==============
 
@@ -405,11 +409,13 @@ void SurgeryRecordingPage::updateScaling() {
 
     // ============== Grid Cards ==============
     int cardW = percentWidth(12, 180, 250);
+    int fileLabelFontSize = percentHeight(1.5, 10, 16);
+    int infoLineH = fileLabelFontSize + 8;   // the duration/size line under the file name
     int cardH = percentHeight(20, 150, 180);
     int thumbW = cardW - 10;
-    int thumbH = cardH - 70;  // More space for delete button
-    
-    int fileLabelFontSize = percentHeight(1.5, 10, 16);
+    // Room for the file-name row (delete button) and the info line; the card stays the same
+    // height as before, so the sections need no more space
+    int thumbH = cardH - 70 - infoLineH;
     int fileLabelPadding = percentHeight(0.5, 3, 6);
     int fileLabelRadius = percentHeight(0.4, 3, 5);
     int checkBoxSize = percentHeight(2, 16, 24);
@@ -448,6 +454,10 @@ void SurgeryRecordingPage::updateScaling() {
                         "padding: %2px; border-radius: %3px;")
                 .arg(fileLabelFontSize).arg(fileLabelPadding).arg(fileLabelRadius)
             );
+        }
+        if (cw.infoLabel) {
+            cw.infoLabel->setStyleSheet(QString("font-size: %1px; color: #444444;").arg(qMax(9, fileLabelFontSize - 1)));
+            cw.infoLabel->setFixedHeight(infoLineH);
         }
         if (cw.checkBox) {
             cw.checkBox->setStyleSheet(
@@ -497,6 +507,10 @@ void SurgeryRecordingPage::updateScaling() {
                         "padding: %2px; border-radius: %3px;")
                 .arg(fileLabelFontSize).arg(fileLabelPadding).arg(fileLabelRadius)
             );
+        }
+        if (cw.infoLabel) {
+            cw.infoLabel->setStyleSheet(QString("font-size: %1px; color: #444444;").arg(qMax(9, fileLabelFontSize - 1)));
+            cw.infoLabel->setFixedHeight(infoLineH);
         }
         if (cw.checkBox) {
             cw.checkBox->setStyleSheet(
@@ -695,8 +709,28 @@ QWidget* SurgeryRecordingPage::createRecordingSection(const QString &title, cons
             labelLayout->addWidget(fileLabel, 1);
             labelLayout->addWidget(delBtn);
 
+            // Size at once; duration (or resolution) follows from a worker thread, because it
+            // needs the file opened and a gallery can hold many multi-GB recordings
+            QLabel *infoLabel = new QLabel(QFileInfo::exists(filePath)
+                                               ? MediaInfo::formatSize(QFileInfo(filePath).size())
+                                               : QStringLiteral("File not found"));
+            infoLabel->setAlignment(Qt::AlignCenter);
+            {
+                QPointer<QLabel> label(infoLabel);
+                auto *watcher = new QFutureWatcher<QString>(this);
+                connect(watcher, &QFutureWatcher<QString>::finished, this, [watcher, label]() {
+                    if (label)
+                        label->setText(watcher->result());
+                    watcher->deleteLater();
+                });
+                watcher->setFuture(QtConcurrent::run([filePath, isVideo]() {
+                    return MediaInfo::describe(filePath, isVideo);
+                }));
+            }
+
             cardLayout->addWidget(thumbnail);
             cardLayout->addWidget(labelContainer);
+            cardLayout->addWidget(infoLabel);
 
             gridLayout->addWidget(card, i / cols, i % cols);
             gridLayout->setAlignment(Qt::AlignTop | Qt::AlignLeft);
@@ -708,6 +742,7 @@ QWidget* SurgeryRecordingPage::createRecordingSection(const QString &title, cons
             cw.fileLabel = fileLabel;
             cw.checkBox = checkBox;
             cw.deleteBtn = delBtn;
+            cw.infoLabel = infoLabel;
             cw.filePath = filePath;
             cw.fileId = fileId;
             cw.isVideo = isVideo;

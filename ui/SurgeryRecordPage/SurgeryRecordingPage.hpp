@@ -25,6 +25,7 @@ struct CardWidgets {
     QLabel* fileLabel;
     QCheckBox* checkBox;
     QPushButton* deleteBtn;  // NEW: Delete button for each card
+    QLabel* infoLabel = nullptr;   // duration and size (video) or resolution and size (image)
     QString filePath;
     int fileId;              // NEW: Database ID for deletion
     bool isVideo;

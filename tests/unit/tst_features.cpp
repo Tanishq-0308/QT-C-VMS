@@ -20,7 +20,9 @@
 #include <QPushButton>
 #include <QRegularExpression>
 #include <QSignalSpy>
+#include <QProcess>
 #include <QSqlDatabase>
+#include <QSqlQuery>
 #include <QStorageInfo>
 #include <QTcpServer>
 #include <QTcpSocket>
@@ -29,6 +31,7 @@
 #include "common/TestSupport.hpp"
 #include "common/ModalCloser.hpp"
 
+#include "core/MediaInfo.hpp"
 #include "core/TransferManager.hpp"
 #include "core/UIScale.hpp"
 #include "core/UsbUtils.hpp"
@@ -512,6 +515,93 @@ private slots:
         QVERIFY2(shown.contains("Failed to generate the PDF report.\n\n"), qPrintable(shown));
         QVERIFY2(!shown.endsWith("\n\n"), "the reason must not be empty");
         QVERIFY(btn->isEnabled());
+    }
+
+    // ================================================================ Media info on the cards
+    void mediaInfo_formatSize()
+    {
+        QCOMPARE(MediaInfo::formatSize(0), QString("0 B"));
+        QCOMPARE(MediaInfo::formatSize(999), QString("999 B"));
+        QCOMPARE(MediaInfo::formatSize(566000), QString("566 KB"));
+        QCOMPARE(MediaInfo::formatSize(5'700'000), QString("5.7 MB"));
+        QCOMPARE(MediaInfo::formatSize(121'000'000), QString("121 MB"));
+        QCOMPARE(MediaInfo::formatSize(1'210'000'000), QString("1.21 GB"));
+        QCOMPARE(MediaInfo::formatSize(33'830'000'000LL), QString("33.8 GB"));
+    }
+
+    void mediaInfo_formatDuration()
+    {
+        QCOMPARE(MediaInfo::formatDuration(0), QString("0:00"));
+        QCOMPARE(MediaInfo::formatDuration(45'400), QString("0:45"));
+        QCOMPARE(MediaInfo::formatDuration(754'000), QString("12:34"));
+        QCOMPARE(MediaInfo::formatDuration(3'723'000), QString("1:02:03"));
+        QCOMPARE(MediaInfo::formatDuration(-1), QString());
+    }
+
+    void mediaInfo_describeImageAndMissingFile()
+    {
+        QTemporaryDir dir;
+        const QString jpg = dir.filePath("snapshot.jpg");
+        QImage img(1920, 1080, QImage::Format_RGB32);
+        img.fill(Qt::darkGray);
+        QVERIFY(img.save(jpg, "JPG", 95));
+        const QString text = MediaInfo::describe(jpg, false);
+        QVERIFY2(text.startsWith(QString::fromUtf8("1920 × 1080 · ")), qPrintable(text));
+        QVERIFY2(text.endsWith(MediaInfo::formatSize(QFileInfo(jpg).size())), qPrintable(text));
+        QCOMPARE(MediaInfo::describe(dir.filePath("gone.mp4"), true), QString("File not found"));
+        // Not a video: the size is still shown
+        QVERIFY(writeFile(dir.filePath("broken.mp4"), QByteArray(5000, 'x')));
+        QCOMPARE(MediaInfo::describe(dir.filePath("broken.mp4"), true), QString("5 KB"));
+    }
+
+    // A fragmented MP4 like the recorder writes (no total length in its header)
+    void mediaInfo_videoDuration()
+    {
+        QTemporaryDir dir;
+        const QString mp4 = dir.filePath("recording.mp4");
+        QProcess ffmpeg;
+        ffmpeg.start("ffmpeg", {"-v", "error", "-f", "lavfi", "-i", "testsrc=duration=7:size=320x240:rate=30",
+                                "-c:v", "mpeg4", "-movflags", "frag_keyframe+empty_moov+default_base_moof", mp4});
+        if (!ffmpeg.waitForStarted(5000))
+            QSKIP("ffmpeg is not installed");
+        QVERIFY(ffmpeg.waitForFinished(60000));
+        QVERIFY2(ffmpeg.exitCode() == 0, ffmpeg.readAllStandardError().constData());
+
+        const qint64 ms = MediaInfo::videoDurationMs(mp4);
+        QVERIFY2(qAbs(ms - 7000) <= 100, qPrintable(QString::number(ms)));
+        const QString text = MediaInfo::describe(mp4, true);
+        QVERIFY2(text.startsWith(QString::fromUtf8("0:07 · ")), qPrintable(text));
+    }
+
+    // The gallery card shows the line (filled in from the worker thread)
+    void mediaInfo_shownOnGalleryCard()
+    {
+        QTemporaryDir dir;
+        const QString jpg = dir.filePath("snapshot_1.jpg");
+        QImage img(1920, 1080, QImage::Format_RGB32);
+        img.fill(Qt::darkGray);
+        QVERIFY(img.save(jpg, "JPG", 95));
+        QSqlQuery q;
+        q.prepare("INSERT INTO snapshots (patient_id, surgery_id, file_path, title) VALUES (?, ?, ?, ?)");
+        q.addBindValue("TEST_INFO_PATIENT"); q.addBindValue(31337); q.addBindValue(jpg); q.addBindValue("t");
+        QVERIFY(q.exec());
+
+        SurgeryRecordingPage page("TEST_INFO_PATIENT", 31337);
+        const QString expected = MediaInfo::describe(jpg, false);
+        auto shown = [&]() {
+            for (QLabel* l : page.findChildren<QLabel*>())
+                if (l->text() == expected) return true;
+            return false;
+        };
+        QTRY_VERIFY_WITH_TIMEOUT(shown(), 5000);
+        const QString shotDir = qEnvironmentVariable("SHOT_DIR");
+        if (!shotDir.isEmpty()) {
+            page.resize(1600, 900);
+            page.show();
+            QTest::qWait(200);
+            page.grab().save(shotDir + "/gallery_info.png");
+        }
+        QVERIFY(q.exec("DELETE FROM snapshots WHERE patient_id = 'TEST_INFO_PATIENT'"));
     }
 
     // ================================================================ Headings
