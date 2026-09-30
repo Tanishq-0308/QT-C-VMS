@@ -48,6 +48,7 @@ public:
     QList<Job> jobs() const { return m_jobs; }
     const Job* job(int id) const;
     int activeCount() const;          // Queued + Copying
+    bool isActiveSource(const QString& source) const;   // queued or being copied right now
     bool hasUnseenFailures() const { return m_unseenFailures; }
     void markFailuresSeen();
 

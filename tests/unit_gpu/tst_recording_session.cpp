@@ -258,6 +258,34 @@ private slots:
         QVERIFY(!row.path.isEmpty());
     }
 
+    // The file being recorded (and its later parts) is reported as in use, nothing else is
+    void isWriting_onlyTheCurrentRecording()
+    {
+        RecordingSession s;
+        FrameFeeder feed(s.recorder());
+        feed.start();
+        QTest::qWait(200);
+        QVERIFY(!s.isWriting("/anything.mp4"));
+
+        QSignalSpy started(&s, &RecordingSession::recordingStarted);
+        QSignalSpy stopped(&s, &RecordingSession::recordingStopped);
+        QString error;
+        QVERIFY2(s.start(QString(), -1, 0, &error), qPrintable(error));
+        QVERIFY(QTest::qWaitFor([&]() { return started.count() == 1; }, 15000));
+        const QString path = started.at(0).at(0).toString();
+        const QFileInfo info(path);
+        QVERIFY(s.isWriting(path));
+        QVERIFY(s.isWriting(info.path() + "/" + info.completeBaseName() + "_part2.mp4"));
+        QVERIFY(!s.isWriting(info.path() + "/some_other_recording.mp4"));
+        QVERIFY(!s.isWriting("/elsewhere/" + info.fileName()));
+
+        s.stop();
+        QVERIFY(s.isWriting(path));   // still being finalised
+        QVERIFY(QTest::qWaitFor([&]() { return stopped.count() == 1; }, 15000));
+        QVERIFY(!s.isWriting(path));
+        m_files << path;
+    }
+
     // Stop, then start again straight away: the second recording must not overwrite the first
     void sameSecond_distinctFiles()
     {

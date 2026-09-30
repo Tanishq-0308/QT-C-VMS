@@ -20,6 +20,8 @@
 #include <QPushButton>
 #include <QRegularExpression>
 #include <QSignalSpy>
+#include <QInputDialog>
+#include <QLineEdit>
 #include <QProcess>
 #include <QSqlDatabase>
 #include <QSqlQuery>
@@ -32,6 +34,7 @@
 #include "common/ModalCloser.hpp"
 
 #include "core/MediaInfo.hpp"
+#include "core/MediaRename.hpp"
 #include "core/TransferManager.hpp"
 #include "core/UIScale.hpp"
 #include "core/UsbUtils.hpp"
@@ -602,6 +605,156 @@ private slots:
             page.grab().save(shotDir + "/gallery_info.png");
         }
         QVERIFY(q.exec("DELETE FROM snapshots WHERE patient_id = 'TEST_INFO_PATIENT'"));
+    }
+
+    // ================================================================ Rename
+    void rename_nameRules()
+    {
+        QTemporaryDir dir;
+        const QString cur = dir.filePath("recording_20260928_120115.mp4");
+        QVERIFY(writeFile(cur, "video"));
+        QVERIFY(writeFile(dir.filePath("Knee Left.mp4"), "other"));
+        QString error;
+
+        QCOMPARE(MediaRename::newPathFor("Hip replacement", cur, &error), dir.filePath("Hip replacement.mp4"));
+        QCOMPARE(MediaRename::newPathFor("  Hip replacement.MP4  ", cur, &error), dir.filePath("Hip replacement.mp4"));
+        QCOMPARE(MediaRename::newPathFor("Dr. Rao - case 12", cur, &error), dir.filePath("Dr. Rao - case 12.mp4"));
+        QCOMPARE(MediaRename::newPathFor("name. ", cur, &error), dir.filePath("name.mp4"));   // trailing dot/space dropped
+        QCOMPARE(MediaRename::newPathFor("recording_20260928_120115", cur, &error), cur);      // unchanged
+
+        for (const QString& bad : {QString(""), QString("   "), QString(".hidden"), QString("a/b"), QString("a\\b"),
+                                   QString("what?"), QString("a:b"), QString("x*y"), QString("q\"uote"), QString("a<b"),
+                                   QString("a|b"), QString("tab\there"), QString(101, 'x')}) {
+            error.clear();
+            QVERIFY2(MediaRename::newPathFor(bad, cur, &error).isEmpty(), qPrintable(bad));
+            QVERIFY2(!error.isEmpty(), qPrintable(bad));
+        }
+        QVERIFY(!MediaRename::newPathFor(QString(100, 'x'), cur, &error).isEmpty());
+
+        // Taken, also when only the case differs (one file on a USB stick)
+        error.clear();
+        QVERIFY(MediaRename::newPathFor("knee left", cur, &error).isEmpty());
+        QVERIFY2(error.contains("Knee Left.mp4"), qPrintable(error));
+        // Changing only the case of its own name is fine
+        QCOMPARE(MediaRename::newPathFor("Recording_20260928_120115", cur, &error),
+                 dir.filePath("Recording_20260928_120115.mp4"));
+    }
+
+    void rename_fileAndDatabaseTogether()
+    {
+        QTemporaryDir dir;
+        const QString oldPath = dir.filePath("recording_1.mp4"), newPath = dir.filePath("Hip.mp4");
+        QVERIFY(writeFile(oldPath, "video-bytes"));
+        QSqlQuery q;
+        q.prepare("INSERT INTO recordings (patient_id, surgery_id, file_path) VALUES (?, ?, ?)");
+        q.addBindValue("TEST_RENAME"); q.addBindValue(1); q.addBindValue(oldPath);
+        QVERIFY(q.exec());
+        const int id = q.lastInsertId().toInt();
+
+        QString error;
+        QVERIFY2(MediaRename::rename("recordings", id, oldPath, newPath, &error), qPrintable(error));
+        QVERIFY(!QFile::exists(oldPath));
+        QCOMPARE(readAll(newPath), QByteArray("video-bytes"));
+        QVERIFY(q.exec(QString("SELECT file_path FROM recordings WHERE id = %1").arg(id)) && q.next());
+        QCOMPARE(q.value(0).toString(), newPath);
+
+        // Database row missing: the file gets its old name back
+        const QString third = dir.filePath("Third.mp4");
+        QVERIFY(!MediaRename::rename("recordings", 987654, newPath, third, &error));
+        QVERIFY(QFile::exists(newPath));
+        QVERIFY(!QFile::exists(third));
+        QVERIFY2(error.contains("keeps its old name"), qPrintable(error));
+
+        // Never over another file; never a table other than the two media tables
+        QVERIFY(writeFile(third, "other"));
+        QVERIFY(!MediaRename::rename("recordings", id, newPath, third, &error));
+        QCOMPARE(readAll(third), QByteArray("other"));
+        QVERIFY(!MediaRename::rename("patients", id, newPath, dir.filePath("x.mp4"), &error));
+        QVERIFY(!MediaRename::rename("recordings", id, dir.filePath("gone.mp4"), dir.filePath("y.mp4"), &error));
+        QVERIFY(q.exec("DELETE FROM recordings WHERE patient_id = 'TEST_RENAME'"));
+    }
+
+    // The button on a card: type a name, the file and the card change; guards block files in use
+    void rename_fromGalleryCard()
+    {
+        QTemporaryDir dir;
+        const QString oldPath = dir.filePath("recording_20260928_120115.mp4");
+        QVERIFY(writeFile(oldPath, "video-bytes"));
+        QSqlQuery q;
+        q.prepare("INSERT INTO recordings (patient_id, surgery_id, file_path) VALUES (?, ?, ?)");
+        q.addBindValue("TEST_RENAME_UI"); q.addBindValue(7); q.addBindValue(oldPath);
+        QVERIFY(q.exec());
+
+        SurgeryRecordingPage page("TEST_RENAME_UI", 7);
+        TransferManager transfers;
+        page.setTransferManager(&transfers);
+        bool recordingNow = true;
+        page.setFileBusyCheck([&](const QString& p) { return recordingNow && p == oldPath; });
+
+        auto renameButton = [&]() -> QPushButton* {
+            for (QPushButton* b : page.findChildren<QPushButton*>())
+                if (b->toolTip() == "Rename this file") return b;
+            return nullptr;
+        };
+        QVERIFY(renameButton());
+
+        // 1. Being recorded: refused with a message, nothing changes
+        {
+            ts::ModalCloser closer;
+            renameButton()->click();
+            QVERIFY2(closer.closed.join("|").contains("still being recorded"), qPrintable(closer.closed.join("|")));
+            QVERIFY(QFile::exists(oldPath));
+        }
+        recordingNow = false;
+
+        // 2. Type a bad name, then a good one
+        QStringList typed = {"bad/name", "Hip replacement"};
+        QStringList messages;
+        QTimer driver;
+        driver.setInterval(20);
+        connect(&driver, &QTimer::timeout, this, [&]() {
+            QWidget* modal = QApplication::activeModalWidget();
+            if (auto* input = qobject_cast<QInputDialog*>(modal)) {
+                if (typed.isEmpty()) { input->reject(); return; }
+                input->setTextValue(typed.takeFirst());
+                input->accept();
+            } else if (auto* box = qobject_cast<QMessageBox*>(modal)) {
+                messages << box->text();
+                box->accept();
+            }
+        });
+        driver.start();
+        renameButton()->click();
+        driver.stop();
+
+        const QString newPath = dir.filePath("Hip replacement.mp4");
+        QVERIFY2(messages.join("|").contains("cannot contain"), qPrintable(messages.join("|")));
+        QVERIFY(!QFile::exists(oldPath));
+        QCOMPARE(readAll(newPath), QByteArray("video-bytes"));
+        QVERIFY(q.exec("SELECT file_path FROM recordings WHERE patient_id = 'TEST_RENAME_UI'") && q.next());
+        QCOMPARE(q.value(0).toString(), newPath);
+        bool cardShowsNewName = false;
+        for (QLabel* l : page.findChildren<QLabel*>())
+            if (l->text() == "Hip replacement.mp4") cardShowsNewName = true;
+        QVERIFY(cardShowsNewName);
+
+        QVERIFY(q.exec("DELETE FROM recordings WHERE patient_id = 'TEST_RENAME_UI'"));
+    }
+
+    void rename_blockedWhileCopyingToUsb()
+    {
+        QTemporaryDir src, dst;
+        const QString big = src.filePath("big.mp4");
+        QVERIFY(makeSparse(big, 512 << 20));
+        TransferManager m;
+        QVERIFY(!m.isActiveSource(big));
+        QSignalSpy drained(&m, &TransferManager::queueDrained);
+        m.enqueue({big}, dst.path());
+        QVERIFY(m.isActiveSource(big));
+        QVERIFY(!m.isActiveSource(src.filePath("other.mp4")));
+        m.cancelAll();
+        QTRY_COMPARE_WITH_TIMEOUT(drained.count(), 1, 60000);
+        QVERIFY(!m.isActiveSource(big));
     }
 
     // ================================================================ Headings

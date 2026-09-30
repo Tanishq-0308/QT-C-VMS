@@ -315,6 +315,14 @@ int TransferManager::activeCount() const {
     return count;
 }
 
+bool TransferManager::isActiveSource(const QString& source) const {
+    for (const Job& j : m_jobs) {
+        if (j.source == source && (j.state == State::Queued || j.state == State::Copying))
+            return true;
+    }
+    return false;
+}
+
 void TransferManager::markFailuresSeen() {
     if (m_unseenFailures) {
         m_unseenFailures = false;

@@ -38,6 +38,9 @@ public:
     int currentRecordingId() const { return m_recordingId; }
     qint64 elapsedSeconds() const;
     qint64 droppedFrames() const { return m_droppedFrames; }
+    // Whether `path` is the file being recorded now (or a later part of it), so it must not be
+    // renamed or deleted
+    bool isWriting(const QString& path) const;
 
     // <app>/../<kind>/<patient>/<surgery>, or <app>/../<kind>/general for the Archive
     static QString mediaDir(const QString& kind, const QString& patientId, int surgeryId);
@@ -61,6 +64,7 @@ private:
     VideoRecorder* m_recorder = nullptr;
     State m_state = State::Idle;
     QString m_patientId;
+    QString m_outputPath;   // first file of the current recording
     int m_surgeryId = -1;
     int m_recordingId = -1;
     qint64 m_droppedFrames = 0;

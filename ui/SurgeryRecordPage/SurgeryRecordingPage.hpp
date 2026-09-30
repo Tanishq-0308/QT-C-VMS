@@ -15,6 +15,7 @@
 #include <QResizeEvent>
 #include <QShowEvent>
 #include "../ClickableLabel/ClickableLabel.hpp"
+#include <functional>
 
 class TransferManager;
 
@@ -26,6 +27,7 @@ struct CardWidgets {
     QCheckBox* checkBox;
     QPushButton* deleteBtn;  // NEW: Delete button for each card
     QLabel* infoLabel = nullptr;   // duration and size (video) or resolution and size (image)
+    QPushButton* renameBtn = nullptr;
     QString filePath;
     int fileId;              // NEW: Database ID for deletion
     bool isVideo;
@@ -43,6 +45,8 @@ public:
     bool isGeneral() const { return m_patientId.isEmpty(); }
     // USB downloads are queued here; it outlives this page, so a copy survives leaving it
     void setTransferManager(TransferManager* manager);
+    // Tells whether a file is being recorded right now (it must not be renamed meanwhile)
+    void setFileBusyCheck(std::function<bool(const QString& path)> check) { m_isFileBusy = std::move(check); }
     void showToast(const QString& message, int durationMs = 2000);
 
 signals:
@@ -61,6 +65,7 @@ private slots:
     void downloadSelectedFiles();
     void deleteSelectedFiles();                                    // NEW
     void deleteSingleFile(int fileId, const QString& filePath, bool isVideo);  // NEW
+    void renameSingleFile(int fileId, const QString& filePath, bool isVideo);
 
 private:
     void setupUI();
@@ -141,6 +146,7 @@ private:
     int m_surgeryId;
 
     TransferManager* m_transferManager = nullptr;
+    std::function<bool(const QString&)> m_isFileBusy;
 
     // Track last size to avoid unnecessary updates
     int m_lastWidth = 0;

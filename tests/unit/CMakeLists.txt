@@ -118,6 +118,8 @@ set(WIDGET_SOURCES
     ${APP_DIR}/core/TransferManager.hpp
     ${APP_DIR}/core/MediaInfo.cpp
     ${APP_DIR}/core/MediaInfo.hpp
+    ${APP_DIR}/core/MediaRename.cpp
+    ${APP_DIR}/core/MediaRename.hpp
     ${APP_DIR}/ui/ClickableLabel/ClickableLabel.cpp
     ${APP_DIR}/ui/ClickableLabel/ClickableLabel.hpp
     ${APP_DIR}/assets/resources.qrc

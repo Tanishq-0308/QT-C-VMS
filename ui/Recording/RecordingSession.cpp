@@ -63,6 +63,7 @@ bool RecordingSession::start(const QString& patientId, int surgeryId, int flipSt
     m_recorder->setFlipStep(flipStep);
     if (!m_recorder->startRecording(outputPath, errorMessage))
         return false;   // nothing was started: no DB row, no state change
+    m_outputPath = outputPath;
 
     // The encoder opens on the recorder thread; onRecordingStarted() confirms it
     setState(State::Starting);
@@ -79,6 +80,17 @@ void RecordingSession::stop() {
 
 void RecordingSession::setFlipStep(int flipStep) {
     m_recorder->setFlipStep(flipStep);
+}
+
+bool RecordingSession::isWriting(const QString& path) const {
+    if (m_state == State::Idle || m_outputPath.isEmpty())
+        return false;
+    const QFileInfo recording(m_outputPath), asked(path);
+    if (recording.absolutePath() != asked.absolutePath())
+        return false;
+    // Later parts (input format changed mid-recording) are named <base>_part<N>.<ext>
+    return asked.fileName() == recording.fileName()
+           || asked.fileName().startsWith(recording.completeBaseName() + "_part");
 }
 
 qint64 RecordingSession::elapsedSeconds() const {

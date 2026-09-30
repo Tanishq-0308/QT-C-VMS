@@ -50,6 +50,7 @@ HomePage::HomePage(QWidget *parent) : ResponsiveWidget(parent) {
     transferManager = new TransferManager(this);
     archivePage = new SurgeryRecordingPage(QString(), -1);
     archivePage->setTransferManager(transferManager);
+    archivePage->setFileBusyCheck([this](const QString& path) { return recordingSession->isWriting(path); });
 
     stackedPages->addWidget(dashboardPage);
     stackedPages->addWidget(patientPage);
@@ -615,6 +616,7 @@ void HomePage::showSurgeryRecordingPage(const QString &patientId, int surgeryId)
     }
     surgeryRecordingPage = new SurgeryRecordingPage(patientId, surgeryId);
     surgeryRecordingPage->setTransferManager(transferManager);
+    surgeryRecordingPage->setFileBusyCheck([this](const QString& path) { return recordingSession->isWriting(path); });
     stackedPages->addWidget(surgeryRecordingPage);
     stackedPages->setCurrentWidget(surgeryRecordingPage);
 

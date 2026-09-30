@@ -34,5 +34,6 @@
         <file>icons/comment.svg</file>
         <file>icons/exit.svg</file>
         <file>icons/stop.svg</file>
+        <file>icons/rename.svg</file>
     </qresource>
 </RCC>

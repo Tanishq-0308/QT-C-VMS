@@ -33,6 +33,8 @@
 #include "core/TransferManager.hpp"
 #include "core/UsbUtils.hpp"
 #include "core/MediaInfo.hpp"
+#include "core/MediaRename.hpp"
+#include <QInputDialog>
 #include <QFutureWatcher>
 #include <QPointer>
 #include <QtConcurrent/QtConcurrent>
@@ -465,6 +467,15 @@ void SurgeryRecordingPage::updateScaling() {
                 .arg(checkBoxSize)
             );
         }
+        if (cw.renameBtn) {
+            cw.renameBtn->setFixedSize(deleteBtnSize, deleteBtnSize);
+            cw.renameBtn->setIconSize(QSize(deleteBtnSize * 6 / 10, deleteBtnSize * 6 / 10));
+            cw.renameBtn->setStyleSheet(
+                QString("QPushButton { background-color: #003366; border: none; border-radius: %1px; }"
+                        "QPushButton:hover { background-color: #0059b3; }")
+                .arg(deleteBtnSize / 2)
+            );
+        }
         if (cw.deleteBtn) {
             cw.deleteBtn->setFixedSize(deleteBtnSize, deleteBtnSize);
             cw.deleteBtn->setStyleSheet(
@@ -516,6 +527,15 @@ void SurgeryRecordingPage::updateScaling() {
             cw.checkBox->setStyleSheet(
                 QString("QCheckBox::indicator { width: %1px; height: %1px; }")
                 .arg(checkBoxSize)
+            );
+        }
+        if (cw.renameBtn) {
+            cw.renameBtn->setFixedSize(deleteBtnSize, deleteBtnSize);
+            cw.renameBtn->setIconSize(QSize(deleteBtnSize * 6 / 10, deleteBtnSize * 6 / 10));
+            cw.renameBtn->setStyleSheet(
+                QString("QPushButton { background-color: #003366; border: none; border-radius: %1px; }"
+                        "QPushButton:hover { background-color: #0059b3; }")
+                .arg(deleteBtnSize / 2)
             );
         }
         if (cw.deleteBtn) {
@@ -705,8 +725,18 @@ QWidget* SurgeryRecordingPage::createRecordingSection(const QString &title, cons
                 deleteSingleFile(fileId, filePath, isVideo);
             });
 
+            // Rename: the file itself, so it carries the name when copied to a USB stick
+            QPushButton *renameBtn = new QPushButton;
+            renameBtn->setIcon(QIcon(":/assets/icons/rename.svg"));
+            renameBtn->setCursor(Qt::PointingHandCursor);
+            renameBtn->setToolTip("Rename this file");
+            connect(renameBtn, &QPushButton::clicked, this, [=]() {
+                renameSingleFile(fileId, filePath, isVideo);
+            });
+
             labelLayout->addWidget(checkBox);
             labelLayout->addWidget(fileLabel, 1);
+            labelLayout->addWidget(renameBtn);
             labelLayout->addWidget(delBtn);
 
             // Size at once; duration (or resolution) follows from a worker thread, because it
@@ -743,6 +773,7 @@ QWidget* SurgeryRecordingPage::createRecordingSection(const QString &title, cons
             cw.checkBox = checkBox;
             cw.deleteBtn = delBtn;
             cw.infoLabel = infoLabel;
+            cw.renameBtn = renameBtn;
             cw.filePath = filePath;
             cw.fileId = fileId;
             cw.isVideo = isVideo;
@@ -852,6 +883,47 @@ bool SurgeryRecordingPage::deleteFileFromStorage(const QString& filePath) {
     } else {
         qDebug() << "⚠️ File not found (already deleted?):" << filePath;
         return true;  // Consider it success if file doesn't exist
+    }
+}
+
+void SurgeryRecordingPage::renameSingleFile(int fileId, const QString& filePath, bool isVideo) {
+    const QString fileType = isVideo ? "recording" : "snapshot";
+
+    // A file that is being written or copied keeps its name until that is finished
+    if (m_isFileBusy && m_isFileBusy(filePath)) {
+        QMessageBox::information(this, "Rename", "This recording is still being recorded. Stop it first, then rename it.");
+        return;
+    }
+    if (m_transferManager && m_transferManager->isActiveSource(filePath)) {
+        QMessageBox::information(this, "Rename", "This file is being copied to the USB stick. Rename it when the copy has finished.");
+        return;
+    }
+
+    QString typed = QFileInfo(filePath).completeBaseName();
+    for (;;) {
+        bool accepted = false;
+        typed = QInputDialog::getText(this, "Rename " + fileType,
+                                      QString("New name (.%1 is kept):").arg(QFileInfo(filePath).suffix()),
+                                      QLineEdit::Normal, typed, &accepted);
+        if (!accepted)
+            return;
+
+        QString error;
+        const QString newPath = MediaRename::newPathFor(typed, filePath, &error);
+        if (newPath.isEmpty()) {
+            QMessageBox::warning(this, "Rename", error);
+            continue;   // let the user correct the name
+        }
+        if (newPath == filePath)
+            return;     // unchanged
+
+        if (!MediaRename::rename(isVideo ? "recordings" : "snapshots", fileId, filePath, newPath, &error)) {
+            QMessageBox::warning(this, "Rename", error);
+            return;
+        }
+        showToast("Renamed to " + QFileInfo(newPath).fileName());
+        refreshRecordings();
+        return;
     }
 }
 
