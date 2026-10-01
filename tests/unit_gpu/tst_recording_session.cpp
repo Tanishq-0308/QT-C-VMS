@@ -303,13 +303,12 @@ private slots:
         m_files << local;
     }
 
-    // The same on a real USB device, if one is connected (its test file is removed afterwards)
+    // The same on the real USB devices that are connected, all at once (test files removed after)
     void mirroredRecordingToRealUsb()
     {
         const QList<UsbUtils::Device> devices = UsbUtils::listDevices();
         if (devices.isEmpty())
             QSKIP("no USB device connected");
-        const UsbUtils::Device device = devices.first();
         RecordingSession s;
         FrameFeeder feed(s.recorder());
         feed.start();
@@ -318,26 +317,39 @@ private slots:
         QSignalSpy stopped(&s, &RecordingSession::recordingStopped);
         QSignalSpy mirrorDone(&s, &RecordingSession::mirrorFinished);
         QString error;
-        QVERIFY2(s.start(QString(), -1, 0, &error, {device}), qPrintable(error));
+        QVERIFY2(s.start(QString(), -1, 0, &error, devices), qPrintable(error));
         QVERIFY(QTest::qWaitFor([&]() { return started.count() == 1; }, 15000));
         const QString local = started.at(0).at(0).toString();
-        const QString copy = device.mountPath + "/Archive/" + QFileInfo(local).fileName();
         QTest::qWait(3000);
         s.stop();
         QVERIFY(QTest::qWaitFor([&]() { return stopped.count() == 1; }, 15000));
-        QVERIFY(QTest::qWaitFor([&]() { return mirrorDone.count() == 1; }, 30000));
-        const bool ok = mirrorDone.at(0).at(1).toBool();
-        QFile a(local), b(copy);
-        const bool same = a.open(QIODevice::ReadOnly) && b.open(QIODevice::ReadOnly) && a.readAll() == b.readAll();
-        b.close();
-        const double copyLen = probeSeconds(copy);
-        qInfo("  %s: %s, copy plays %.2f s", qPrintable(device.name), qPrintable(mirrorDone.at(0).at(2).toString()), copyLen);
-        QFile::remove(copy);
-        QDir(device.mountPath + "/Archive").rmdir(".");   // only if it is empty now
+        QVERIFY(QTest::qWaitFor([&]() { return mirrorDone.count() == devices.size(); }, 60000));
+
+        QFile a(local);
+        QVERIFY(a.open(QIODevice::ReadOnly));
+        const QByteArray original = a.readAll();
+        bool allOk = true, allSame = true, allPlay = true;
+        for (const UsbUtils::Device& device : devices) {
+            const QString copy = device.mountPath + "/Archive/" + QFileInfo(local).fileName();
+            QFile b(copy);
+            const bool same = b.open(QIODevice::ReadOnly) && b.readAll() == original;
+            b.close();
+            const double len = probeSeconds(copy);
+            qInfo("  %s (%s): copy %s, plays %.2f s", qPrintable(device.name), qPrintable(device.fileSystem),
+                  same ? "identical" : "DIFFERENT", len);
+            allSame = allSame && same;
+            allPlay = allPlay && len > 2.5;
+            QFile::remove(copy);
+            QDir(device.mountPath + "/Archive").rmdir(".");   // only if it is empty now
+        }
+        for (const auto& args : mirrorDone) {
+            qInfo("  %s", qPrintable(args.at(2).toString()));
+            allOk = allOk && args.at(1).toBool();
+        }
         m_files << local;
-        QVERIFY(ok);
-        QVERIFY(same);
-        QVERIFY(copyLen > 2.5);
+        QVERIFY(allOk);
+        QVERIFY(allSame);
+        QVERIFY(allPlay);
     }
 
     // The file being recorded (and its later parts) is reported as in use, nothing else is

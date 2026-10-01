@@ -104,8 +104,11 @@ RecordingMirror::~RecordingMirror() {
     m_shared->cv.notify_all();
     // A USB device that hangs can keep the thread in a write for a long time: don't let that
     // hang the app. The thread only touches the shared state, which it keeps alive itself.
+    // System-clock deadlines (pthread_cond_timedwait) rather than wait_for: ThreadSanitizer can
+    // follow those, so the locking here stays checkable. Every wait is also woken by a notify.
     std::unique_lock<std::mutex> lock(m_shared->m);
-    const bool exited = m_shared->cv.wait_for(lock, std::chrono::seconds(3), [this] { return m_shared->exited; });
+    const bool exited = m_shared->cv.wait_until(lock, std::chrono::system_clock::now() + std::chrono::seconds(3),
+                                                [this] { return m_shared->exited; });
     lock.unlock();
     if (exited)
         m_thread.join();
@@ -287,7 +290,7 @@ void RecordingMirror::run(std::shared_ptr<Shared> shared) {
             break;
 
         std::unique_lock<std::mutex> lock(shared->m);
-        shared->cv.wait_for(lock, std::chrono::seconds(1), [&] {
+        shared->cv.wait_until(lock, std::chrono::system_clock::now() + std::chrono::seconds(1), [&] {
             return shared->stop || !shared->pending.isEmpty() || (shared->finishing && !finishing);
         });
     }
