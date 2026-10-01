@@ -39,9 +39,11 @@ git ls-files -d -z | xargs -0 -r git restore --
 git pull origin ui-icons-headings
 
 # e. Build. Always run cmake: new source files are only picked up by it.
+#    "cmake --build" uses whatever build tool the folder was set up with (make or ninja);
+#    plain "make" can silently use stale build rules if the folder was set up for ninja.
 cd build
 cmake ..
-make -j$(nproc)
+cmake --build . -j$(nproc)
 
 # f. Start
 ./medical_qt_app
@@ -86,7 +88,8 @@ with an error like `fatal error: VideoRecorder.hpp: No such file or directory`.
 
 | What you see | What to do |
 |---|---|
-| Build: `fatal error: <something>.hpp: No such file or directory` | Source files are missing: run step 2c, then `cmake .. && make -j$(nproc)` again |
+| Build: `fatal error: <something>.hpp: No such file or directory` | Source files are missing: run step 2c, then `cmake .. && cmake --build . -j$(nproc)` again |
+| Build: `undefined reference to …` for a file that exists | Build rules are stale: build with `cmake --build . -j$(nproc)`, not `make` |
 | `git pull` refuses: "Your local changes would be overwritten" | A file was edited on this machine. Run `git status` and send the list before doing anything else |
 | App doesn't appear after a reboot (kiosk mode) | `journalctl --user -b \| grep -i medical` and send the output |
 | `error while loading shared libraries: libswresample…` | The binary is from an old build: rebuild (step 2e) |
@@ -101,7 +104,7 @@ with an error like `fatal error: VideoRecorder.hpp: No such file or directory`.
 cd ~/medical_qt_app
 git log --oneline -5                 # find the commit that worked
 git checkout <that commit>
-cd build && cmake .. && make -j$(nproc)
+cd build && cmake .. && cmake --build . -j$(nproc)
 ```
 
 Restore `sqlite.db` from the backup only if the database itself was damaged; recordings made

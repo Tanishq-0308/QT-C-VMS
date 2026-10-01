@@ -55,7 +55,7 @@ Archive recordings are stored without a patient. An old database may not allow t
 
 - [ ] ```bash
   cd ~/medical_qt_app/build
-  cmake .. && make -j$(nproc) medical_qt_app
+  cmake .. && cmake --build . -j$(nproc)
   ```
   **Expected:** ends with `Built target medical_qt_app`, no errors.
 
