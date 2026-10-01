@@ -75,6 +75,12 @@ public:
     // True from a successful startRecording() call until the file has been finalised
     bool isRecording() const { return m_active.load(); }
 
+    // Target bit rate the encoder uses for a format: ~0.13 bits per pixel, 4-60 Mbit/s
+    // (1080p60 -> ~16 Mbit/s, 1080p30 -> ~8, 2160p30 -> ~32)
+    static int64_t bitRateFor(int width, int height, double fps);
+    // Bit rate a recording started now would use (current input format; 1080p60 without a signal)
+    int64_t expectedBitRate();
+
     // Flip steps as used by the preview: 1 horizontal, 2 both, 3 vertical, other = none
     void setFlipStep(int step) { m_flipStep = step; }
 

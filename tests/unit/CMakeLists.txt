@@ -122,6 +122,10 @@ set(WIDGET_SOURCES
     ${APP_DIR}/core/MediaRename.hpp
     ${APP_DIR}/widgets/UsbDeviceDialog.cpp
     ${APP_DIR}/widgets/UsbDeviceDialog.hpp
+    ${APP_DIR}/widgets/RecordTargetDialog.cpp
+    ${APP_DIR}/widgets/RecordTargetDialog.hpp
+    ${APP_DIR}/core/RecordingMirror.cpp
+    ${APP_DIR}/core/RecordingMirror.hpp
     ${APP_DIR}/widgets/Toast.cpp
     ${APP_DIR}/widgets/Toast.hpp
     ${APP_DIR}/ui/ClickableLabel/ClickableLabel.cpp

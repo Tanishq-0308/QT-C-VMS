@@ -9,6 +9,7 @@
 
 class CameraZoomAPI;
 class RecordingSession;
+class TransferManager;
 
 class DashboardPage : public QWidget {
     Q_OBJECT
@@ -30,6 +31,8 @@ public:
     // The Record button starts/stops an Archive recording (no patient) on this session.
     // It keeps running while the user goes fullscreen or to other pages.
     void setRecordingSession(RecordingSession* session);
+    // Asked before recording: is a USB device busy with a download
+    void setTransferManager(TransferManager* manager) { m_transferManager = manager; }
 
 signals:
     void fullscreenRequested(bool on);
@@ -63,6 +66,7 @@ private:
 
     // Archive recording
     RecordingSession* m_session = nullptr;
+    TransferManager* m_transferManager = nullptr;
     QPushButton* m_recordBtn = nullptr;
     QTimer* m_blinkTimer = nullptr;
     bool m_blinkOn = true;

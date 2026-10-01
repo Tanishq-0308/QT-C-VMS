@@ -48,6 +48,10 @@ target_compile_definitions(tst_videorecorder PRIVATE SRC_DIR="${CMAKE_CURRENT_SO
 # The app's shared RecordingSession (patient + Archive recordings) over the real VideoRecorder
 add_executable(tst_recording_session
   tst_recording_session.cpp
+  ${REPO_ROOT}/core/RecordingMirror.cpp
+  ${REPO_ROOT}/core/RecordingMirror.hpp
+  ${REPO_ROOT}/core/UsbUtils.cpp
+  ${REPO_ROOT}/core/UsbUtils.hpp
   ${REPO_ROOT}/ui/Recording/RecordingSession.cpp
   ${REPO_ROOT}/ui/Recording/RecordingSession.hpp
   ${REPO_ROOT}/ui/Recording/VideoRecorder.cpp

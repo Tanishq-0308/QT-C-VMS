@@ -57,6 +57,7 @@ public:
     int activeCount() const;          // Queued + Copying
     int copyingCount() const;         // files being copied right now (one per busy device)
     bool isActiveSource(const QString& source) const;   // queued or being copied right now
+    bool isDeviceBusy(const QString& mountPath) const;  // the device has files queued or copying
     bool hasUnseenFailures() const { return m_unseenFailures; }
     void markFailuresSeen();
 

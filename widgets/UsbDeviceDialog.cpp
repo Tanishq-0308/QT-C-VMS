@@ -18,7 +18,8 @@ QString describe(const UsbUtils::Device& device) {
              device.fileSystem);
 }
 
-QList<UsbUtils::Device> choose(QWidget* parent, const QList<UsbUtils::Device>& devices, qint64 largestFileBytes) {
+QList<UsbUtils::Device> choose(QWidget* parent, const QList<UsbUtils::Device>& devices, qint64 largestFileBytes,
+                               const QString& title, const QString& prompt, const QString& acceptText) {
     if (devices.size() <= 1)
         return devices;
 
@@ -26,7 +27,7 @@ QList<UsbUtils::Device> choose(QWidget* parent, const QList<UsbUtils::Device>& d
 
     const int fontPx = UIScale::fontSize(36, 16, 28, parent);
     QDialog dialog(parent);
-    dialog.setWindowTitle("Download to USB");
+    dialog.setWindowTitle(title);
     dialog.setStyleSheet(QString("QLabel, QCheckBox, QPushButton { font-size: %1px; }"
                                  "QCheckBox { padding: %2px 0; }"
                                  "QCheckBox::indicator { width: %3px; height: %3px; }"
@@ -35,7 +36,7 @@ QList<UsbUtils::Device> choose(QWidget* parent, const QList<UsbUtils::Device>& d
 
     auto* layout = new QVBoxLayout(&dialog);
     layout->setSpacing(fontPx / 2);
-    layout->addWidget(new QLabel("Choose the USB device(s) to download to:"));
+    layout->addWidget(new QLabel(prompt));
 
     QList<QCheckBox*> boxes;
     bool anyTicked = false;
@@ -55,7 +56,7 @@ QList<UsbUtils::Device> choose(QWidget* parent, const QList<UsbUtils::Device>& d
         boxes.first()->setChecked(true);
 
     auto* buttons = new QDialogButtonBox(QDialogButtonBox::Cancel);
-    QPushButton* download = buttons->addButton("Download", QDialogButtonBox::AcceptRole);
+    QPushButton* download = buttons->addButton(acceptText, QDialogButtonBox::AcceptRole);
     layout->addWidget(buttons);
     QObject::connect(buttons, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
     QObject::connect(buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);

@@ -37,6 +37,8 @@
 
 #include "core/MediaInfo.hpp"
 #include "core/MediaRename.hpp"
+#include "core/RecordingMirror.hpp"
+#include "widgets/RecordTargetDialog.hpp"
 #include "core/TransferManager.hpp"
 #include "core/UIScale.hpp"
 #include "core/UsbUtils.hpp"
@@ -674,6 +676,165 @@ private slots:
         const QList<QLabel*> toasts = window.findChildren<QLabel*>("AppToast");
         QCOMPARE(toasts.size(), 2);
         QVERIFY(!toasts[0]->geometry().intersects(toasts[1]->geometry()));
+    }
+
+    // ================================================================ Recording also saved to USB
+    // The mirror follows a file that keeps growing, like a recording, and ends with an exact copy
+    void mirror_followsGrowingRecording()
+    {
+        QTemporaryDir local, usb;
+        const QString part1 = local.filePath("recording_1.mp4"), part2 = local.filePath("recording_1_part2.mp4");
+        const QString dest = usb.filePath("SurgeryDownloads");
+        { QFile f(part1); QVERIFY(f.open(QIODevice::WriteOnly)); }
+
+        RecordingMirror mirror(part1, dest, "TESTUSB", 0);
+        QSignalSpy finished(&mirror, &RecordingMirror::finished);
+
+        // "Record" 24 MB in 1 MB pieces over ~1.2 s, then a second part
+        QByteArray expected1;
+        for (int i = 0; i < 24; ++i) {
+            const QByteArray piece = patternBytes(1 << 20, i);
+            QFile f(part1);
+            QVERIFY(f.open(QIODevice::Append));
+            f.write(piece);
+            expected1 += piece;
+            f.close();
+            QTest::qWait(50);
+        }
+        // The copy follows while recording (it doesn't wait for the end)
+        QTRY_VERIFY_WITH_TIMEOUT(QFileInfo(dest + "/recording_1.mp4").size() >= (16 << 20), 10000);
+        QVERIFY(finished.isEmpty());
+        const QByteArray expected2 = patternBytes(3 << 20, 99);
+        QVERIFY(writeFile(part2, expected2));
+        mirror.addFile(part2);
+
+        mirror.finish();
+        QTRY_COMPARE_WITH_TIMEOUT(finished.count(), 1, 20000);
+        QVERIFY2(finished.at(0).at(0).toBool(), qPrintable(finished.at(0).at(1).toString()));
+        QVERIFY2(finished.at(0).at(1).toString().contains("You can remove it"), qPrintable(finished.at(0).at(1).toString()));
+        QCOMPARE(readAll(dest + "/recording_1.mp4"), expected1);
+        QCOMPARE(readAll(dest + "/recording_1_part2.mp4"), expected2);
+        QCOMPARE(mirror.state(), RecordingMirror::State::Done);
+    }
+
+    // FAT32: each file's copy stops at the limit, the next part still copies
+    void mirror_fileSizeLimit()
+    {
+        QTemporaryDir local, usb;
+        const QString part1 = local.filePath("rec.mp4"), part2 = local.filePath("rec_part2.mp4");
+        QVERIFY(writeFile(part1, patternBytes(3 << 20, 1)));
+        QVERIFY(writeFile(part2, patternBytes(512 << 10, 2)));
+        RecordingMirror mirror(part1, usb.path(), "FATSTICK", 1 << 20);   // 1 MiB stands in for 4 GB
+        QSignalSpy finished(&mirror, &RecordingMirror::finished);
+        QSignalSpy notices(&mirror, &RecordingMirror::notice);
+        mirror.addFile(part2);
+        mirror.finish();
+        QTRY_COMPARE_WITH_TIMEOUT(finished.count(), 1, 20000);
+        QVERIFY(finished.at(0).at(0).toBool());
+        QVERIFY2(finished.at(0).at(1).toString().contains("cut at 4 GB"), qPrintable(finished.at(0).at(1).toString()));
+        QCOMPARE(notices.count(), 1);
+        QVERIFY2(notices.at(0).at(0).toString().contains("4 GB limit"), qPrintable(notices.at(0).at(0).toString()));
+        QCOMPARE(QFileInfo(usb.filePath("rec.mp4")).size(), qint64(1 << 20));
+        QCOMPARE(readAll(usb.filePath("rec.mp4")), patternBytes(3 << 20, 1).left(1 << 20));
+        QCOMPARE(readAll(usb.filePath("rec_part2.mp4")), patternBytes(512 << 10, 2));
+    }
+
+    // A full (or removed) device stops the copy with a reason; the local file is untouched
+    void mirror_deviceFullStopsCopy()
+    {
+        QTemporaryDir local, usb;
+        const QString part = local.filePath("rec.mp4");
+        const QByteArray data = patternBytes(2 << 20, 5);
+        QVERIFY(writeFile(part, data));
+        QVERIFY(QFile::link("/dev/full", usb.filePath("rec.mp4")));   // every write: "no space left"
+        RecordingMirror mirror(part, usb.path(), "FULLSTICK", 0);
+        QSignalSpy finished(&mirror, &RecordingMirror::finished);
+        QTRY_COMPARE_WITH_TIMEOUT(finished.count(), 1, 10000);
+        QVERIFY(!finished.at(0).at(0).toBool());
+        QVERIFY2(finished.at(0).at(1).toString().contains("FULLSTICK is full"), qPrintable(finished.at(0).at(1).toString()));
+        QVERIFY2(finished.at(0).at(1).toString().contains("continues on this system"), "says the recording goes on");
+        QCOMPARE(mirror.state(), RecordingMirror::State::Failed);
+        QCOMPARE(readAll(part), data);
+    }
+
+    // Closing the app while a copy runs doesn't hang
+    void mirror_destroyWhileCopying()
+    {
+        QTemporaryDir local, usb;
+        const QString part = local.filePath("rec.mp4");
+        QVERIFY(makeSparse(part, qint64(1) << 30));
+        auto* mirror = new RecordingMirror(part, usb.path(), "TESTUSB", 0);
+        QTest::qWait(100);
+        QElapsedTimer clock;
+        clock.start();
+        delete mirror;
+        QVERIFY2(clock.elapsed() < 4000, qPrintable(QString::number(clock.elapsed())));
+    }
+
+    void recordTarget_minutes()
+    {
+        const qint64 rate1080p60 = 16174080 / 8;   // bytes/s at 1080p60
+        QCOMPARE(RecordTargetDialog::minutesFor(UsbUtils::kFat32MaxFileSize, rate1080p60), 35);
+        QCOMPARE(RecordTargetDialog::minutesFor(qint64(29) * 1000 * 1000 * 1000, rate1080p60), 239);
+        QCOMPARE(RecordTargetDialog::minutesFor(1000, 0), 0);
+    }
+
+    // The questions when Record is pressed, on the USB devices actually connected
+    void recordTarget_questions()
+    {
+        const QList<UsbUtils::Device> devices = UsbUtils::listDevices();
+        if (devices.isEmpty())
+            QSKIP("no USB device connected");
+        int fatIndex = -1;
+        for (int i = 0; i < devices.size(); ++i)
+            if (devices[i].fat32) fatIndex = i;
+
+        // Answers the dialogs in order: each entry is the text of the button to press, or for the
+        // device chooser "tick:<index>"
+        QStringList answers, seen;
+        QTimer driver;
+        driver.setInterval(30);
+        connect(&driver, &QTimer::timeout, this, [&]() {
+            QWidget* modal = QApplication::activeModalWidget();
+            if (!modal || answers.isEmpty()) return;
+            const QString answer = answers.takeFirst();
+            if (auto* box = qobject_cast<QMessageBox*>(modal)) seen << box->text();
+            if (answer.startsWith("tick:")) {
+                const QList<QCheckBox*> boxes = modal->findChildren<QCheckBox*>();
+                for (int i = 0; i < boxes.size(); ++i) boxes[i]->setChecked(i == answer.mid(5).toInt());
+                for (QPushButton* b : modal->findChildren<QPushButton*>())
+                    if (b->text() == "Record") { b->click(); return; }
+            }
+            for (QPushButton* b : modal->findChildren<QPushButton*>())
+                if (b->text().remove('&') == answer) { b->click(); return; }
+            qWarning("no button %s", qPrintable(answer));
+        });
+        driver.start();
+        const qint64 rate = 16174080 / 8;
+        QList<UsbUtils::Device> mirrorTo;
+
+        answers = QStringList{"This system only"};
+        QVERIFY(RecordTargetDialog::ask(nullptr, nullptr, rate, &mirrorTo));
+        QVERIFY(mirrorTo.isEmpty());
+        QVERIFY2(seen.join("|").contains("Where should this recording be saved?"), qPrintable(seen.join("|")));
+
+        answers = QStringList{"Cancel"};
+        QVERIFY(!RecordTargetDialog::ask(nullptr, nullptr, rate, &mirrorTo));
+
+        if (fatIndex >= 0) {
+            QStringList chooseFat = {"This system and USB"};
+            if (devices.size() > 1) chooseFat << QString("tick:%1").arg(fatIndex);
+            seen.clear();
+            answers = chooseFat + QStringList{"Don't record"};
+            QVERIFY(!RecordTargetDialog::ask(nullptr, nullptr, rate, &mirrorTo));     // FAT32 warning declined
+            QVERIFY2(seen.join("|").contains("is FAT32: it can hold at most 4 GB per file, about 35 minutes"),
+                     qPrintable(seen.join("|")));
+            answers = chooseFat + QStringList{"Record anyway"};
+            QVERIFY(RecordTargetDialog::ask(nullptr, nullptr, rate, &mirrorTo));
+            QCOMPARE(mirrorTo.size(), 1);
+            QVERIFY(mirrorTo.first().fat32);
+        }
+        driver.stop();
     }
 
     // ================================================================ Generate Report

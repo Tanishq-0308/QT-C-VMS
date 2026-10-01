@@ -367,6 +367,15 @@ int TransferManager::copyingCount() const {
     return m_active.size();
 }
 
+bool TransferManager::isDeviceBusy(const QString& mountPath) const {
+    const QString device = UsbUtils::volumeRoot(mountPath);
+    for (const Job& j : m_jobs) {
+        if (j.device == device && (j.state == State::Queued || j.state == State::Copying))
+            return true;
+    }
+    return false;
+}
+
 bool TransferManager::isActiveSource(const QString& source) const {
     for (const Job& j : m_jobs) {
         if (j.source == source && (j.state == State::Queued || j.state == State::Copying))

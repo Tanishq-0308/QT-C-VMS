@@ -5,6 +5,7 @@
 #include <QTimer>  // ✅ Required for frame timer
 #include "decklink/DeckLinkOpenGLWidget.h"
 #include "RecordingSession.hpp"
+class TransferManager;
 #include <QElapsedTimer>
 #include <QLabel>
 
@@ -35,6 +36,8 @@ public:
 
     // The app's shared recording (HomePage owns it; the Dashboard uses it for the Archive)
     void setRecordingSession(RecordingSession* session);
+    // Asked before recording: is a USB device busy with a download
+    void setTransferManager(TransferManager* manager) { m_transferManager = manager; }
 
     // Live input state for the preview overlay
     void setSignalValid(bool valid);
@@ -81,6 +84,8 @@ private:
     // Recording (shared). m_ownsRecording: the session's current recording was started here,
     // so this page shows it; an Archive recording started from the Dashboard is not
     RecordingSession* m_session = nullptr;
+    TransferManager* m_transferManager = nullptr;
+    QLabel* m_mirrorLabel = nullptr;   // "Also saving to KINGSTON", under the timer
     bool m_ownsRecording = false;
     bool m_recording = false;
     int currentRecordingId = -1;

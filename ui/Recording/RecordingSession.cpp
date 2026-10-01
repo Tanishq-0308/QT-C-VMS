@@ -1,5 +1,6 @@
 #include "RecordingSession.hpp"
 #include "VideoRecorder.hpp"
+#include "core/RecordingMirror.hpp"
 
 #include <QCoreApplication>
 #include <QDateTime>
@@ -34,7 +35,8 @@ QString RecordingSession::mediaDir(const QString& kind, const QString& patientId
     return QDir::cleanPath(QString("%1/%2/%3").arg(base, patientId, QString::number(surgeryId)));
 }
 
-bool RecordingSession::start(const QString& patientId, int surgeryId, int flipStep, QString* errorMessage) {
+bool RecordingSession::start(const QString& patientId, int surgeryId, int flipStep, QString* errorMessage,
+                             const QList<UsbUtils::Device>& mirrorTo) {
     if (m_state != State::Idle || m_recorder->isRecording()) {
         if (errorMessage) {
             *errorMessage = m_state == State::Saving || (m_state == State::Idle && m_recorder->isRecording())
@@ -64,6 +66,7 @@ bool RecordingSession::start(const QString& patientId, int surgeryId, int flipSt
     if (!m_recorder->startRecording(outputPath, errorMessage))
         return false;   // nothing was started: no DB row, no state change
     m_outputPath = outputPath;
+    m_pendingMirrors = mirrorTo;
 
     // The encoder opens on the recorder thread; onRecordingStarted() confirms it
     setState(State::Starting);
@@ -115,6 +118,7 @@ int RecordingSession::insertRecordingRow(const QString& path) {
 }
 
 void RecordingSession::onRecordingStarted(const QString& path) {
+    startMirrors(path);
     m_recordingId = insertRecordingRow(path);
     m_clock.start();
     // A stop pressed while starting stays a stop
@@ -127,6 +131,10 @@ void RecordingSession::onRecordingStopped(const QString& path, qint64 framesEnco
     qDebug() << "✅ Recording finalised:" << path << "frames" << framesEncoded << "lost" << framesDropped;
     // A failed start never reached onRecordingStarted()
     const bool wasRecording = m_recordingId != -1 || m_clock.isValid();
+    m_pendingMirrors.clear();   // a start that failed never began its copies
+    // The USB copies catch up with the finished file, then report (mirrorFinished)
+    for (RecordingMirror* mirror : m_mirrors)
+        mirror->finish();
     m_clock.invalidate();
     m_recordingId = -1;
     setState(State::Idle);
@@ -134,9 +142,63 @@ void RecordingSession::onRecordingStopped(const QString& path, qint64 framesEnco
 }
 
 void RecordingSession::onSegmentStarted(const QString& path) {
+    for (RecordingMirror* mirror : m_mirrors)
+        mirror->addFile(path);
     // Comments stay linked to the first file (currentRecordingId() is unchanged)
     insertRecordingRow(path);
     emit segmentStarted(path);
+}
+
+qint64 RecordingSession::expectedBytesPerSecond() const {
+    return m_recorder->expectedBitRate() / 8;
+}
+
+void RecordingSession::startMirrors(const QString& firstFile) {
+    const QString folder = isArchive() ? "/Archive" : "/SurgeryDownloads";
+    for (const UsbUtils::Device& device : m_pendingMirrors) {
+        auto* mirror = new RecordingMirror(firstFile, device.mountPath + folder, device.name,
+                                           device.fat32 ? UsbUtils::kFat32MaxFileSize : 0, this);
+        connect(mirror, &RecordingMirror::stateChanged, this, &RecordingSession::emitMirrorStatus);
+        connect(mirror, &RecordingMirror::notice, this, &RecordingSession::mirrorNotice);
+        connect(mirror, &RecordingMirror::finished, this, [this, mirror](bool ok, const QString& message) {
+            m_mirrors.removeOne(mirror);
+            const QString name = mirror->deviceName();
+            mirror->deleteLater();
+            emit mirrorFinished(name, ok, message);
+            emitMirrorStatus();
+        });
+        m_mirrors << mirror;
+        qInfo() << "Also recording to" << device.name << device.mountPath + folder;
+    }
+    m_pendingMirrors.clear();
+    emitMirrorStatus();
+}
+
+QString RecordingSession::mirrorStatus(int* level) const {
+    QStringList texts;
+    int worst = 0;
+    for (RecordingMirror* mirror : m_mirrors) {
+        texts << mirror->statusText();
+        switch (mirror->state()) {
+        case RecordingMirror::State::Behind:
+        case RecordingMirror::State::Finishing: worst = qMax(worst, 1); break;
+        case RecordingMirror::State::Failed: worst = 2; break;
+        default: break;
+        }
+    }
+    if (level)
+        *level = worst;
+    return texts.join("  ·  ");
+}
+
+void RecordingSession::emitMirrorStatus() {
+    int level = 0;
+    const QString text = mirrorStatus(&level);
+    if (text == m_lastMirrorStatus && level == m_lastMirrorLevel)
+        return;
+    m_lastMirrorStatus = text;
+    m_lastMirrorLevel = level;
+    emit mirrorStatusChanged(text, level);
 }
 
 void RecordingSession::setState(State state) {

@@ -19,6 +19,7 @@
 #include <QMessageBox>
 #include <QIcon>
 #include "diag/DiagProbe.h"
+#include "widgets/RecordTargetDialog.hpp"
 
 static const char* const kRecordIcon = ":/assets/icons/record.svg";
 static const char* const kStopIcon = ":/assets/icons/stop.svg";
@@ -92,6 +93,13 @@ RecordingPage::RecordingPage(QWidget* parent)
     recordingTimeLabel->setStyleSheet("font-size: 24px; color: red;");
     recordingTimeLabel->setAlignment(Qt::AlignCenter);
     cardLayout->addWidget(recordingTimeLabel);
+
+    // State of the copy to USB, when the recording is also saved there
+    m_mirrorLabel = new QLabel(this);
+    m_mirrorLabel->setAlignment(Qt::AlignCenter);
+    m_mirrorLabel->setWordWrap(true);
+    m_mirrorLabel->hide();
+    cardLayout->addWidget(m_mirrorLabel);
 
     mainLayout->addWidget(card);
 
@@ -172,6 +180,12 @@ void RecordingPage::setRecordingSession(RecordingSession* session) {
     connect(session, &RecordingSession::recordingStopped, this, &RecordingPage::onRecordingStopped);
     connect(session, &RecordingSession::segmentStarted, this, &RecordingPage::onSegmentStarted);
     connect(session, &RecordingSession::framesDropped, this, &RecordingPage::onFramesDropped);
+    connect(session, &RecordingSession::mirrorStatusChanged, this, [this](const QString& text, int level) {
+        m_mirrorLabel->setVisible(!text.isEmpty());
+        m_mirrorLabel->setText(text);
+        const char* color = level == 2 ? "#ff5050" : level == 1 ? "#ffb020" : "#4cd964";
+        m_mirrorLabel->setStyleSheet(QString("font-size: 18px; color: %1;").arg(color));
+    });
 }
 
 void RecordingPage::updateRecordingLabel() {
@@ -204,8 +218,13 @@ void RecordingPage::onToggleRecording() {
     if (!m_recording) {
         ensureFoldersExist();
 
+        // USB device connected: this system only, or also on USB (with its checks)
+        QList<UsbUtils::Device> mirrorTo;
+        if (!RecordTargetDialog::ask(this, m_transferManager, m_session->expectedBytesPerSecond(), &mirrorTo))
+            return;
+
         QString error;
-        if (!m_session->start(m_patientId, m_surgeryId, m_flipStep, &error)) {
+        if (!m_session->start(m_patientId, m_surgeryId, m_flipStep, &error, mirrorTo)) {
             // Nothing was started: no DB row, no "recording" state
             QMessageBox::critical(this, "Recording could not start", error);
             return;

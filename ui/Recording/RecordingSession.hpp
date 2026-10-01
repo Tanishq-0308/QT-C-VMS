@@ -2,9 +2,12 @@
 
 #include <QObject>
 #include <QElapsedTimer>
+#include <QList>
 #include <QString>
+#include "core/UsbUtils.hpp"
 
 class VideoRecorder;
+class RecordingMirror;
 
 // The app's one recording at a time. Owns the VideoRecorder (the capture device feeds it
 // directly) and does the bookkeeping around it: file paths, the `recordings` rows and state.
@@ -24,8 +27,11 @@ public:
     VideoRecorder* recorder() const { return m_recorder; }
 
     // Starts recording for a patient/surgery, or an Archive recording when patientId is empty.
-    // Returns false (with the reason) when nothing was started.
-    bool start(const QString& patientId, int surgeryId, int flipStep, QString* errorMessage = nullptr);
+    // Returns false (with the reason) when nothing was started. `mirrorTo`: USB devices that also
+    // get the recording, copied while it is recorded (RecordingMirror) into the folder downloads
+    // use (SurgeryDownloads, or Archive for Archive recordings).
+    bool start(const QString& patientId, int surgeryId, int flipStep, QString* errorMessage = nullptr,
+               const QList<UsbUtils::Device>& mirrorTo = {});
     // Returns immediately; recordingStopped() follows once the file is finalised
     void stop();
     void setFlipStep(int flipStep);
@@ -42,6 +48,13 @@ public:
     // renamed or deleted
     bool isWriting(const QString& path) const;
 
+    // Bytes per second a recording started now would take (for USB space estimates)
+    qint64 expectedBytesPerSecond() const;
+    // Copies to USB still running (also after Stop, until they have caught up)
+    bool isMirroring() const { return !m_mirrors.isEmpty(); }
+    // One line about the USB copies and how serious it is: 0 fine, 1 behind/finishing, 2 problem
+    QString mirrorStatus(int* level = nullptr) const;
+
     // <app>/../<kind>/<patient>/<surgery>, or <app>/../<kind>/general for the Archive
     static QString mediaDir(const QString& kind, const QString& patientId, int surgeryId);
 
@@ -53,6 +66,9 @@ signals:
     void segmentStarted(const QString& path);   // input format changed, continued in a new file
     void framesDropped(qint64 total);
     void errorOccurred(const QString& message);
+    void mirrorStatusChanged(const QString& text, int level);   // empty text: no USB copy
+    void mirrorNotice(const QString& text);                      // e.g. FAT32 limit reached
+    void mirrorFinished(const QString& deviceName, bool ok, const QString& message);
 
 private:
     void setState(State state);
@@ -65,6 +81,12 @@ private:
     State m_state = State::Idle;
     QString m_patientId;
     QString m_outputPath;   // first file of the current recording
+    QList<UsbUtils::Device> m_pendingMirrors;   // chosen at start, begin with the first file
+    QList<RecordingMirror*> m_mirrors;
+    QString m_lastMirrorStatus;
+    int m_lastMirrorLevel = -1;
+    void startMirrors(const QString& firstFile);
+    void emitMirrorStatus();
     int m_surgeryId = -1;
     int m_recordingId = -1;
     qint64 m_droppedFrames = 0;

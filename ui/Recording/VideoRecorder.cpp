@@ -195,6 +195,23 @@ void VideoRecorder::pushFrame(const RawVideoFrame& frame)
     m_poolCond.notify_one();
 }
 
+int64_t VideoRecorder::bitRateFor(int width, int height, double fps)
+{
+    return qBound<int64_t>(4000000, static_cast<int64_t>(double(width) * height * fps * 0.13), 60000000);
+}
+
+int64_t VideoRecorder::expectedBitRate()
+{
+    Format format;
+    {
+        std::lock_guard<std::mutex> lock(m_formatMutex);
+        format = m_lastFormat;
+    }
+    if (format.width == 0 || format.frameDuration <= 0)
+        return bitRateFor(1920, 1080, 60.0);
+    return bitRateFor(format.width, format.height, double(format.timeScale) / format.frameDuration);
+}
+
 /// Start / stop (GUI thread)
 
 bool VideoRecorder::startRecording(const QString& outputPath, QString* errorMessage)
@@ -615,9 +632,7 @@ bool VideoRecorder::openSegment(const QString& path, const Format& format, QStri
         return false;
     }
 
-    // ~0.13 bits per pixel: 1080p60 -> ~16 Mbps, 1080p30 -> ~8 Mbps, 2160p30 -> ~32 Mbps
-    const int64_t bitRate = qBound<int64_t>(4000000, static_cast<int64_t>(double(format.width) * format.height * fps * 0.13),
-                                            60000000);
+    const int64_t bitRate = bitRateFor(format.width, format.height, fps);
 
     m_codecCtx->width = format.width;
     m_codecCtx->height = format.height;

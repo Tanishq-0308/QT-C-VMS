@@ -2,6 +2,7 @@
 #include "core/UIScale.hpp"
 #include "ui/Recording/RecordingSession.hpp"
 #include "widgets/Toast.hpp"
+#include "widgets/RecordTargetDialog.hpp"
 #include <QIcon>
 #include <QMessageBox>
 #include "../widgets/VideoWidget.hpp"
@@ -204,8 +205,12 @@ void DashboardPage::onRecordClicked()
         return;
     switch (m_session->state()) {
     case RecordingSession::State::Idle: {
+        // USB device connected: this system only, or also on USB (with its checks)
+        QList<UsbUtils::Device> mirrorTo;
+        if (!RecordTargetDialog::ask(this, m_transferManager, m_session->expectedBytesPerSecond(), &mirrorTo))
+            break;
         QString error;
-        if (!m_session->start(QString(), -1, m_flipStep, &error))
+        if (!m_session->start(QString(), -1, m_flipStep, &error, mirrorTo))
             QMessageBox::critical(this, "Recording could not start", error);
         break;
     }

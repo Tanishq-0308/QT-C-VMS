@@ -48,6 +48,8 @@ HomePage::HomePage(QWidget *parent) : ResponsiveWidget(parent) {
     pdfViewerPage = new PdfViewerPage;
     surgeryRecordingPage = nullptr;
     transferManager = new TransferManager(this);
+    recordingPage->setTransferManager(transferManager);
+    dashboardPage->setTransferManager(transferManager);
     archivePage = new SurgeryRecordingPage(QString(), -1);
     archivePage->setTransferManager(transferManager);
     archivePage->setFileBusyCheck([this](const QString& path) { return recordingSession->isWriting(path); });
@@ -99,6 +101,15 @@ HomePage::HomePage(QWidget *parent) : ResponsiveWidget(parent) {
         updateRecIndicator();
     });
     connect(recordingSession, &RecordingSession::stateChanged, this, &HomePage::updateRecIndicator);
+    connect(recordingSession, &RecordingSession::mirrorStatusChanged, this, &HomePage::updateRecIndicator);
+    // USB copy of a recording: limit reached, finished (safe to remove) or stopped
+    connect(recordingSession, &RecordingSession::mirrorNotice, this, [this](const QString& text) {
+        Toast::show(this, text, 7000, "#b36b00");
+    });
+    connect(recordingSession, &RecordingSession::mirrorFinished, this,
+            [this](const QString&, bool ok, const QString& message) {
+        Toast::show(this, message, ok ? 6000 : 8000, ok ? "#1a7f37" : "#c40000");
+    });
     connect(recordingSession, &RecordingSession::recordingStopped, this, [this]() {
         if (recordingSession->isArchive() && stackedPages->currentWidget() == archivePage)
             archivePage->refreshRecordings();   // show what was just recorded
@@ -450,18 +461,33 @@ void HomePage::updateRecIndicator() {
     } else if (!recording && recBlinkTimer->isActive()) {
         recBlinkTimer->stop();
     }
-    if (!recording && !saving) {
+    // An Archive recording's USB copy can still be finishing after Stop: keep showing that
+    const bool mirroring = archive && recordingSession->isMirroring();
+    if (!recording && !saving && !mirroring) {
         recIndicator->hide();
         return;
     }
 
     const qint64 secs = recordingSession->elapsedSeconds();
-    recIndicator->setText(saving ? "Saving recording…"
-                                 : QString("%1 REC  %2:%3:%4")
-                                       .arg(recBlinkOn ? "●" : "○")
-                                       .arg(secs / 3600, 2, 10, QChar('0'))
-                                       .arg((secs % 3600) / 60, 2, 10, QChar('0'))
-                                       .arg(secs % 60, 2, 10, QChar('0')));
+    if (!recording && !saving) {
+        recIndicator->setText(recordingSession->mirrorStatus());   // "Finishing copy to …"
+        recIndicator->show();
+        return;
+    }
+    QString text = saving ? QString("Saving recording…")
+                          : QString("%1 REC  %2:%3:%4")
+                                .arg(recBlinkOn ? "●" : "○")
+                                .arg(secs / 3600, 2, 10, QChar('0'))
+                                .arg((secs % 3600) / 60, 2, 10, QChar('0'))
+                                .arg(secs % 60, 2, 10, QChar('0'));
+    // Also saved to USB: say so, and whether that copy keeps up
+    int mirrorLevel = 0;
+    if (!recordingSession->mirrorStatus(&mirrorLevel).isEmpty())
+        text += mirrorLevel == 2 ? "  + USB stopped" : mirrorLevel == 1 ? "  + USB behind" : "  + USB";
+    recIndicator->setText(text);
+    recIndicator->setToolTip(recordingSession->mirrorStatus().isEmpty()
+                                 ? QString("An Archive recording is running. Tap to go to the Dashboard to stop it.")
+                                 : recordingSession->mirrorStatus());
     const int fontPx = UIScale::scaled(40, 16, 40, this);
     recIndicator->setStyleSheet(QString("QPushButton#RecIndicator { background: #fff0f0; color: #c40000; "
                                         "border: 2px solid #c40000; border-radius: 8px; font-weight: bold; "
@@ -476,6 +502,16 @@ bool HomePage::confirmNoActiveTransfers(const QString& action) {
             this, "Recording in progress",
             QString("A recording is still running.\nStop it first so the file is saved completely.\n\n"
                     "%1 anyway?").arg(action),
+            QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
+        if (reply != QMessageBox::Yes)
+            return false;
+    }
+    if (recordingSession->isMirroring()) {
+        const auto reply = QMessageBox::warning(
+            this, "Copying to USB",
+            QString("A recording is still being copied to the USB device.\n"
+                    "If you %1 now, the copy on the USB device will be incomplete.\n\n%2 anyway?")
+                .arg(action.toLower(), action),
             QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
         if (reply != QMessageBox::Yes)
             return false;

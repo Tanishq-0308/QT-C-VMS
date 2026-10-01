@@ -258,6 +258,88 @@ private slots:
         QVERIFY(!row.path.isEmpty());
     }
 
+    // Recording also saved to "USB" (a folder standing in for the device): the copy follows
+    // while recording, is identical and plays when the session reports it finished
+    void mirroredRecording()
+    {
+        QTemporaryDir usb;
+        UsbUtils::Device device;
+        device.mountPath = usb.path();
+        device.name = "TESTUSB";
+        device.fileSystem = "exFAT";
+
+        RecordingSession s;
+        FrameFeeder feed(s.recorder());
+        feed.start();
+        QTest::qWait(200);
+        QSignalSpy started(&s, &RecordingSession::recordingStarted);
+        QSignalSpy stopped(&s, &RecordingSession::recordingStopped);
+        QSignalSpy mirrorDone(&s, &RecordingSession::mirrorFinished);
+        QSignalSpy status(&s, &RecordingSession::mirrorStatusChanged);
+        QString error;
+        QVERIFY2(s.start("P_TEST", 7, 0, &error, {device}), qPrintable(error));
+        QVERIFY(QTest::qWaitFor([&]() { return started.count() == 1; }, 15000));
+        QVERIFY(s.isMirroring());
+        QVERIFY2(s.mirrorStatus().contains("Also saving to TESTUSB"), qPrintable(s.mirrorStatus()));
+        const QString local = started.at(0).at(0).toString();
+        const QString copy = usb.path() + "/SurgeryDownloads/" + QFileInfo(local).fileName();
+
+        QTest::qWait(3000);
+        QVERIFY2(QFileInfo(copy).size() > 0, "the copy follows while recording");
+        s.stop();
+        QVERIFY(QTest::qWaitFor([&]() { return stopped.count() == 1; }, 15000));
+        QVERIFY(QTest::qWaitFor([&]() { return mirrorDone.count() == 1; }, 15000));
+        QCOMPARE(mirrorDone.at(0).at(0).toString(), QString("TESTUSB"));
+        QVERIFY2(mirrorDone.at(0).at(1).toBool(), qPrintable(mirrorDone.at(0).at(2).toString()));
+        QVERIFY(!s.isMirroring());
+        QVERIFY(!status.isEmpty());
+
+        QFile a(local), b(copy);
+        QVERIFY(a.open(QIODevice::ReadOnly) && b.open(QIODevice::ReadOnly));
+        QVERIFY2(a.readAll() == b.readAll(), "USB copy identical to the local recording");
+        const double localLen = probeSeconds(local), copyLen = probeSeconds(copy);
+        qInfo("  local %.2f s, USB copy %.2f s, %lld bytes", localLen, copyLen, QFileInfo(copy).size());
+        QVERIFY(copyLen > 2.5 && qAbs(copyLen - localLen) < 0.01);
+        m_files << local;
+    }
+
+    // The same on a real USB device, if one is connected (its test file is removed afterwards)
+    void mirroredRecordingToRealUsb()
+    {
+        const QList<UsbUtils::Device> devices = UsbUtils::listDevices();
+        if (devices.isEmpty())
+            QSKIP("no USB device connected");
+        const UsbUtils::Device device = devices.first();
+        RecordingSession s;
+        FrameFeeder feed(s.recorder());
+        feed.start();
+        QTest::qWait(200);
+        QSignalSpy started(&s, &RecordingSession::recordingStarted);
+        QSignalSpy stopped(&s, &RecordingSession::recordingStopped);
+        QSignalSpy mirrorDone(&s, &RecordingSession::mirrorFinished);
+        QString error;
+        QVERIFY2(s.start(QString(), -1, 0, &error, {device}), qPrintable(error));
+        QVERIFY(QTest::qWaitFor([&]() { return started.count() == 1; }, 15000));
+        const QString local = started.at(0).at(0).toString();
+        const QString copy = device.mountPath + "/Archive/" + QFileInfo(local).fileName();
+        QTest::qWait(3000);
+        s.stop();
+        QVERIFY(QTest::qWaitFor([&]() { return stopped.count() == 1; }, 15000));
+        QVERIFY(QTest::qWaitFor([&]() { return mirrorDone.count() == 1; }, 30000));
+        const bool ok = mirrorDone.at(0).at(1).toBool();
+        QFile a(local), b(copy);
+        const bool same = a.open(QIODevice::ReadOnly) && b.open(QIODevice::ReadOnly) && a.readAll() == b.readAll();
+        b.close();
+        const double copyLen = probeSeconds(copy);
+        qInfo("  %s: %s, copy plays %.2f s", qPrintable(device.name), qPrintable(mirrorDone.at(0).at(2).toString()), copyLen);
+        QFile::remove(copy);
+        QDir(device.mountPath + "/Archive").rmdir(".");   // only if it is empty now
+        m_files << local;
+        QVERIFY(ok);
+        QVERIFY(same);
+        QVERIFY(copyLen > 2.5);
+    }
+
     // The file being recorded (and its later parts) is reported as in use, nothing else is
     void isWriting_onlyTheCurrentRecording()
     {
