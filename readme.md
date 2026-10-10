@@ -1,3 +1,11 @@
+# Medical Video System
+
+**New machine:** fresh Ubuntu 22.04, then `git clone` this repository and
+`sudo ./deploy/install.sh <ot-deps folder from the team drive>`. Full guide:
+[deploy/DEPLOYMENT.md](deploy/DEPLOYMENT.md). Updating a machine: [deploy/UPDATE_GUIDE.md](deploy/UPDATE_GUIDE.md).
+
+---
+
 cd ~/Desktop/sdkDev1/medical_qt_app
 
 cd ..

@@ -33,7 +33,8 @@ include_directories(${CUDA_TOOLKIT_ROOT_DIR}/include)
 link_directories(${CUDA_TOOLKIT_ROOT_DIR}/targets/x86_64-linux/lib)
 
 # ---- NVIDIA Video Codec SDK ----
-set(NVCODEC_PATH "/home/brainwave/sdk/Video_Codec_SDK_13.0.19/Interface")
+# Headers are in this repository (sdk/), so a fresh clone builds on any machine
+set(NVCODEC_PATH "${CMAKE_SOURCE_DIR}/sdk/Video_Codec_SDK_13.0.19/Interface")
 include_directories(${NVCODEC_PATH})
 
 file(COPY ${CMAKE_SOURCE_DIR}/assets/logo.png DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
@@ -52,14 +53,6 @@ pkg_check_modules(POPPLER REQUIRED poppler-qt5)
 # Include directories for Poppler
 include_directories(${POPPLER_INCLUDE_DIRS})
 link_directories(${POPPLER_LIBRARY_DIRS})
-
-
-# ✅ Find OpenCV via pkg-config
-find_package(PkgConfig REQUIRED)
-pkg_check_modules(OPENCV REQUIRED opencv4)
-
-include_directories(${OPENCV_INCLUDE_DIRS})
-link_directories(${OPENCV_LIBRARY_DIRS})
 
 
 # ✅ Find FFmpeg libraries via PkgConfig
@@ -135,15 +128,9 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     ${CMAKE_SOURCE_DIR}/api/camera_zoom
     ${PROJECT_SOURCE_DIR}/widgets
     ${CMAKE_SOURCE_DIR}/ui/dashboard
-    ${OpenCV_INCLUDE_DIRS}
 )
 
-# Link DeckLink libraries
-link_directories(
-    /home/brainwave/Downloads/desktopvideo-14.4.1a4-x86_64/usr/lib/
-    /usr/lib
-)
-
+# DeckLink libraries: /usr/lib, from Blackmagic Desktop Video (desktopvideo package)
 # The library folders (e.g. /opt/ffmpeg-full/lib) are stored in the binary as RPATH, not RUNPATH:
 # RUNPATH only covers the app's direct libraries, so libavcodec's own dependency libswresample
 # was not found when the app started without LD_LIBRARY_PATH (login autostart, file manager).
@@ -168,8 +155,6 @@ target_link_libraries(${PROJECT_NAME}
     cuda
     cudart
     nvcuvid
-    ${OpenCV_LIBS}
-    ${OPENCV_LIBRARIES}
     ${POPPLER_LIBRARIES}
 )
 

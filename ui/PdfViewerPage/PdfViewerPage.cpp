@@ -9,6 +9,7 @@
 #include <QMessageBox>
 #include <QFile>
 #include <QDir>
+#include <QCoreApplication>
 #include <poppler-qt5.h>
 
 PdfViewerPage::PdfViewerPage(QWidget *parent) : QWidget(parent), zoomLevel(100)
@@ -231,7 +232,11 @@ void PdfViewerPage::renderPdf()
 
 void PdfViewerPage::downloadReport()
 {
-    QString sourcePath = "/home/brainwave/medical_qt_app/flask_zoom_api/reports/report.pdf";
+    // The report on screen; else where the report service writes it (flask_zoom_api next to the
+    // build folder), so this works for any user and install folder
+    QString sourcePath = currentPdfPath;
+    if (sourcePath.isEmpty())
+        sourcePath = QCoreApplication::applicationDirPath() + "/../flask_zoom_api/reports/report.pdf";
 
     if (!QFile::exists(sourcePath)) {
         QMessageBox::information(this,

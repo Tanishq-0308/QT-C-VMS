@@ -5,6 +5,10 @@
 #   1. GDM logs the desktop user in automatically (no Ubuntu login screen)
 #   2. The app starts with the desktop session (autostart entry)
 #   3. The screen never blanks or locks, so no password is asked later either
+#   3b. Shortcuts that lead away from the app are off: Super key (overview), Super+A/S/V,
+#      Super+1..9 (dock), Super+L (lock), Ctrl+Alt+T (terminal), Ctrl+Alt+Del (log out dialog),
+#      hot corner, notification pop-ups. Kept: Alt+Tab, and Ctrl+Alt+F3 (text console: the
+#      maintenance way in)
 #   4. The few commands the app needs root for run through sudo without a password
 #   5. The packages the app needs at runtime (video playback) are installed
 #
@@ -126,7 +130,32 @@ disable-lock-screen=true
 
 [org/gnome/settings-daemon/plugins/power]
 sleep-inactive-ac-type='nothing'
+sleep-inactive-battery-type='nothing'
 idle-dim=false
+
+# Shortcuts that lead away from the app (Alt+Tab and Ctrl+Alt+F3 stay)
+[org/gnome/mutter]
+overlay-key=''
+
+[org/gnome/shell/keybindings]
+toggle-overview=@as []
+toggle-application-view=@as []
+toggle-message-tray=@as []
+
+[org/gnome/shell/extensions/dash-to-dock]
+hot-keys=false
+
+[org/gnome/settings-daemon/plugins/media-keys]
+terminal=@as []
+screensaver=@as []
+logout=@as []
+
+[org/gnome/desktop/interface]
+enable-hot-corners=false
+
+# Nothing covers the video
+[org/gnome/desktop/notifications]
+show-banners=false
 KEYS
 cat > "$DCONF_LOCKS" <<'LOCKS'
 /org/gnome/desktop/session/idle-delay
@@ -135,10 +164,21 @@ cat > "$DCONF_LOCKS" <<'LOCKS'
 /org/gnome/desktop/screensaver/ubuntu-lock-on-suspend
 /org/gnome/desktop/lockdown/disable-lock-screen
 /org/gnome/settings-daemon/plugins/power/sleep-inactive-ac-type
+/org/gnome/settings-daemon/plugins/power/sleep-inactive-battery-type
 /org/gnome/settings-daemon/plugins/power/idle-dim
+/org/gnome/mutter/overlay-key
+/org/gnome/shell/keybindings/toggle-overview
+/org/gnome/shell/keybindings/toggle-application-view
+/org/gnome/shell/keybindings/toggle-message-tray
+/org/gnome/shell/extensions/dash-to-dock/hot-keys
+/org/gnome/settings-daemon/plugins/media-keys/terminal
+/org/gnome/settings-daemon/plugins/media-keys/screensaver
+/org/gnome/settings-daemon/plugins/media-keys/logout
+/org/gnome/desktop/interface/enable-hot-corners
+/org/gnome/desktop/notifications/show-banners
 LOCKS
 dconf update
-echo "✔ Screen blanking, lock screen and auto-suspend disabled"
+echo "✔ Screen blanking, lock screen and auto-suspend disabled; shortcuts away from the app off"
 
 # 4. Password-less sudo for the commands the app needs (validated before installing)
 TMP_SUDOERS="$(mktemp)"
@@ -162,4 +202,4 @@ echo "✔ Video playback packages installed"
 
 echo
 echo "Done. Reboot to check: the device should open the app with no password prompt."
-echo "Undo with: sudo $0 --undo"
+echo "Maintenance: Ctrl+Alt+F3, log in, then: sudo $0 --undo && sudo reboot"
