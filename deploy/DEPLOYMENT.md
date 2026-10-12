@@ -45,8 +45,20 @@ After the reboot the machine logs in by itself and the app opens on the Dashboar
 | `nvidia` | NVIDIA driver 580, CUDA toolkit 12.9 |
 | `deps` | Blackmagic Desktop Video 14.4.1 and FFmpeg (NVENC, LGPL, `/opt/ot-ffmpeg`) from the deps folder; `ffmpeg` command for the report / zoom service |
 | `python` | Python packages of the report / zoom-camera service (`flask_zoom_api/requirements.txt`, fixed versions) |
-| `app` | Builds the app: `build/medical_qt_app` |
+| `app` | Builds the app: `build/medical_qt_app` (debug information stripped) |
 | `kiosk` | `kiosk-setup.sh` (below) and `freeze-updates.sh` (below) |
+| `clean` | Removes the source code and git history (below) |
+
+**The source code is removed at the end** (step `clean`). The machine keeps only
+`build/medical_qt_app` and `build/logo.png`, `database/migrations/` (read at every start),
+`flask_zoom_api/` (the report / zoom service), `deploy/` and a `VERSION` file (the commit
+installed). Only files that came from git are deleted: `sqlite.db`, `recordings/`, `snapshots/`
+and reports are never touched. `clean` refuses to run if the folder has changes that are not on
+GitHub; on a developer machine add `--keep-code` (same as `--skip clean`).
+
+**Updating** such a machine: `sudo ~/medical_qt_app/deploy/install.sh <deps folder> --only app,clean`
+downloads the latest code from GitHub into a temporary folder (GitHub user name and token),
+builds it and removes it again. Details: `UPDATE_GUIDE.md`.
 
 ## 3. Kiosk mode (`deploy/kiosk-setup.sh`)
 
@@ -91,7 +103,7 @@ Work through `PRODUCTION_CHECKLIST.md` sections 6-8 with a **test patient**. In 
 
 | | |
 |---|---|
-| App | `~/medical_qt_app/build/medical_qt_app` |
+| App | `~/medical_qt_app/build/medical_qt_app`; installed version: `~/medical_qt_app/VERSION` |
 | Database (patient data) | `~/medical_qt_app/sqlite.db`; created on the first start from `database/migrations/init.sql` |
 | Recordings, snapshots | `~/medical_qt_app/recordings/`, `~/medical_qt_app/snapshots/` |
 | Report / zoom service | `~/medical_qt_app/flask_zoom_api/` (started by the app, port 8001), log `flask.log` there |

@@ -1,55 +1,47 @@
 # Updating the client machine
 
-How to get a new version from the development machine onto the client's machine.
-For the first installation and kiosk setup see `PRODUCTION_CHECKLIST.md`.
+How to get a new version onto a machine set up with `deploy/install.sh`.
+For the first installation see `DEPLOYMENT.md`.
 
-Paths assume the repo is at `~/medical_qt_app` and the branch is `ui-icons-headings`
-(use `main` instead once the branch has been merged).
+The client machine has **no source code**: the installer removed it after building (step
+`clean`). An update downloads the code from GitHub into a temporary folder, builds it and
+removes it again. Patient data (`sqlite.db`, `recordings/`, `snapshots/`, reports) is not
+touched.
 
 ## 1. On the development machine: push
 
 ```bash
 cd ~/medical_qt_app
 git status                      # nothing uncommitted that should go along
-git push origin ui-icons-headings
+git push origin main && git push second-repo main
 ```
 
-The last line should look like `abc1234..def5678  ui-icons-headings -> ui-icons-headings`.
-GitHub asks for your username and token here.
+The client machine downloads `main` from `Brainwave-Technologie/medical_qt_app`.
 
 ## 2. On the client machine: update
 
-Do this when no recording and no USB copy is running.
+Do this when no recording and no USB copy is running. Get to a terminal: Ctrl+Alt+F3 and log
+in (kiosk mode), or Ctrl+Alt+T if kiosk mode is off.
 
 ```bash
-cd ~/medical_qt_app
-
 # a. Back up the patient database
-cp -a sqlite.db ~/sqlite.db.backup_$(date +%F_%H%M)
+cp -a ~/medical_qt_app/sqlite.db ~/sqlite.db.backup_$(date +%F_%H%M)
 
 # b. Stop the app and the report/zoom service (the service keeps running after the app closes)
 pkill -x medical_qt_app
 pkill -f flask_zoom_api/app.py
 
-# c. Bring back source files that were deleted after the last build (see section 4).
-#    Restores only missing files; does nothing if none are missing.
-git ls-files -d -z | xargs -0 -r git restore --
+# c. Download, build, remove the code again (asks for the GitHub user name and token)
+sudo ~/medical_qt_app/deploy/install.sh ~/Downloads/ot-deps-2026-10 --only app,clean
 
-# d. Get the new code
-git pull origin ui-icons-headings
+# d. The version now installed
+cat ~/medical_qt_app/VERSION
 
-# e. Build. Always run cmake: new source files are only picked up by it.
-#    "cmake --build" uses whatever build tool the folder was set up with (make or ninja);
-#    plain "make" can silently use stale build rules if the folder was set up for ninja.
-cd build
-cmake ..
-cmake --build . -j$(nproc)
-
-# f. Start
-./medical_qt_app
+# e. Start: reboot (kiosk mode starts the app)
+sudo reboot
 ```
 
-In kiosk mode you can reboot instead of step f (`sudo reboot`): the app starts by itself.
+If the Python packages of the report service changed, add `python`: `--only python,app,clean`.
 
 ## 3. Check after the update
 
@@ -58,64 +50,32 @@ In kiosk mode you can reboot instead of step f (`sudo reboot`): the app starts b
 - [ ] Open a test patient's surgery: recordings and snapshots are listed, with duration/size
       under each name; a video plays.
 - [ ] Generate Report opens the PDF.
-- [ ] Whatever the update was about works (see the commit messages: `git log --oneline -5`).
+- [ ] Whatever the update was about works.
 
-## 4. Removing the source code from the client machine (optional)
-
-The built app does not need the source folders. After a successful build these can be deleted:
-
-```
-ui/  widgets/  core/  decklink/  api/  cuda/  include/  tests/  diag/  sdk/
-main.cpp  mainwindow.cpp  mainwindow.hpp
-```
-
-**Never delete** (the running app needs them):
-
-| Keep | Why |
-|---|---|
-| `build/medical_qt_app`, `build/logo.png` | the app and the hospital logo |
-| `sqlite.db` | patient database |
-| `database/migrations/init.sql` | read at every start; the app won't start without it |
-| `flask_zoom_api/` | report and zoom service |
-| `recordings/`, `snapshots/` | recorded media |
-| `deploy/` | kiosk setup / undo, this guide |
-| `.git/`, `CMakeLists.txt`, `assets/` | needed for the next update |
-
-Before the next update, step 2c puts the deleted source files back. Without it the build fails
-with an error like `fatal error: VideoRecorder.hpp: No such file or directory`.
-
-## 5. If something goes wrong
+## 4. If something goes wrong
 
 | What you see | What to do |
 |---|---|
-| Build: `fatal error: <something>.hpp: No such file or directory` | Source files are missing: run step 2c, then `cmake .. && cmake --build . -j$(nproc)` again |
-| Build: `undefined reference to …` for a file that exists | Build rules are stale: build with `cmake --build . -j$(nproc)`, not `make` |
-| `git pull` refuses: "Your local changes would be overwritten" | A file was edited on this machine. Run `git status` and send the list before doing anything else |
+| `git clone`: Authentication failed | Use a GitHub personal access token as the password; the account needs access to `Brainwave-Technologie/medical_qt_app` |
+| Build fails | Send the end of `/var/log/medical-install.log` |
+| `no code to remove (already removed?)` | Run `app` and `clean` together: `--only app,clean` |
 | App doesn't appear after a reboot (kiosk mode) | `journalctl --user -b \| grep -i medical` and send the output |
-| `error while loading shared libraries: libswresample…` | The binary is from an old build: rebuild (step 2e) |
 | Generate Report fails | Read the message it shows, and send `flask_zoom_api/flask.log` (or `~/.local/share/medical_qt_app/flask.log`) |
-| "Cannot play video" | `sudo apt install libqt5multimedia5-plugins`, restart the app |
+| "Cannot play video" | `sudo ~/medical_qt_app/deploy/install.sh <deps folder> --only base`, restart the app |
 | USB: "The stick is FAT32, which cannot hold files over 4 GB" | Format the stick as exFAT or NTFS (this erases it), then download again |
 | The report service doesn't answer after the update | The old one may still be running: `pkill -f flask_zoom_api/app.py`, then restart the app |
 
-**Going back to the previous version:**
-
-```bash
-cd ~/medical_qt_app
-git log --oneline -5                 # find the commit that worked
-git checkout <that commit>
-cd build && cmake .. && cmake --build . -j$(nproc)
-```
-
+**Going back to the previous version:** on the development machine, revert the faulty commit
+(`git revert <commit>`) and push `main`; then update the client machine again (section 2).
 Restore `sqlite.db` from the backup only if the database itself was damaged; recordings made
 since the backup would otherwise disappear from the lists.
 
-## 6. Kiosk mode
+## 5. Kiosk mode
 
 | | |
 |---|---|
-| Turn on (auto login, app starts at boot, no lock screen) | `sudo deploy/kiosk-setup.sh` then `sudo reboot` |
-| Turn off, back to how the system was | `sudo deploy/kiosk-setup.sh --undo` then `sudo reboot` |
-| Close the app to work on the machine | `pkill -x medical_qt_app` from a terminal (Ctrl+Alt+T) |
+| Turn on (auto login, app starts at boot, no lock screen) | `sudo ~/medical_qt_app/deploy/kiosk-setup.sh` then `sudo reboot` |
+| Turn off, back to how the system was | `sudo ~/medical_qt_app/deploy/kiosk-setup.sh --undo` then `sudo reboot` |
+| Close the app to work on the machine | `pkill -x medical_qt_app` from a terminal (Ctrl+Alt+F3) |
 
-Rebuilding the app does not change kiosk mode: it starts whatever is at `build/medical_qt_app`.
+Updating the app does not change kiosk mode: it starts whatever is at `build/medical_qt_app`.

@@ -11,11 +11,26 @@
 #   --dry-run          print every command, change nothing
 #   --only <steps>     run only these steps (comma separated), e.g. --only app
 #   --skip <steps>     run all steps except these
+#   --keep-code        do not remove the source code at the end (same as --skip clean)
 #
-# Steps, in order: check base nvidia deps python app kiosk
+# Steps, in order: check base nvidia deps python app kiosk clean
 # Every step can be run again: what is already installed is left as it is.
+# "clean" removes the source code and its git history, so a client machine keeps only the built
+# app and what it needs to run (database schema, report service, deploy scripts). Patient data
+# (sqlite.db, recordings, snapshots, reports) is never touched. To update such a machine:
+#   sudo ~/medical_qt_app/deploy/install.sh <deps folder> --only app,clean
+# (downloads the code again into a temporary folder, builds, and removes it).
 # Log: /var/log/medical-install.log
 set -euo pipefail
+
+# Run from a copy: "clean" and updates replace the files in deploy/, this one included
+if [ -z "${MEDICAL_INSTALL_REPO:-}" ]; then
+    MEDICAL_INSTALL_REPO="$(cd "$(dirname "$0")/.." && pwd)"
+    self_copy="$(mktemp /tmp/medical-install.XXXXXX.sh)"
+    cp "$0" "$self_copy"
+    MEDICAL_INSTALL_REPO="$MEDICAL_INSTALL_REPO" exec bash "$self_copy" "$@"
+fi
+trap 'rm -f "$0"' EXIT
 
 # --- Arguments --------------------------------------------------------------------------------
 DEPS=""
@@ -28,14 +43,20 @@ while [ $# -gt 0 ]; do
         --dry-run) DRY_RUN=1 ;;
         --only) ONLY="$2"; shift ;;
         --skip) SKIP="$2"; shift ;;
-        -h|--help) sed -n '2,18p' "$0"; exit 0 ;;
+        --keep-code) SKIP="${SKIP:+$SKIP,}clean" ;;
+        -h|--help) sed -n '2,25p' "$0"; exit 0 ;;
         *) POSITIONAL+=("$1") ;;
     esac
     shift
 done
 DEPS="${POSITIONAL[0]:-}"
 
-REPO="$(cd "$(dirname "$0")/.." && pwd)"
+REPO="$MEDICAL_INSTALL_REPO"
+APP_REPO_URL="${MEDICAL_APP_REPO:-https://github.com/Brainwave-Technologie/medical_qt_app.git}"
+# Where the code is built from: the repository itself, or (after "clean" removed the code) a
+# fresh download in $REPO/.src
+SRC="$REPO"
+[ -f "$REPO/CMakeLists.txt" ] || SRC="$REPO/.src"
 USER_NAME="${SUDO_USER:-}"
 CUDA_VERSION="12-9"
 NVIDIA_DRIVER="580"
@@ -55,7 +76,7 @@ USER_HOME="$(getent passwd "$USER_NAME" | cut -d: -f6)"
 if [ "$DRY_RUN" = 0 ]; then
     exec > >(tee -a /var/log/medical-install.log) 2>&1
 fi
-echo "=== Medical install $(date '+%Y-%m-%d %H:%M') - repo $REPO ($(git -C "$REPO" describe --always --dirty 2>/dev/null || echo '?')), user $USER_NAME"
+echo "=== Medical install $(date '+%Y-%m-%d %H:%M') - $REPO ($(git -C "$REPO" describe --always --dirty 2>/dev/null || cat "$REPO/VERSION" 2>/dev/null || echo '?')), user $USER_NAME"
 
 # --- Helpers ----------------------------------------------------------------------------------
 run() {        # a command (printed; not executed in a dry run)
@@ -144,7 +165,7 @@ fi
 # --- python: the report / zoom-camera service (flask_zoom_api, started by the app) ------------
 if want python; then
     echo "=== Python packages for flask_zoom_api"
-    as_user python3 -m pip install --user -r "$REPO/flask_zoom_api/requirements.txt"
+    as_user python3 -m pip install --user -r "$SRC/flask_zoom_api/requirements.txt"
     as_user python3 -c "import flask, websockets, reportlab, onvif, requests; print('python packages ok')"
     step_done python
 fi
@@ -152,10 +173,19 @@ fi
 # --- app: build the app from this repository --------------------------------------------------
 if want app; then
     echo "=== the app"
+    if [ "$SRC" != "$REPO" ]; then
+        echo "The code was removed after the last install: downloading it again (GitHub login)"
+        run rm -rf "$SRC"
+        as_user git clone --depth 1 "$APP_REPO_URL" "$SRC"
+    fi
+    # A fresh configuration each time (the code may come from another folder than last time)
+    run rm -rf "$REPO/build/CMakeCache.txt" "$REPO/build/CMakeFiles"
     as_user env PKG_CONFIG_PATH=/opt/ot-ffmpeg/lib/pkgconfig \
-        cmake -S "$REPO" -B "$REPO/build" -DCMAKE_BUILD_TYPE=Release \
+        cmake -S "$SRC" -B "$REPO/build" -DCMAKE_BUILD_TYPE=Release \
         -DCUDA_TOOLKIT_ROOT_DIR="/usr/local/cuda-${CUDA_VERSION/-/.}"
     as_user cmake --build "$REPO/build" --target medical_qt_app -j"$(nproc)"
+    # No debug information in the delivered program (it names source files and functions)
+    as_user strip --strip-all "$REPO/build/medical_qt_app"
     step_done app
 fi
 
@@ -177,6 +207,52 @@ if want kiosk; then
         "$REPO/deploy/freeze-updates.sh"
     fi
     step_done kiosk
+fi
+
+# --- clean: remove the source code; keep only what the installed app needs -------------------
+# Kept: build/medical_qt_app and build/logo.png, database/migrations/ (read at every start),
+# flask_zoom_api/ (the report / zoom service the app starts), deploy/ (installer, kiosk, update
+# freeze, guides), VERSION. Removed: every other file that came from git, the git history and
+# the build's work files. Patient data and anything else not from git is left alone.
+if want clean; then
+    echo "=== remove the source code"
+    [ -x "$REPO/build/medical_qt_app" ] || [ "$DRY_RUN" = 1 ] || die "build/medical_qt_app missing: run the app step first"
+    [ -d "$SRC/.git" ] || [ "$DRY_RUN" = 1 ] || die "no code to remove (already removed?)"
+    if [ "$SRC" = "$REPO" ] && [ "$DRY_RUN" = 0 ]; then
+        # Never lose work on a developer machine
+        [ -z "$(git -C "$REPO" status --porcelain --untracked-files=no)" ] \
+            || die "uncommitted changes in $REPO - not removing the code (or use --keep-code)"
+        [ -n "$(git -C "$REPO" branch -r --contains HEAD 2>/dev/null)" ] \
+            || die "commits not pushed to GitHub in $REPO - not removing the code (or use --keep-code)"
+    fi
+    KEEP_TOP="deploy database flask_zoom_api"
+    if [ "$DRY_RUN" = 1 ]; then
+        echo "+ write $REPO/VERSION; replace deploy/ database/migrations/ flask_zoom_api/ from the code"
+        echo "  just built; remove all other files from git, .git, .src and build work files"
+    else
+        git -C "$SRC" log -1 --format='%h %cd %s' --date=short > "$REPO/VERSION"
+        if [ "$SRC" != "$REPO" ]; then   # an update: the kept files from the new version
+            rm -rf "$REPO/deploy"
+            git -C "$SRC" archive HEAD deploy database/migrations flask_zoom_api | tar -x -C "$REPO"
+        fi
+        # Every file from git except what is kept; only git's own files, so data in the same
+        # folders survives. Folders left empty afterwards go too.
+        git -C "$SRC" ls-files -z | while IFS= read -r -d '' file; do
+            [[ " $KEEP_TOP " == *" ${file%%/*} "* ]] || rm -f "${REPO:?}/$file"
+        done
+        git -C "$SRC" ls-tree -d --name-only HEAD | while IFS= read -r dir; do
+            [[ " $KEEP_TOP " == *" $dir "* ]] || [ ! -d "$REPO/$dir" ] || find "$REPO/$dir" -depth -type d -empty -delete
+        done
+        find "$REPO/database" -mindepth 1 -maxdepth 1 ! -name migrations -exec rm -rf {} +
+        rm -f "$REPO/flask_zoom_api/test_app.py"
+        rm -rf "$REPO/build/CMakeFiles" "$REPO/build/medical_qt_app_autogen" "$REPO/build/CMakeCache.txt" \
+            "$REPO/build/Makefile" "$REPO/build/build.ninja" "$REPO/build/cmake_install.cmake" \
+            "$REPO/build/compile_commands.json" "$REPO/build/.ninja_deps" "$REPO/build/.ninja_log"
+        rm -rf "$REPO/.git" "$REPO/.src"
+        chown -R "$USER_NAME": "$REPO"
+        echo "Source code removed. Version: $(cat "$REPO/VERSION")"
+    fi
+    step_done clean
 fi
 
 # --- Summary ----------------------------------------------------------------------------------
