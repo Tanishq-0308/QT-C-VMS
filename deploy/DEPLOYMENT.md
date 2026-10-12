@@ -19,7 +19,7 @@ Everything else is downloaded by the installer.
 
 ```bash
 # 1. The code
-git clone https://github.com/Tanishq-0308/QT-C-VMS.git ~/medical_qt_app
+git clone https://github.com/Brainwave-Technologie/medical_qt_app.git ~/medical_qt_app
 
 # 2. The deps folder: download it from the drive (e.g. to ~/Downloads) and check it
 cd ~/Downloads/ot-deps-2026-10 && sha256sum -c SHA256SUMS      # every line: OK
